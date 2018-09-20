@@ -1,0 +1,178 @@
+== HiveMQ S3 Cluster Discovery Plugin
+
+This plugin allows your HiveMQ cluster nodes to discover each other dynamically by exchanging their information via S3 from Amazon Web Services.
+
+=== How it works
+
+On Startup each broker puts his own IP and Port (depends on the configured bind-adress for the cluster transport) in a File in S3.
+Then each broker regularly checks the configured S3 bucket for files from other brokers, each containing the information on how to connect to them.
+When the plugin finds files from other brokers it will try to form a cluster with them.
+
+Additionally every broker updates its own file on a regular basis to prevent the file from expiring.
+
+=== Installation
+
+1. Copy the jar file `plugins/s3-cluster-discovery-plugin-<version>.jar` to your `[HIVEMQ_HOME]/plugins` folder
+2. Copy the `conf/s3discovery.properties` file to your `[HIVEMQ_HOME]/conf` folder
+3. Modify the `s3discovery.properties file for your needs
+4. Done
+
+
+=== Usage
+
+1. Start more than one HiveMQ with clustering enabled
+2. The HiveMQs will form a cluster.
+
+
+=== Configuration
+
+The S3 plugin uses its own configuration file 's3discovery.properties' which must be placed in HiveMQ's config folder.
+
+==== General Configuration
+
+|===
+| Config name | Required | Description
+
+| s3-bucket-region | x | The region in which this bucket resides. See http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region for a list of regions
+| s3-bucket-name | x | Name of the bucket to use
+| file-prefix | x | Prefix for the filename of every node's file
+| file-expiration | x | timeout in minutes after a file on S3 will be garbage collected
+| update-interval | x | Interval (in minutes) in which the own information in S3 is updated. (must be smaller than `file-expiration`)
+|===
+
+.Example Configuration
+[source]
+----
+s3-bucket-region:us-east-1
+s3-bucket-name:hivemq
+file-prefix:hivemq/cluster/nodes/
+file-expiration:360
+update-interval:180
+credentials-type:default
+----
+
+
+===== Authentication Configuration
+
+This plugin provides several mechanisms to authenticate with the S3-API. These are `default`,`environment_variables`, `java_system_properties`, `user_credentials_file`,`instance_profile_credentials`,`access_key` and `temporary_session`.
+
+===== Default Authentication
+
+Defult Authentication tries to access S3 via the default mechanisms in the following order
+
+1. Environment variables
+2. Java system properties
+3. User credentials file
+4. IAM profiles assigned to EC2 instance
+
+.Example Default Config
+[source]
+----
+credentials-type:default
+----
+
+
+===== Environment Variables Authentication
+
+Uses environment variables to specify your AWS credentials
+
+the following variables need to be set:
+
+* AWS_ACCESS_KEY_ID
+* AWS_SECRET_ACCESS_KEY
+
+.Linux example
+[source,bash]
+----
+export AWS_ACCESS_KEY_ID=<your-access-key>
+export AWS_SECRET_ACCESS_KEY=<your-secret-key>
+----
+
+.Example Environment Variables Config
+[source]
+----
+credentials-type:environment_variables
+----
+
+
+===== Java System Property Authentication
+
+Uses Java system properties to specify your AWS credentials
+
+the following Java system properties need to be set:
+
+* aws.accessKeyId
+* aws.secretKey
+
+
+.Example Java System Properties Config
+[source]
+----
+credentials-type:java_system_properties
+----
+
+
+===== User Credentials Authentication
+
+Uses the credentials file wich can be created by calling 'aws configure' (AWS CLI)
+usually this file is located at ~/.aws/credentials (platform dependent)
+The location of the file can be configured by setting the environment variable
+`AWS_CREDENTIAL_PROFILE_FILE` to the location of your file
+
+.Example Java System Properties Config
+[source]
+----
+credentials-type:user_credentials_file
+----
+
+
+===== Instance Profile Credentials Authentication
+
+Uses the IAM Roles assigned to the EC2 instance running HiveMQ to access S3
+
+WARNING: This only works if HiveMQ is running on an EC2 instance and your EC2 instance has configured the right IAM Role to access S3 !
+
+
+.Example Instance Profile Credentials Config
+[source]
+----
+credentials-type:instance_profile_credentials
+----
+
+
+===== Access Key Authentication
+
+Uses the credentials specified in this file.
+
+The variables you must provide are:
+
+* `credentials-access-key-id`
+* `credentials-secret-access-key`
+
+.Example Instance Profile Credentials Config
+[source]
+----
+credentials-type:access_key
+credentials-access-key-id:<your-access-key>
+credentials-secret-access-key:<your-secret_access_key>
+----
+
+
+===== Secret Access Key Authentication
+
+Uses the credentials specified in this file to authenticate with a temporary session
+
+The variables you must provide are:
+
+* `credentials-access-key-id`
+* `credentials-secret-access-key`
+* `credentials-session-token`
+
+.Example Instance Profile Credentials Config
+[source]
+----
+credentials-type:temporary_session
+credentials-access-key-id:<your-access_key_id>
+credentials-secret-access-key:<your-secret_access_key>
+credentials-session-token:<your-session_token>
+----
