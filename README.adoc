@@ -1,0 +1,196 @@
+:aws_credentials: https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys
+:s3_regions: https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
+:path-style-access: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html#access-bucket-intro
+:hivemq-downloads: https://www.hivemq.com/downloads
+:hivemq-cluster-discovery: http://develop.hivemq.com/docs/4/hivemq/cluster.html#discovery
+:hivemq-support: http://www.hivemq.com/support/
+
+== S3 Cluster Discovery Extension
+
+*Type*: Integration
+
+*Version*: 4.0.0
+
+*License*: Apache License 2.0
+
+
+=== Purpose
+
+This extension allows your HiveMQ cluster nodes to discover each other dynamically by exchanging their information via S3 from Amazon Web Services (AWS).
+Each node will place its own ip-address and port to the given bucket and will read the files from other nodes.
+The ip-address and port are taken from the `external-address` and `external-port` which is configured in the cluster `transport` (config.xml).
+If they are not set, the `bind-address` and `bind-port` will be used.
+The extension will regularly check the configured S3 bucket for files from other HiveMQ nodes, which contains the information on how to connect to them.
+Additionally every broker updates its own file on a regular basis to prevent the file from expiring.
+The `s3discovery.properties` can be reloaded during runtime.
+
+
+=== Installation
+
+* Download the extension from the {hivemq-downloads}[HiveMQ website^].
+* Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
+* Modify the `s3discovery.properties` file for your needs.
+* Change the {hivemq-cluster-discovery}[discovery mechanism^] of HiveMQ to `extension`.
+
+
+=== Configuration
+
+==== General Configuration
+
+|===
+| Config name           | Required  | Description
+| s3-bucket-name        |     x     | Name of the S3 bucket to use.
+| s3-bucket-region      |     x     | The region in which this S3 bucket resides. (List of regions: {s3_regions}[AWS documentation^])
+| file-prefix           |     x     | Prefix for the filename of every node's file.
+| file-expiration       |     x     | Timeout in seconds after a file on S3 will be removed.
+| update-interval       |     x     | Interval in seconds in which the own information will be updated. (Must be smaller than `file-expiration`)
+| s3-endpoint           |           | Endpoint url to use other S3 compatible storage services.
+| s3-endpoint-region    |           | The region of the endpoint. (Optional)
+| s3-path-style-access  |           | De-/activate path style access. Information about path style access can be found in the {path-style-access}[AWS documentation^].
+|===
+
+.Example Configuration
+[source]
+----
+s3-bucket-region:us-east-1
+s3-bucket-name:hivemq
+file-prefix:hivemq/cluster/nodes/
+file-expiration:360
+update-interval:180
+credentials-type:default
+----
+
+
+==== Authentication Configuration
+
+The extension uses AWS API operations for exchanging cluster information.
+These operations work with `Access Keys`, if you don't know what access keys are or how to generate them please look at the official {aws_credentials}[AWS documentation] about credentials.
+
+===== Default Authentication
+
+Default Authentication tries to access S3 via the default mechanisms in the following order:
+
+1. Environment variables
+2. Java system properties
+3. User credentials file
+4. IAM profiles assigned to EC2 instance
+
+.Example Default Config
+[source]
+----
+credentials-type:default
+----
+
+===== Environment Variables Authentication
+
+Uses environment variables to specify your AWS credentials the following variables need to be set:
+
+* AWS_ACCESS_KEY_ID
+* AWS_SECRET_ACCESS_KEY
+
+.Linux example
+[source,bash]
+----
+export AWS_ACCESS_KEY_ID=<your-access-key>
+export AWS_SECRET_ACCESS_KEY=<your-secret-key>
+----
+
+.Example Environment Variables Config
+[source]
+----
+credentials-type:environment_variables
+----
+
+===== Java System Property Authentication
+
+Uses Java system properties to specify your AWS credentials the following Java system properties need to be set:
+
+* aws.accessKeyId
+* aws.secretKey
+
+.Example Java System Properties Config
+[source]
+----
+credentials-type:java_system_properties
+----
+
+You can for example extend the `run.sh` or `run.bat` in order to start HiveMQ with the system properties:
+
+.Example for extendending `run.sh`
+[source]
+----
+############## VARIABLES
+JAVA_OPTS="$JAVA_OPTS -Daws.accessKeyId=<your-access-key> -Daws.secretKey=<your-secret-key>"
+----
+
+===== User Credentials Authentication
+
+Uses the credentials file which can be created by calling 'aws configure' (AWS CLI).
+This file is usually located at ~/.aws/credentials. The exact location can vary based on the platform.
+The location of the file can be configured by setting the environment variable `AWS_CREDENTIAL_PROFILE_FILE` to the location of your file.
+
+.Example Java System Properties Config
+[source]
+----
+credentials-type:user_credentials_file
+----
+
+===== Instance Profile Credentials Authentication
+
+Uses the IAM Roles assigned to the EC2 instance running HiveMQ to access S3.
+
+WARNING: This only works if HiveMQ is running on an EC2 instance and your EC2 instance has configured the right IAM Role to access S3!
+
+
+.Example Instance Profile Credentials Config
+[source]
+----
+credentials-type:instance_profile_credentials
+----
+
+===== Access Key Authentication
+
+Uses the credentials specified in the `s3discovery.properties` file.
+
+The variables you must provide are:
+
+* `credentials-access-key-id`
+* `credentials-secret-access-key`
+
+.Example Instance Profile Credentials Config
+[source]
+----
+credentials-type:access_key
+credentials-access-key-id:<your-access-key>
+credentials-secret-access-key:<your-secret_access_key>
+----
+
+===== Secret Access Key Authentication
+
+Uses the credentials specified in `s3discovery.properties` file to authenticate with a temporary session.
+
+The variables you must provide are:
+
+* `credentials-access-key-id`
+* `credentials-secret-access-key`
+* `credentials-session-token`
+
+.Example Instance Profile Credentials Config
+[source]
+----
+credentials-type:temporary_session
+credentials-access-key-id:<your-access_key_id>
+credentials-secret-access-key:<your-secret_access_key>
+credentials-session-token:<your-session_token>
+----
+
+
+=== First Steps
+
+* Create a S3 bucket with the configured name.
+* Verify that the given authentication can access the S3 bucket.
+* Start HiveMQ which will start discover other nodes via S3.
+
+==== Need help?
+
+If you encounter any problems, we are happy to help. The best place to get in contact is our {hivemq-support}[support^].
