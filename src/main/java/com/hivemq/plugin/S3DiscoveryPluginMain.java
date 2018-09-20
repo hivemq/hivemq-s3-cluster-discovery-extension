@@ -27,6 +27,8 @@ import com.hivemq.plugin.callbacks.S3DiscoveryCallback;
 import com.hivemq.plugin.configuration.Configuration;
 import com.hivemq.plugin.configuration.PluginPropertiesReader;
 import com.hivemq.plugin.amazon.S3Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Florian Limpöck
@@ -34,7 +36,7 @@ import com.hivemq.plugin.amazon.S3Client;
  */
 public class S3DiscoveryPluginMain implements PluginMain {
 
-    //    private static final Logger log = LoggerFactory.getLogger(S3DiscoveryPluginMain.class);
+    private static final Logger log = LoggerFactory.getLogger(S3DiscoveryPluginMain.class);
 
     @Override
     public void pluginStart(@NotNull final PluginStartInput pluginStartInput, @NotNull final PluginStartOutput pluginStartOutput) {
@@ -45,8 +47,9 @@ public class S3DiscoveryPluginMain implements PluginMain {
             final S3Client s3Client = new S3Client(configuration);
 
             Services.clusterService().addDiscoveryCallback(new S3DiscoveryCallback(s3Client.get(), configuration));
-        } catch (final Exception e){
-//            log.error("Not able to start S3 Plugin: ", e);
+        } catch (final Exception e) {
+            log.error("Not able to start S3 Plugin: ", e);
+            pluginStartOutput.preventPluginStartup("Exception caught at plugin start");
         }
 
     }

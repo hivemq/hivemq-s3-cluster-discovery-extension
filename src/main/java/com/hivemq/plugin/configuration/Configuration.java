@@ -20,7 +20,10 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.internal.Constants;
 import com.hivemq.plugin.api.annotations.NotNull;
 import com.hivemq.plugin.api.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -29,8 +32,7 @@ import java.util.Properties;
  */
 public class Configuration {
 
-    //FIXME: add logger and logstatements
-//    private static final Logger log = LoggerFactory.getLogger(Configuration.class);
+    private static final Logger log = LoggerFactory.getLogger(Configuration.class);
 
     private @NotNull final Properties properties;
 
@@ -48,8 +50,8 @@ public class Configuration {
             }
 
             return AuthenticationType.fromName(property);
-        } catch (IllegalArgumentException e) {
-//            log.error("Not able to initialize S3 Plugin", e);
+        } catch (final IllegalArgumentException e) {
+            log.error("Not able to initialize S3 Plugin", e);
             return null;
         }
     }
@@ -62,8 +64,8 @@ public class Configuration {
             }
 
             return Regions.fromName(property);
-        } catch (IllegalArgumentException e) {
-//            log.error("Not able to initialize S3 Plugin", e);
+        } catch (final IllegalArgumentException e) {
+            log.error("Not able to initialize S3 Plugin", e);
             return null;
         }
     }
@@ -91,16 +93,17 @@ public class Configuration {
         try {
             final long value = Long.parseLong(property);
             if (value < 0) {
-//                log.error("Value for S3 expire configuration must be positive or zero, disabling expiration");
+                log.error("Value for S3 expire configuration must be positive or zero, disabling expiration");
                 return 0;
             }
             return value;
-        } catch (NumberFormatException e) {
-//            log.error("Not able to parse S3 expiration configuration, disabling expiration");
+        } catch (final NumberFormatException e) {
+            log.error("Not able to parse S3 expiration configuration, disabling expiration");
             return 0L;
         }
     }
 
+    //FIXME: Use method for schedule task
     public long getOwnInformationUpdateInterval() {
         final String property = getProperty("update-interval");
         if (property == null) {
@@ -110,12 +113,12 @@ public class Configuration {
         try {
             final long value = Long.parseLong(property);
             if (value < 0) {
-//                log.error("Value for S3 update interval configuration must be positive or zero, disabling update interval");
+                log.error("Value for S3 update interval configuration must be positive or zero, disabling update interval");
                 return 0;
             }
             return value;
-        } catch (NumberFormatException e) {
-//            log.error("Not able to parse S3 update interval configuration, disabling update interval");
+        } catch (final NumberFormatException e) {
+            log.error("Not able to parse S3 update interval configuration, disabling update interval");
             return 0L;
         }
     }
@@ -138,11 +141,7 @@ public class Configuration {
 
     public @Nullable String getEndpoint() {
         final String property = getProperty("s3-endpoint");
-        if (property == null) {
-            return Constants.S3_HOSTNAME;
-        }
-
-        return property;
+        return Objects.requireNonNullElse(property, Constants.S3_HOSTNAME);
     }
 
     public boolean withPathStyleAccess() {

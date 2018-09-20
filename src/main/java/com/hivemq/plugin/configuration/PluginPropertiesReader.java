@@ -18,6 +18,8 @@ package com.hivemq.plugin.configuration;
 
 import com.hivemq.plugin.api.annotations.NotNull;
 import com.hivemq.plugin.api.parameter.PluginInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,8 +33,7 @@ import java.util.Properties;
  */
 public class PluginPropertiesReader {
 
-    //FIXME: add logger and logstatements
-//    private static final Logger log = LoggerFactory.getLogger(PluginPropertiesReader.class);
+    private static final Logger log = LoggerFactory.getLogger(PluginPropertiesReader.class);
 
     private final @NotNull Properties properties = new Properties();
 
@@ -43,19 +44,16 @@ public class PluginPropertiesReader {
         final File pluginFile = new File(configFolder, "s3discovery.properties");
 
         if (!pluginFile.canRead()) {
-//            log.error("Could not read the properties file {}", pluginFile.getAbsolutePath());
+            log.error("Could not read the properties file {}", pluginFile.getAbsolutePath());
             return;
         }
 
-        try (InputStream is = new FileInputStream(pluginFile)) {
-
-//            log.debug("Reading property file {}", pluginFile.getAbsolutePath());
-
+        try (final InputStream is = new FileInputStream(pluginFile)) {
+            log.debug("Reading property file {}", pluginFile.getAbsolutePath());
             properties.load(is);
 
-
         } catch (final IOException e) {
-//            log.error("An error occurred while reading the properties file {}", pluginFile.getAbsolutePath(), e);
+            log.error("An error occurred while reading the properties file {}", pluginFile.getAbsolutePath(), e);
         }
     }
 

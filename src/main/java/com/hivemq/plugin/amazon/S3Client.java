@@ -27,6 +27,8 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.hivemq.plugin.api.annotations.NotNull;
 import com.hivemq.plugin.configuration.AuthenticationType;
 import com.hivemq.plugin.configuration.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -36,8 +38,7 @@ import java.util.Map;
  */
 public class S3Client {
 
-    //FIXME: add logger and logstatements
-//    private static final Logger log = LoggerFactory.getLogger(S3Client.class);
+    private static final Logger log = LoggerFactory.getLogger(S3Client.class);
 
     @NotNull private final Configuration configuration;
 
@@ -49,7 +50,7 @@ public class S3Client {
 
         final AuthenticationType authenticationType = configuration.getAuthenticationType();
         if (authenticationType == null) {
-//            log.error("S3 credentials type not configured, shutting down HiveMQ");
+            log.error("S3 credentials type not configured, shutting down HiveMQ");
             throw new NullPointerException("S3 Authentication type is null");
         }
 
@@ -57,7 +58,7 @@ public class S3Client {
         try {
             credentialsProvider = getAwsCredentials(authenticationType);
         } catch (final Exception e) {
-//            log.error("Not able to authenticate with S3, shutting down HiveMQ");
+            log.error("Not able to authenticate with S3, shutting down HiveMQ");
             throw e;
         }
 
@@ -65,13 +66,13 @@ public class S3Client {
         try {
             s3 = new AmazonS3Client(credentialsProvider);
         } catch (Exception e) {
-//            log.error("Not able to authenticate with S3, shutting down HiveMQ");
+            log.error("Not able to authenticate with S3, shutting down HiveMQ");
             throw e;
         }
 
         final Regions regions = configuration.getRegion();
         if (regions == null) {
-//            log.error("S3 region is not configured, shutting down HiveMQ");
+            log.error("S3 region is not configured, shutting down HiveMQ");
             throw new NullPointerException("S3 region is null");
         }
 
@@ -83,21 +84,21 @@ public class S3Client {
         final String bucketName = configuration.getBucketName();
 
         if (bucketName == null) {
-//            log.error("S3 Bucket name is not configured, shutting down HiveMQ");
+            log.error("S3 Bucket name is not configured, shutting down HiveMQ");
             throw new NullPointerException("S3 Bucket name is null");
         }
 
         try {
 
             if (!s3.doesBucketExist(bucketName)) {
-//                log.error("S3 Bucket {} does not exist, shutting down HiveMQ", bucketName);
+                log.error("S3 Bucket {} does not exist, shutting down HiveMQ", bucketName);
                 throw new IllegalArgumentException("S3 Bucket does not exist");
             }
         } catch (final AmazonS3Exception e) {
             for (final Map.Entry<String, String> entry : e.getAdditionalDetails().entrySet()) {
-//                log.debug("Additional Error information {} : {}", entry.getKey(), entry.getValue());
+                log.debug("Additional Error information {} : {}", entry.getKey(), entry.getValue());
             }
-//            log.error("Error at checking if S3 bucket {} exists", bucketName, e);
+            log.error("Error at checking if S3 bucket {} exists", bucketName, e);
         }
 
         return s3;
@@ -125,6 +126,9 @@ public class S3Client {
             case TEMPORARY_SESSION:
                 final String accessKey = configuration.getAccessKeyId();
                 final String secretAccessKey = configuration.getSecretAccessKey();
+                if(accessKey == null || secretAccessKey == null){
+                    throw new NullPointerException("Access key or secret access key is null");
+                }
                 if (authenticationType == AuthenticationType.ACCESS_KEY) {
                     credentialsProvider = new StaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretAccessKey));
                     break;

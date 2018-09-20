@@ -27,6 +27,8 @@ import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.plugin.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.plugin.configuration.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,8 +44,7 @@ import java.util.List;
  */
 public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
-    //FIXME: add logger and logstatements
-    //    private static final Logger log = LoggerFactory.getLogger(S3DiscoveryCallback.class);
+    private static final Logger log = LoggerFactory.getLogger(S3DiscoveryCallback.class);
 
     private static final @NotNull String SEPARATOR = "||||";
     private static final @NotNull String SEPARATOR_REGEX = "\\|\\|\\|\\|";
@@ -51,7 +52,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     private final @NotNull AmazonS3 s3;
     private final @NotNull Configuration configuration;
-    private final @NotNull String bucketName;
+    private final @Nullable String bucketName;
     private @Nullable String objectKey;
     private @Nullable String clusterId;
     private @Nullable ClusterNodeAddress ownAddress;
@@ -60,11 +61,10 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                                final Configuration configuration) {
         this.s3 = s3;
         this.s3.setEndpoint(configuration.getEndpoint());
-        this.s3.setS3ClientOptions(new S3ClientOptions().withPathStyleAccess(configuration.withPathStyleAccess()));
+        this.s3.setS3ClientOptions(S3ClientOptions.builder().setPathStyleAccess(configuration.withPathStyleAccess()).build());
         this.configuration = configuration;
         this.bucketName = configuration.getBucketName();
     }
-
 
 
     @Override
@@ -85,12 +85,11 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             clusterDiscoveryOutput.setReloadInterval(30);
 
         } catch (final Exception e) {
-            // log.error("S3 initialization failed");
-            // log.debug("Original exception", e);
+             log.error("S3 initialization failed");
+             log.debug("Original exception", e);
         }
 
     }
-
 
     @Override
     public void reload(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput, @NotNull final ClusterDiscoveryOutput clusterDiscoveryOutput) {
@@ -98,18 +97,19 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             loadAndProvideNodes(clusterDiscoveryOutput);
         } catch (final Exception e) {
-        // log.error("Not able to reload nodes from S3");
-        // log.debug("Original exception", e);
+            log.error("Not able to reload nodes from S3");
+            log.debug("Original exception", e);
         }
 
     }
+
     @Override
     public void destroy(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput) {
         try {
             s3.deleteObject(bucketName, objectKey);
         } catch (final Exception e) {
-//            log.error("Not able to delete object from S3");
-//            log.debug("Original exception", e);
+            log.error("Not able to delete object from S3");
+            log.debug("Original exception", e);
         }
     }
 
@@ -123,6 +123,13 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
     private void saveOwnInformationToS3() {
 
         try {
+            if (clusterId == null) {
+                throw new NullPointerException("Cluster id must never be null");
+            }
+            if (ownAddress == null) {
+                throw new NullPointerException("Own address must never be null");
+            }
+
             final String content = createFileContent(clusterId, ownAddress);
             final StringInputStream input;
             input = new StringInputStream(content);
@@ -130,11 +137,11 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             metadata.setContentLength(input.available());
 
             s3.putObject(bucketName, objectKey, input, metadata);
-//            log.debug("S3 node information updated");
+            log.debug("S3 node information updated");
 
         } catch (final Exception e) {
-//            log.error("Not able to save node information to S3");
-//            log.debug("Original exception", e);
+            log.error("Not able to save node information to S3");
+            log.debug("Original exception", e);
         }
     }
 
@@ -158,7 +165,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                 try {
                     object = s3.getObject(bucketName, key);
                 } catch (final AmazonS3Exception e) {
-//                    log.debug("Not able to read file {} from S3: {}", key, e.getMessage());
+                    log.debug("Not able to read file {} from S3: {}", key, e.getMessage());
                     continue;
                 }
 
@@ -174,7 +181,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                 try {
                     objectContent.close();
                 } catch (final IOException e) {
-//                    log.trace("Not able to close S3 input stream", e);
+                    log.trace("Not able to close S3 input stream", e);
                 }
 
                 if (objectListing.isTruncated()) {
@@ -198,18 +205,18 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             final byte[] decode = Base64.getDecoder().decode(fileContent);
             if (decode == null) {
-//                log.debug("Not able to parse contents from S3-object '{}'", key);
+                log.debug("Not able to parse contents from S3-object '{}'", key);
                 return null;
             }
             content = new String(decode, StandardCharsets.UTF_8);
         } catch (final IllegalArgumentException e) {
-//            log.debug("Not able to parse contents from S3-object '{}'", key);
+            log.debug("Not able to parse contents from S3-object '{}'", key);
             return null;
         }
 
         final String[] split = content.split(SEPARATOR_REGEX);
         if (split.length < 4) {
-//            log.debug("Not able to parse contents from S3-object '{}'", key);
+            log.debug("Not able to parse contents from S3-object '{}'", key);
             return null;
         }
 
@@ -218,7 +225,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         if (expirationMinutes > 0) {
             final long expirationFromFile = Long.parseLong(split[1]);
             if (expirationFromFile + (expirationMinutes * 60000) < System.currentTimeMillis()) {
-//                log.debug("S3 object {} expired, deleting it.", key);
+                log.debug("S3 object {} expired, deleting it.", key);
                 s3.deleteObject(bucketName, key);
                 return null;
             }
@@ -226,7 +233,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
         final String host = split[3];
         if (host.length() < 1) {
-//            log.debug("Not able to parse contents from S3-object '{}'", key);
+            log.debug("Not able to parse contents from S3-object '{}'", key);
             return null;
         }
 
@@ -234,7 +241,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             port = Integer.parseInt(split[4]);
         } catch (final NumberFormatException e) {
-//            log.debug("Not able to parse contents from S3-object '{}'", key);
+            log.debug("Not able to parse contents from S3-object '{}'", key);
             return null;
         }
 
