@@ -15,6 +15,7 @@ The ip-address and port are taken from the `external-address` and `external-port
 If they are not set, the `bind-address` and `bind-port` will be used.
 The plugin will regularly check the configured S3 bucket for files from other HiveMQ nodes, which contains the information on how to connect to them.
 Additionally every broker updates its own file on a regular basis to prevent the file from expiring.
+The `s3discovery.properties` can be reloaded during runtime.
 
 
 === Installation
@@ -25,7 +26,6 @@ Additionally every broker updates its own file on a regular basis to prevent the
 * Copy the content of the zip file to the `plugins` folder of your HiveMQ nodes.
 * Modify the `s3discovery.properties` file for your needs.
 * Change the discovery mechanism of HiveMQ to `plugin`.
-* HiveMQ will use the S3 Discovery Plugin when started.
 
 
 === Configuration
@@ -173,3 +173,7 @@ credentials-access-key-id:<your-access_key_id>
 credentials-secret-access-key:<your-secret_access_key>
 credentials-session-token:<your-session_token>
 ----
+
+=== First Steps
+
+HiveMQ will use the S3 Discovery Plugin when started.
