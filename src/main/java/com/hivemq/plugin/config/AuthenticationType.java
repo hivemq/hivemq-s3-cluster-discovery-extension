@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.hivemq.plugin.configuration;
+package com.hivemq.plugin.config;
 
 import com.hivemq.plugin.api.annotations.NotNull;
 
 /**
  * @author Florian Limpöck
+ * @author Abdullah Imal
  * @since 4.0.0
  */
 public enum AuthenticationType {
@@ -32,29 +33,24 @@ public enum AuthenticationType {
     ACCESS_KEY("access_key"),
     TEMPORARY_SESSION("temporary_session");
 
-    private @NotNull final String name;
+    private final String name;
 
-    AuthenticationType(final @NotNull String name) {
+    AuthenticationType(@NotNull final String name) {
         this.name = name;
     }
 
-    public static @NotNull AuthenticationType fromName(final @NotNull String name) {
-
+    @NotNull
+    public static AuthenticationType fromName(@NotNull final String name) throws IllegalArgumentException {
         for (final AuthenticationType type : values()) {
-            if (name.equals(type.getName())) {
+            if (name.contentEquals(type.getName())) {
                 return type;
             }
         }
-
         throw new IllegalArgumentException("Unknown credentials type " + name);
     }
 
-    @Override
-    public @NotNull String toString() {
-        return name;
-    }
-
-    public @NotNull String getName() {
+    @NotNull
+    public String getName() {
         return name;
     }
 }

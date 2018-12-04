@@ -24,38 +24,42 @@ import com.hivemq.plugin.api.parameter.PluginStopInput;
 import com.hivemq.plugin.api.parameter.PluginStopOutput;
 import com.hivemq.plugin.api.services.Services;
 import com.hivemq.plugin.callbacks.S3DiscoveryCallback;
-import com.hivemq.plugin.configuration.Configuration;
-import com.hivemq.plugin.configuration.PluginPropertiesReader;
-import com.hivemq.plugin.amazon.S3Client;
+import com.hivemq.plugin.config.ConfigurationReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Florian Limpöck
+ * @author Abdullah Imal
  * @since 4.0.0
  */
 public class S3DiscoveryPluginMain implements PluginMain {
 
-    private static final Logger log = LoggerFactory.getLogger(S3DiscoveryPluginMain.class);
+    private static final Logger logger = LoggerFactory.getLogger(S3DiscoveryPluginMain.class);
+
+    private S3DiscoveryCallback s3DiscoveryCallback;
 
     @Override
     public void pluginStart(@NotNull final PluginStartInput pluginStartInput, @NotNull final PluginStartOutput pluginStartOutput) {
-
         try {
-            final PluginPropertiesReader pluginPropertiesReader = new PluginPropertiesReader(pluginStartInput.getPluginInformation());
-            final Configuration configuration = new Configuration(pluginPropertiesReader);
-            final S3Client s3Client = new S3Client(configuration);
+            final ConfigurationReader configurationReader = new ConfigurationReader(pluginStartInput.getPluginInformation());
 
-            Services.clusterService().addDiscoveryCallback(new S3DiscoveryCallback(s3Client.get(), configuration));
-        } catch (final Exception e) {
-            log.error("Not able to start S3 Plugin: ", e);
-            pluginStartOutput.preventPluginStartup("Exception caught at plugin start");
+            s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
+
+            Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
+
+            logger.debug("Registered S3 discovery callback successfully.");
+        } catch (final Exception ex) {
+            logger.error("Not able to start S3 Discovery Plugin.", ex);
+            pluginStartOutput.preventPluginStartup("Exception caught at plugin start.");
         }
-
     }
 
     @Override
     public void pluginStop(@NotNull final PluginStopInput pluginStopInput, @NotNull final PluginStopOutput pluginStopOutput) {
 
+        if (s3DiscoveryCallback != null) {
+            Services.clusterService().removeDiscoveryCallback(s3DiscoveryCallback);
+        }
     }
 }

@@ -16,235 +16,208 @@
 
 package com.hivemq.plugin.callbacks;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.S3ClientOptions;
 import com.amazonaws.services.s3.model.*;
-import com.amazonaws.util.StringInputStream;
 import com.hivemq.plugin.api.annotations.NotNull;
 import com.hivemq.plugin.api.annotations.Nullable;
 import com.hivemq.plugin.api.services.cluster.ClusterDiscoveryCallback;
 import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.plugin.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.plugin.configuration.Configuration;
+import com.hivemq.plugin.aws.S3Client;
+import com.hivemq.plugin.config.ClusterNodeFile;
+import com.hivemq.plugin.config.ConfigurationReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 /**
- * @author Florian Limpöck
+ * @author Abdullah Imal
  * @since 4.0.0
  */
 public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
-    private static final Logger log = LoggerFactory.getLogger(S3DiscoveryCallback.class);
+    private static final Logger logger = LoggerFactory.getLogger(S3DiscoveryCallback.class);
 
-    private static final @NotNull String SEPARATOR = "||||";
-    private static final @NotNull String SEPARATOR_REGEX = "\\|\\|\\|\\|";
-    private static final @NotNull String VERSION = "1";
+    private static final int reloadInterval = 30;
 
-    private final @NotNull AmazonS3 s3;
-    private final @NotNull Configuration configuration;
-    private final @Nullable String bucketName;
-    private @Nullable String objectKey;
-    private @Nullable String clusterId;
-    private @Nullable ClusterNodeAddress ownAddress;
+    private final ConfigurationReader configurationReader;
+    private S3Client s3Client;
+    private ClusterNodeFile ownNodeFile;
 
-    public S3DiscoveryCallback(final @NotNull AmazonS3 s3,
-                               final Configuration configuration) {
-        this.s3 = s3;
-        this.s3.setEndpoint(configuration.getEndpoint());
-        this.s3.setS3ClientOptions(S3ClientOptions.builder().setPathStyleAccess(configuration.withPathStyleAccess()).build());
-        this.configuration = configuration;
-        this.bucketName = configuration.getBucketName();
+    public S3DiscoveryCallback(@NotNull final ConfigurationReader configurationReader) {
+        this.configurationReader = configurationReader;
     }
-
 
     @Override
     public void init(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput, @NotNull final ClusterDiscoveryOutput clusterDiscoveryOutput) {
 
+        clusterDiscoveryOutput.setReloadInterval(reloadInterval);
+
         try {
-            this.clusterId = clusterDiscoveryInput.getOwnClusterId();
-            this.ownAddress = clusterDiscoveryInput.getOwnAddress();
+            s3Client = S3Client.create(configurationReader);
+            if (s3Client == null) {
+                logger.error("S3Client couldn't be initialized. Skipping initial S3 discovery.");
+                return;
+            }
 
-            objectKey = configuration.getFilePrefix() + clusterId;
-
-            saveOwnInformationToS3();
-
-            //FIXME: schedule update own information as soon as ManagedPluginExecutor is merged.
-
-            loadAndProvideNodes(clusterDiscoveryOutput);
-
-            clusterDiscoveryOutput.setReloadInterval(30);
-
-        } catch (final Exception e) {
-             log.error("S3 initialization failed");
-             log.debug("Original exception", e);
+            saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
+            clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
+        } catch (final Exception ex) {
+            logger.error("Initialization of the S3 discovery callback failed.");
+            logger.debug("Original exception", ex);
         }
-
     }
 
     @Override
     public void reload(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput, @NotNull final ClusterDiscoveryOutput clusterDiscoveryOutput) {
 
         try {
-            loadAndProvideNodes(clusterDiscoveryOutput);
-        } catch (final Exception e) {
-            log.error("Not able to reload nodes from S3");
-            log.debug("Original exception", e);
-        }
+            final S3Client newS3Client = S3Client.create(configurationReader);
+            if (newS3Client == null) {
+                String logMessage = "Configuration of the S3 discovery plugin couldn't be (re)loaded in the reload of the discovery callback. ";
 
+                if (s3Client == null) {
+                    logger.error(logMessage + "S3Client is not initialized. Skipping reload of the discovery callback.");
+                    return;
+                } else {
+                    logger.debug(logMessage + "Reusing existing S3Client.");
+                }
+            }
+
+            if (ownNodeFile.isExpired(s3Client.getS3Config().getFileUpdateIntervalInSeconds())) {
+                saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
+            }
+
+            clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
+        } catch (final Exception ex) {
+            logger.error("Reload of the S3 discovery callback failed.");
+            logger.debug("Original exception", ex);
+        }
     }
 
     @Override
     public void destroy(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput) {
         try {
-            s3.deleteObject(bucketName, objectKey);
-        } catch (final Exception e) {
-            log.error("Not able to delete object from S3");
-            log.debug("Original exception", e);
+            if (s3Client == null) {
+                logger.debug("S3Client is not initialized. Skipping destroy of the callback.");
+                return;
+            }
+            removeOwnFile(clusterDiscoveryInput.getOwnClusterId());
+        } catch (final Exception ex) {
+            logger.error("Destroy of the S3 discovery callback failed.");
+            logger.debug("Original exception", ex);
         }
     }
 
-    private void loadAndProvideNodes(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
-        final List<ClusterNodeAddress> addresses = new ArrayList<>();
-        final ObjectListing objectListing = s3.listObjects(bucketName, configuration.getFilePrefix());
-        readAllFiles(addresses, objectListing);
-        clusterDiscoveryOutput.provideCurrentNodes(addresses);
+    private void saveOwnFile(@NotNull final String ownClusterId, @NotNull final ClusterNodeAddress ownAddress) throws Exception {
+
+        final String objectKey = s3Client.getS3Config().getFilePrefix() + ownClusterId;
+        final ClusterNodeFile newNodeFile = new ClusterNodeFile(ownClusterId, ownAddress);
+
+        s3Client.saveObject(objectKey, newNodeFile.toString());
+        ownNodeFile = newNodeFile;
+
+        logger.debug("Updated own S3 file '{}'.", objectKey);
     }
 
-    private void saveOwnInformationToS3() {
+    private void removeOwnFile(@NotNull final String ownClusterId) {
 
+        final String objectKey = s3Client.getS3Config().getFilePrefix() + ownClusterId;
+
+        s3Client.removeObject(objectKey);
+        ownNodeFile = null;
+
+        logger.debug("Removed own S3 file '{}'.", objectKey);
+    }
+
+    @NotNull
+    private List<ClusterNodeAddress> getNodeAddresses() {
+
+        final List<ClusterNodeAddress> nodeAddresses = new ArrayList<>();
+
+        final List<ClusterNodeFile> nodeFiles;
         try {
-            if (clusterId == null) {
-                throw new NullPointerException("Cluster id must never be null");
-            }
-            if (ownAddress == null) {
-                throw new NullPointerException("Own address must never be null");
-            }
-
-            final String content = createFileContent(clusterId, ownAddress);
-            final StringInputStream input;
-            input = new StringInputStream(content);
-            final ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(input.available());
-
-            s3.putObject(bucketName, objectKey, input, metadata);
-            log.debug("S3 node information updated");
-
-        } catch (final Exception e) {
-            log.error("Not able to save node information to S3");
-            log.debug("Original exception", e);
+            nodeFiles = getNodeFiles();
+        } catch (final Exception ex) {
+            logger.error("Unknown error while reading all node files.", ex);
+            return nodeAddresses;
         }
+
+        for (final ClusterNodeFile nodeFile : nodeFiles) {
+
+            if (nodeFile.isExpired(s3Client.getS3Config().getFileExpirationInSeconds())) {
+
+                logger.debug("S3 file of node with clusterId {} is expired. File will be deleted.", nodeFile.getClusterId());
+
+                final String objectKey = s3Client.getS3Config().getFilePrefix() + nodeFile.getClusterId();
+                s3Client.deleteObject(objectKey);
+            } else {
+                nodeAddresses.add(nodeFile.getClusterNodeAddress());
+            }
+        }
+
+        logger.debug("Found following node addresses with the S3 plugin: {}", nodeAddresses);
+
+        return nodeAddresses;
     }
 
-    private String createFileContent(final @NotNull String clusterId, final @NotNull ClusterNodeAddress ownAddress) {
-        final String content = VERSION + SEPARATOR
-                + Long.toString(System.currentTimeMillis()) + SEPARATOR
-                + clusterId + SEPARATOR
-                + ownAddress.getHost() + SEPARATOR
-                + ownAddress.getPort() + SEPARATOR;
+    @NotNull
+    private List<ClusterNodeFile> getNodeFiles() {
 
-        return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
-    }
+        final List<ClusterNodeFile> clusterNodeFiles = new ArrayList<>();
 
+        ObjectListing objectListing = s3Client.getObjects(s3Client.getS3Config().getFilePrefix());
 
-    private void readAllFiles(final @NotNull List<ClusterNodeAddress> addresses, @NotNull final ObjectListing objectListing) {
-        for (final S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
-            try {
+        while (objectListing != null) {
 
-                final String key = objectSummary.getKey();
-                final S3Object object;
+            for (final S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
+
                 try {
-                    object = s3.getObject(bucketName, key);
-                } catch (final AmazonS3Exception e) {
-                    log.debug("Not able to read file {} from S3: {}", key, e.getMessage());
-                    continue;
+                    final ClusterNodeFile nodeFile = getNodeFile(objectSummary);
+                    if (nodeFile != null) {
+                        clusterNodeFiles.add(nodeFile);
+                    }
+                } catch (final AmazonS3Exception | IOException ex) {
+                    logger.error("Not able to read file {} from bucket {}. Skipping file.", objectSummary.getKey(), s3Client.getS3Config().getBucketName(), ex);
                 }
+            }
 
-                final S3ObjectInputStream objectContent = object.getObjectContent();
-
-                final String fileContent = new BufferedReader(new InputStreamReader(objectContent)).readLine();
-
-                final ClusterNodeAddress address = parseFileContent(fileContent, key);
-                if (address != null) {
-                    addresses.add(address);
-                }
-
-                try {
-                    objectContent.close();
-                } catch (final IOException e) {
-                    log.trace("Not able to close S3 input stream", e);
-                }
-
-                if (objectListing.isTruncated()) {
-                    final ObjectListing objectListingNext = s3.listNextBatchOfObjects(objectListing);
-                    readAllFiles(addresses, objectListingNext);
-                }
-
-            } catch (final Exception e) {
-                e.printStackTrace();
+            if (objectListing.isTruncated()) {
+                logger.debug("ObjectListing is truncated. Next batch will be loaded.");
+                objectListing = s3Client.getNextBatchOfObjects(objectListing);
+            } else {
+                objectListing = null;
             }
         }
+
+        return clusterNodeFiles;
     }
 
-    private @Nullable ClusterNodeAddress parseFileContent(final @Nullable String fileContent, final @NotNull String key) {
+    @Nullable
+    private ClusterNodeFile getNodeFile(@NotNull final S3ObjectSummary objectSummary) throws IOException {
 
-        if (fileContent == null) {
+        final String key = objectSummary.getKey();
+        final S3Object s3Object = s3Client.getObject(key);
+
+        final String fileContent;
+
+        try (final S3ObjectInputStream s3ObjectInputStream = s3Object.getObjectContent()) {
+            fileContent = new BufferedReader(new InputStreamReader(s3ObjectInputStream)).readLine();
+        } catch (final IOException ex) {
+            logger.error("An error occurred while reading the S3 object from an input stream.");
+            throw ex;
+        }
+
+        final ClusterNodeFile nodeFile = ClusterNodeFile.parseClusterNodeFile(fileContent);
+        if (nodeFile == null) {
+            logger.debug("Content of the S3 object '{}' could not parsed. Skipping file.", key);
             return null;
         }
-
-        final String content;
-        try {
-            final byte[] decode = Base64.getDecoder().decode(fileContent);
-            if (decode == null) {
-                log.debug("Not able to parse contents from S3-object '{}'", key);
-                return null;
-            }
-            content = new String(decode, StandardCharsets.UTF_8);
-        } catch (final IllegalArgumentException e) {
-            log.debug("Not able to parse contents from S3-object '{}'", key);
-            return null;
-        }
-
-        final String[] split = content.split(SEPARATOR_REGEX);
-        if (split.length < 4) {
-            log.debug("Not able to parse contents from S3-object '{}'", key);
-            return null;
-        }
-
-        final long expirationMinutes = configuration.getExpirationMinutes();
-
-        if (expirationMinutes > 0) {
-            final long expirationFromFile = Long.parseLong(split[1]);
-            if (expirationFromFile + (expirationMinutes * 60000) < System.currentTimeMillis()) {
-                log.debug("S3 object {} expired, deleting it.", key);
-                s3.deleteObject(bucketName, key);
-                return null;
-            }
-        }
-
-        final String host = split[3];
-        if (host.length() < 1) {
-            log.debug("Not able to parse contents from S3-object '{}'", key);
-            return null;
-        }
-
-        final int port;
-        try {
-            port = Integer.parseInt(split[4]);
-        } catch (final NumberFormatException e) {
-            log.debug("Not able to parse contents from S3-object '{}'", key);
-            return null;
-        }
-
-        return new ClusterNodeAddress(host, port);
+        return nodeFile;
     }
 }
