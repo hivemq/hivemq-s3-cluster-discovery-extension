@@ -75,7 +75,7 @@ public class S3Client {
         }
 
         this.amazonS3 = amazonS3ClientBuilder.build();
-        logger.debug("Created AmazonS3 successfully.");
+        logger.trace("Created AmazonS3 successfully.");
     }
 
     @NotNull

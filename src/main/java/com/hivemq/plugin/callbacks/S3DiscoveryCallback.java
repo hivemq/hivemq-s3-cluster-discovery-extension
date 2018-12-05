@@ -61,7 +61,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             try {
                 s3Client = new S3Client(configurationReader);
             } catch (final Exception ex) {
-                logger.error("Configuration of the S3 discovery plugin couldn't be loaded. Skipping initial discovery.", ex);
+                logger.error("Configuration of the S3 discovery plugin couldn't be loaded. Skipping initial discovery.");
                 return;
             }
             if (!s3Client.doesBucketExist()) {
@@ -72,8 +72,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception ex) {
-            logger.error("Initialization of the S3 discovery callback failed.");
-            logger.debug("Original exception", ex);
+            logger.error("Initialization of the S3 discovery callback failed.", ex);
         }
     }
 
@@ -90,7 +89,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                     newS3Client = null;
                 }
             } catch (final Exception ex) {
-                logger.error("Configuration of the S3 discovery plugin couldn't be (re)loaded in the reload of the discovery callback.", ex);
+                logger.error("Configuration of the S3 discovery plugin couldn't be (re)loaded in the reload of the discovery callback.");
             }
 
             if (newS3Client == null) {
@@ -102,14 +101,13 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                 }
             }
 
-            if (ownNodeFile.isExpired(s3Client.getS3Config().getFileUpdateIntervalInSeconds())) {
+            if (ownNodeFile == null || ownNodeFile.isExpired(s3Client.getS3Config().getFileUpdateIntervalInSeconds())) {
                 saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
             }
 
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception ex) {
-            logger.error("Reload of the S3 discovery callback failed.");
-            logger.debug("Original exception", ex);
+            logger.error("Reload of the S3 discovery callback failed.", ex);
         }
     }
 
@@ -122,8 +120,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             }
             removeOwnFile(clusterDiscoveryInput.getOwnClusterId());
         } catch (final Exception ex) {
-            logger.error("Destroy of the S3 discovery callback failed.");
-            logger.debug("Original exception", ex);
+            logger.error("Destroy of the S3 discovery callback failed.", ex);
         }
     }
 

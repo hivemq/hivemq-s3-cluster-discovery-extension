@@ -71,7 +71,7 @@ public class ConfigurationReader {
                 logger.error("Configuration of the S3 Discovery plugin is not valid!");
                 return null;
             }
-            logger.debug("Read properties file '{}' successfully.", propertiesFile.getAbsolutePath());
+            logger.trace("Read properties file '{}' successfully.", propertiesFile.getAbsolutePath());
             return s3Config;
 
         } catch (final IOException ex) {
