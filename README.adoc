@@ -1,16 +1,16 @@
 == S3 Cluster Discovery Plugin
 
-*Type*: Cluster Discovery Plugin
+*Type*: Cluster Discovery
 
-*Version*: 1.0.0
+*Version*: 4.0.0
 
 *License*: Apache License Version 2.0
 
 
 === Purpose
 
-This plugin allows your HiveMQ 4 cluster nodes to discover each other dynamically by exchanging their information via S3 from Amazon Web Services (AWS).
-Each node will place its own ip-address and port to the given bucket.  and will read the files from other nodes.
+This plugin allows your HiveMQ cluster nodes to discover each other dynamically by exchanging their information via S3 from Amazon Web Services (AWS).
+Each node will place its own ip-address and port to the given bucket and will read the files from other nodes.
 The ip-address and port are taken from the `external-address` and `external-port` which is configured in the cluster `transport` (config.xml).
 If they are not set, the `bind-address` and `bind-port` will be used.
 The plugin will regularly check the configured S3 bucket for files from other HiveMQ nodes, which contains the information on how to connect to them.
@@ -73,7 +73,6 @@ Default Authentication tries to access S3 via the default mechanisms in the foll
 credentials-type:default
 ----
 
-
 ===== Environment Variables Authentication
 
 Uses environment variables to specify your AWS credentials the following variables need to be set:
@@ -94,7 +93,6 @@ export AWS_SECRET_ACCESS_KEY=<your-secret-key>
 credentials-type:environment_variables
 ----
 
-
 ===== Java System Property Authentication
 
 Uses Java system properties to specify your AWS credentials the following Java system properties need to be set:
@@ -109,7 +107,6 @@ Uses Java system properties to specify your AWS credentials the following Java s
 credentials-type:java_system_properties
 ----
 
-
 ===== User Credentials Authentication
 
 Uses the credentials file which can be created by calling 'aws configure' (AWS CLI).
@@ -121,7 +118,6 @@ The location of the file can be configured by setting the environment variable `
 ----
 credentials-type:user_credentials_file
 ----
-
 
 ===== Instance Profile Credentials Authentication
 
@@ -135,7 +131,6 @@ WARNING: This only works if HiveMQ is running on an EC2 instance and your EC2 in
 ----
 credentials-type:instance_profile_credentials
 ----
-
 
 ===== Access Key Authentication
 
@@ -153,7 +148,6 @@ credentials-type:access_key
 credentials-access-key-id:<your-access-key>
 credentials-secret-access-key:<your-secret_access_key>
 ----
-
 
 ===== Secret Access Key Authentication
 
@@ -174,6 +168,9 @@ credentials-secret-access-key:<your-secret_access_key>
 credentials-session-token:<your-session_token>
 ----
 
+
 === First Steps
 
-HiveMQ will use the S3 Discovery Plugin when started.
+* Create a S3 bucket with the configured name.
+* Verify that the given authentication can access the S3 bucket.
+* Start HiveMQ which will start discover other nodes via S3.

@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * @author Florian Limpöck
  * @author Abdullah Imal
  * @since 4.0.0
  */
@@ -55,13 +56,16 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     @Override
     public void init(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput, @NotNull final ClusterDiscoveryOutput clusterDiscoveryOutput) {
-
         clusterDiscoveryOutput.setReloadInterval(reloadInterval);
-
         try {
-            s3Client = S3Client.create(configurationReader);
-            if (s3Client == null) {
-                logger.error("S3Client couldn't be initialized. Skipping initial S3 discovery.");
+            try {
+                s3Client = new S3Client(configurationReader);
+            } catch (final Exception ex) {
+                logger.error("Configuration of the S3 discovery plugin couldn't be loaded. Skipping initial discovery.", ex);
+                return;
+            }
+            if (!s3Client.doesBucketExist()) {
+                logger.error("Configured bucket '{}' doesn't exist.", s3Client.getS3Config().getBucketName());
                 return;
             }
 
@@ -75,17 +79,26 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     @Override
     public void reload(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput, @NotNull final ClusterDiscoveryOutput clusterDiscoveryOutput) {
-
         try {
-            final S3Client newS3Client = S3Client.create(configurationReader);
-            if (newS3Client == null) {
-                String logMessage = "Configuration of the S3 discovery plugin couldn't be (re)loaded in the reload of the discovery callback. ";
+            S3Client newS3Client = null;
+            try {
+                newS3Client = new S3Client(configurationReader);
+                if (newS3Client.doesBucketExist()) {
+                    this.s3Client = newS3Client;
+                } else {
+                    logger.error("Configured bucket '{}' doesn't exist. Reusing old S3Client when possible.", s3Client.getS3Config().getBucketName());
+                    newS3Client = null;
+                }
+            } catch (final Exception ex) {
+                logger.error("Configuration of the S3 discovery plugin couldn't be (re)loaded in the reload of the discovery callback.", ex);
+            }
 
+            if (newS3Client == null) {
                 if (s3Client == null) {
-                    logger.error(logMessage + "S3Client is not initialized. Skipping reload of the discovery callback.");
+                    logger.error("S3Client is not initialized. Skipping reload of the discovery callback.");
                     return;
                 } else {
-                    logger.debug(logMessage + "Reusing existing S3Client.");
+                    logger.error("Reusing existing S3Client.");
                 }
             }
 
@@ -115,7 +128,6 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
     }
 
     private void saveOwnFile(@NotNull final String ownClusterId, @NotNull final ClusterNodeAddress ownAddress) throws Exception {
-
         final String objectKey = s3Client.getS3Config().getFilePrefix() + ownClusterId;
         final ClusterNodeFile newNodeFile = new ClusterNodeFile(ownClusterId, ownAddress);
 
@@ -126,10 +138,9 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
     }
 
     private void removeOwnFile(@NotNull final String ownClusterId) {
-
         final String objectKey = s3Client.getS3Config().getFilePrefix() + ownClusterId;
 
-        s3Client.removeObject(objectKey);
+        s3Client.deleteObject(objectKey);
         ownNodeFile = null;
 
         logger.debug("Removed own S3 file '{}'.", objectKey);
@@ -137,7 +148,6 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     @NotNull
     private List<ClusterNodeAddress> getNodeAddresses() {
-
         final List<ClusterNodeAddress> nodeAddresses = new ArrayList<>();
 
         final List<ClusterNodeFile> nodeFiles;
@@ -168,7 +178,6 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     @NotNull
     private List<ClusterNodeFile> getNodeFiles() {
-
         final List<ClusterNodeFile> clusterNodeFiles = new ArrayList<>();
 
         ObjectListing objectListing = s3Client.getObjects(s3Client.getS3Config().getFilePrefix());
@@ -177,13 +186,19 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
             for (final S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
 
+                if (objectSummary == null) {
+                    continue;
+                }
+
                 try {
                     final ClusterNodeFile nodeFile = getNodeFile(objectSummary);
                     if (nodeFile != null) {
                         clusterNodeFiles.add(nodeFile);
                     }
-                } catch (final AmazonS3Exception | IOException ex) {
+                } catch (final AmazonS3Exception ex) {
                     logger.error("Not able to read file {} from bucket {}. Skipping file.", objectSummary.getKey(), s3Client.getS3Config().getBucketName(), ex);
+                } catch (final Exception ex) {
+                    logger.error("Unknown error occurred while reading file {} from bucket {}. Skipping file.", objectSummary.getKey(), s3Client.getS3Config().getBucketName(), ex);
                 }
             }
 
@@ -199,23 +214,25 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
     }
 
     @Nullable
-    private ClusterNodeFile getNodeFile(@NotNull final S3ObjectSummary objectSummary) throws IOException {
-
-        final String key = objectSummary.getKey();
-        final S3Object s3Object = s3Client.getObject(key);
+    private ClusterNodeFile getNodeFile(@NotNull final S3ObjectSummary objectSummary) {
+        final String objectKey = objectSummary.getKey();
+        final S3Object s3Object = s3Client.getObject(objectKey);
 
         final String fileContent;
 
         try (final S3ObjectInputStream s3ObjectInputStream = s3Object.getObjectContent()) {
             fileContent = new BufferedReader(new InputStreamReader(s3ObjectInputStream)).readLine();
         } catch (final IOException ex) {
-            logger.error("An error occurred while reading the S3 object from an input stream.");
-            throw ex;
+            logger.error("An error occurred while reading the S3 object from an input stream.", ex);
+            return null;
         }
-
+        if (fileContent == null || fileContent.isBlank()) {
+            logger.debug("S3 object '{}' has no content. Skipping file.", objectKey);
+            return null;
+        }
         final ClusterNodeFile nodeFile = ClusterNodeFile.parseClusterNodeFile(fileContent);
         if (nodeFile == null) {
-            logger.debug("Content of the S3 object '{}' could not parsed. Skipping file.", key);
+            logger.debug("Content of the S3 object '{}' could not parsed. Skipping file.", objectKey);
             return null;
         }
         return nodeFile;

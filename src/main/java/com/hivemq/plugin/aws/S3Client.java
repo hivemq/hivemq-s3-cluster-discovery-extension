@@ -29,10 +29,8 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.StringInputStream;
 import com.hivemq.plugin.api.annotations.NotNull;
-import com.hivemq.plugin.api.annotations.Nullable;
 import com.hivemq.plugin.config.AuthenticationType;
 import com.hivemq.plugin.config.ConfigurationReader;
-import com.hivemq.plugin.config.ConfigurationValidator;
 import com.hivemq.plugin.config.S3Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +48,13 @@ public class S3Client {
     private final S3Config s3Config;
     private final AmazonS3 amazonS3;
 
-    private S3Client(@NotNull final S3Config s3Config) {
+    public S3Client(@NotNull final ConfigurationReader configurationReader) {
 
+        final S3Config s3Config = configurationReader.readConfiguration();
+        if (s3Config == null) {
+            throw new IllegalStateException("Configuration of the S3 discovery plugin couldn't be loaded.");
+        }
+        logger.trace("Loaded configuration successfully.");
         this.s3Config = s3Config;
 
         final AuthenticationType authenticationType = AuthenticationType.fromName(s3Config.getAuthenticationTypeName());
@@ -72,38 +75,7 @@ public class S3Client {
         }
 
         this.amazonS3 = amazonS3ClientBuilder.build();
-    }
-
-    @Nullable
-    public static S3Client create(@NotNull final ConfigurationReader configurationReader) {
-
-        final S3Config s3Config = configurationReader.readConfiguration();
-        if (s3Config == null) {
-            logger.error("Configuration of the S3 discovery plugin couldn't be loaded.");
-            return null;
-        }
-
-        final ConfigurationValidator configurationValidator = new ConfigurationValidator(s3Config);
-        if (!configurationValidator.isValid()) {
-            logger.error("Configuration of the S3 Discovery plugin is not valid!");
-            return null;
-        }
-
-        final S3Client s3Client;
-        try {
-            s3Client = new S3Client(s3Config);
-        } catch (final Exception ex) {
-            logger.error("An exception occurred while creating the S3Client.", ex);
-            return null;
-        }
-        if (!s3Client.doesBucketExist()) {
-            logger.error("Configured bucket '{}' doesn't exist.", s3Config.getBucketName());
-            return null;
-        }
-
-        logger.trace("Loaded configuration and created S3Client successfully.");
-
-        return s3Client;
+        logger.debug("Created AmazonS3 successfully.");
     }
 
     @NotNull
@@ -112,8 +84,7 @@ public class S3Client {
     }
 
     @NotNull
-    private AWSCredentialsProvider getAwsCredentials(final AuthenticationType authenticationType) {
-
+    private AWSCredentialsProvider getAwsCredentials(@NotNull final AuthenticationType authenticationType) {
         final AWSCredentialsProvider credentialsProvider;
 
         switch (authenticationType) {
@@ -136,9 +107,6 @@ public class S3Client {
             case TEMPORARY_SESSION:
                 final String accessKey = s3Config.getAccessKeyId();
                 final String secretAccessKey = s3Config.getAccessKeySecret();
-                if (accessKey == null || secretAccessKey == null) {
-                    throw new NullPointerException("Access key or secret access key is null");
-                }
 
                 if (authenticationType == AuthenticationType.ACCESS_KEY) {
                     credentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretAccessKey));
@@ -155,7 +123,6 @@ public class S3Client {
     }
 
     public boolean doesBucketExist() {
-
         final String bucketName = s3Config.getBucketName();
 
         try {
@@ -167,7 +134,6 @@ public class S3Client {
     }
 
     public void saveObject(@NotNull final String objectKey, @NotNull final String content) throws Exception {
-
         final InputStream inputStream = new StringInputStream(content);
 
         final ObjectMetadata objectMetadata = new ObjectMetadata();
@@ -176,23 +142,19 @@ public class S3Client {
         amazonS3.putObject(s3Config.getBucketName(), objectKey, inputStream, objectMetadata);
     }
 
-    public void removeObject(@NotNull final String objectKey) {
+    public void deleteObject(@NotNull final String objectKey) {
         amazonS3.deleteObject(s3Config.getBucketName(), objectKey);
+    }
+
+    public S3Object getObject(@NotNull final String objectKey) {
+        return amazonS3.getObject(s3Config.getBucketName(), objectKey);
     }
 
     public ObjectListing getObjects(@NotNull final String filePrefix) {
         return amazonS3.listObjects(s3Config.getBucketName(), filePrefix);
     }
 
-    public S3Object getObject(@NotNull final String key) {
-        return amazonS3.getObject(s3Config.getBucketName(), key);
-    }
-
     public ObjectListing getNextBatchOfObjects(@NotNull final ObjectListing objectListing) {
         return amazonS3.listNextBatchOfObjects(objectListing);
-    }
-
-    public void deleteObject(@NotNull final String key) {
-        amazonS3.deleteObject(s3Config.getBucketName(), key);
     }
 }
