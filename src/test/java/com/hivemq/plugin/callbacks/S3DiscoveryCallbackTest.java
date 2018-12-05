@@ -159,7 +159,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
+        verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
 
     @Test
@@ -187,7 +187,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
+        verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
 
     @Test
@@ -210,12 +210,12 @@ public class S3DiscoveryCallbackTest {
 
         final S3Config s3Config = configurationReader.readConfiguration();
         Mockito.when(s3Client.getS3Config()).thenReturn(s3Config);
-        Mockito.when(s3Client.doesBucketExist()).thenReturn(false);
+        Mockito.when(s3Client.doesBucketExist()).thenReturn(true);
 
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(clusterDiscoveryOutput, times(1)).provideCurrentNodes(anyList());
+        verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
 
     @Test
@@ -224,13 +224,10 @@ public class S3DiscoveryCallbackTest {
 
         deleteFilesInTemporaryFolder();
 
-        s3Client = PowerMockito.mock(S3Client.class);
-        PowerMockito.whenNew(S3Client.class).withAnyArguments().thenReturn(s3Client);
-
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
+        verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
 
     @Test
