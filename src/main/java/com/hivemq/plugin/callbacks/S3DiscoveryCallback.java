@@ -104,7 +104,6 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             if (ownNodeFile == null || ownNodeFile.isExpired(s3Client.getS3Config().getFileUpdateIntervalInSeconds())) {
                 saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
             }
-
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception ex) {
             logger.error("Reload of the S3 discovery callback failed.", ex);
@@ -118,7 +117,9 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                 logger.debug("S3Client is not initialized. Skipping destroy of the callback.");
                 return;
             }
-            removeOwnFile(clusterDiscoveryInput.getOwnClusterId());
+            if (ownNodeFile != null) {
+                removeOwnFile(clusterDiscoveryInput.getOwnClusterId());
+            }
         } catch (final Exception ex) {
             logger.error("Destroy of the S3 discovery callback failed.", ex);
         }
