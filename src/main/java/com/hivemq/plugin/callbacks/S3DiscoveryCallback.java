@@ -46,12 +46,11 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     private static final int reloadInterval = 30;
 
-    private final ConfigurationReader configurationReader;
-    private S3Client s3Client;
+    @NotNull S3Client s3Client;
     private ClusterNodeFile ownNodeFile;
 
     public S3DiscoveryCallback(@NotNull final ConfigurationReader configurationReader) {
-        this.configurationReader = configurationReader;
+        this.s3Client = new S3Client(configurationReader);
     }
 
     @Override
@@ -59,7 +58,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         clusterDiscoveryOutput.setReloadInterval(reloadInterval);
         try {
             try {
-                s3Client = new S3Client(configurationReader);
+                s3Client.createOrUpdate();
             } catch (final Exception ex) {
                 logger.error("Configuration of the S3 discovery plugin couldn't be loaded. Skipping initial discovery.");
                 return;
@@ -79,26 +78,15 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
     @Override
     public void reload(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput, @NotNull final ClusterDiscoveryOutput clusterDiscoveryOutput) {
         try {
-            S3Client newS3Client = null;
             try {
-                newS3Client = new S3Client(configurationReader);
-                if (newS3Client.doesBucketExist()) {
-                    this.s3Client = newS3Client;
-                } else {
-                    logger.error("Configured bucket '{}' doesn't exist. Reusing old S3Client when possible.", s3Client.getS3Config().getBucketName());
-                    newS3Client = null;
-                }
+                s3Client.createOrUpdate();
             } catch (final Exception ex) {
-                logger.error("Configuration of the S3 discovery plugin couldn't be (re)loaded in the reload of the discovery callback.");
+                logger.error("Configuration of the S3 discovery plugin couldn't be reloaded.");
+                return;
             }
-
-            if (newS3Client == null) {
-                if (s3Client == null) {
-                    logger.error("S3Client is not initialized. Skipping reload of the discovery callback.");
-                    return;
-                } else {
-                    logger.error("Reusing existing S3Client.");
-                }
+            if (!s3Client.doesBucketExist()) {
+                logger.error("Configured bucket '{}' doesn't exist.", s3Client.getS3Config().getBucketName());
+                return;
             }
 
             if (ownNodeFile == null || ownNodeFile.isExpired(s3Client.getS3Config().getFileUpdateIntervalInSeconds())) {
@@ -113,10 +101,6 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
     @Override
     public void destroy(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput) {
         try {
-            if (s3Client == null) {
-                logger.debug("S3Client is not initialized. Skipping destroy of the callback.");
-                return;
-            }
             if (ownNodeFile != null) {
                 removeOwnFile(clusterDiscoveryInput.getOwnClusterId());
             }

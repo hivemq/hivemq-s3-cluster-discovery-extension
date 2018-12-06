@@ -1,5 +1,6 @@
 package com.hivemq.plugin.aws;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.hivemq.plugin.api.parameter.PluginInformation;
 import com.hivemq.plugin.config.ConfigurationReader;
 import org.junit.Assert;
@@ -14,6 +15,11 @@ import org.mockito.MockitoAnnotations;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+
 public class S3ClientTest {
 
     @Rule
@@ -24,13 +30,9 @@ public class S3ClientTest {
     public S3Client s3Client;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(pluginInformation.getPluginHomeFolder()).thenReturn(temporaryFolder.getRoot());
-    }
-
-    @Test
-    public void test_create_successful() throws IOException {
+        when(pluginInformation.getPluginHomeFolder()).thenReturn(temporaryFolder.getRoot());
 
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
@@ -42,22 +44,63 @@ public class S3ClientTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
-        final S3Client s3Client = new S3Client(configurationReader);
+        s3Client = new S3Client(configurationReader);
+    }
+
+    @Test
+    public void test_create_successful() throws IOException {
+
+        s3Client.createOrUpdate();
         Assert.assertNotNull(s3Client);
+    }
+
+    @Test
+    public void test_bucket_exists() throws IOException {
+
+        s3Client.createOrUpdate();
+        final AmazonS3 amazonS3 = Mockito.mock(AmazonS3.class);
+        s3Client.amazonS3 = amazonS3;
+
+
+        when(amazonS3.doesBucketExistV2(anyString())).thenReturn(true);
+        final boolean bucketExist = s3Client.doesBucketExist();
+
+        assertTrue(bucketExist);
+
+    }
+
+    @Test
+    public void test_bucket_not_exists() throws IOException {
+
+        s3Client.createOrUpdate();
+        final AmazonS3 amazonS3 = Mockito.mock(AmazonS3.class);
+        s3Client.amazonS3 = amazonS3;
+
+
+        when(amazonS3.doesBucketExistV2(anyString())).thenReturn(false);
+        final boolean bucketExist = s3Client.doesBucketExist();
+
+        assertFalse(bucketExist);
+
     }
 
     @Test(expected = IllegalStateException.class)
     public void test_create_no_config_file() {
+        temporaryFolder.delete();
         final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
-        new S3Client(configurationReader);
+        s3Client = new S3Client(configurationReader);
+        s3Client.createOrUpdate();
     }
 
     @Test(expected = IllegalStateException.class)
     public void test_create_invalid_config() throws IOException {
+        temporaryFolder.delete();
+        temporaryFolder.create();
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-12345");
         }
         final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
-        new S3Client(configurationReader);
+        s3Client = new S3Client(configurationReader);
+        s3Client.createOrUpdate();
     }
 }

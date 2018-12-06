@@ -39,23 +39,28 @@ import java.io.InputStream;
 
 /**
  * @author Abdullah Imal
+ * @author Florian Limpöck
  * @since 4.0.0
  */
 public class S3Client {
 
     private static Logger logger = LoggerFactory.getLogger(S3Client.class);
 
-    private final S3Config s3Config;
-    private final AmazonS3 amazonS3;
+    private S3Config s3Config;
+    private final ConfigurationReader configurationReader;
+    AmazonS3 amazonS3;
 
     public S3Client(@NotNull final ConfigurationReader configurationReader) {
+        this.configurationReader = configurationReader;
+    }
 
-        final S3Config s3Config = configurationReader.readConfiguration();
+    public void createOrUpdate(){
+
+        this.s3Config = configurationReader.readConfiguration();
         if (s3Config == null) {
             throw new IllegalStateException("Configuration of the S3 discovery plugin couldn't be loaded.");
         }
         logger.trace("Loaded configuration successfully.");
-        this.s3Config = s3Config;
 
         final AuthenticationType authenticationType = AuthenticationType.fromName(s3Config.getAuthenticationTypeName());
         final AWSCredentialsProvider credentialsProvider = getAwsCredentials(authenticationType);

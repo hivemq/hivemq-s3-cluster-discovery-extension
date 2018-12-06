@@ -7,28 +7,21 @@ import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.plugin.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.plugin.aws.S3Client;
-import com.hivemq.plugin.config.ClusterNodeFile;
 import com.hivemq.plugin.config.ConfigurationReader;
 import com.hivemq.plugin.config.S3Config;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.File;
 import java.io.PrintWriter;
 
 import static org.mockito.Mockito.*;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(S3DiscoveryCallback.class)
 public class S3DiscoveryCallbackTest {
 
     @Rule
@@ -50,19 +43,6 @@ public class S3DiscoveryCallbackTest {
         MockitoAnnotations.initMocks(this);
         Mockito.when(pluginInformation.getPluginHomeFolder()).thenReturn(temporaryFolder.getRoot());
         configurationReader = new ConfigurationReader(pluginInformation);
-
-        Mockito.doNothing().when(s3Client).saveObject(any(), any());
-        Mockito.doNothing().when(s3Client).deleteObject(any());
-        Mockito.when(s3Client.getObject(any())).thenReturn(new S3Object());
-        Mockito.when(s3Client.getObjects(any())).thenReturn(new ObjectListing());
-        Mockito.when(s3Client.getNextBatchOfObjects(any())).thenReturn(new ObjectListing());
-
-        Mockito.when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
-        Mockito.when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
-    }
-
-    @Test
-    public void test_init_success() throws Exception {
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
             printWriter.println("s3-bucket-name:hivemq");
@@ -71,23 +51,81 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("update-interval:180");
             printWriter.println("credentials-type:default");
         }
+        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
+        s3DiscoveryCallback.s3Client = s3Client;
+        when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
+        when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
 
-        s3Client = PowerMockito.mock(S3Client.class);
-        PowerMockito.whenNew(S3Client.class).withAnyArguments().thenReturn(s3Client);
 
         final S3Config s3Config = configurationReader.readConfiguration();
-        Mockito.when(s3Client.getS3Config()).thenReturn(s3Config);
-        Mockito.when(s3Client.doesBucketExist()).thenReturn(true);
+        when(s3Client.getS3Config()).thenReturn(s3Config);
+        when(s3Client.doesBucketExist()).thenReturn(true);
 
-        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
+    }
+
+    @Test
+    public void test_init_success() throws Exception {
+
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+
+        verify(s3Client).createOrUpdate();
+        verify(s3Client).doesBucketExist();
 
         verify(clusterDiscoveryOutput).setReloadInterval(30);
         verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
     }
 
     @Test
+    public void test_init_bucket_does_not_exist() throws Exception {
+
+        when(s3Client.doesBucketExist()).thenReturn(false);
+
+        s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+
+        verify(s3Client).createOrUpdate();
+        verify(s3Client).doesBucketExist();
+        verify(clusterDiscoveryOutput).setReloadInterval(30);
+
+        verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
+    }
+
+    @Test
+    public void test_init_create_failed() throws Exception {
+
+        doThrow(new NullPointerException("something is missing")).when(s3Client).createOrUpdate();
+
+        s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+
+        verify(clusterDiscoveryOutput).setReloadInterval(30);
+        verify(s3Client).createOrUpdate();
+
+        verify(s3Client, never()).doesBucketExist();
+        verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
+
+    }
+
+
+    @Test
+    public void test_init_bucket_check_failed() throws Exception {
+
+        when(s3Client.doesBucketExist()).thenThrow(new NullPointerException("something is missing"));
+
+        s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
+
+        verify(clusterDiscoveryOutput).setReloadInterval(30);
+        verify(s3Client).createOrUpdate();
+        verify(s3Client).doesBucketExist();
+
+        verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
+
+    }
+
+    @Test
     public void test_init_config_invalid() throws Exception {
+
+        temporaryFolder.delete();
+        temporaryFolder.create();
+
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
             printWriter.println("s3-bucket-name:hivemq");
@@ -97,46 +135,18 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("credentials-type:default1234");
         }
 
-        s3Client = PowerMockito.mock(S3Client.class);
-        PowerMockito.whenNew(S3Client.class).withAnyArguments().thenReturn(s3Client);
-
-        final S3Config s3Config = configurationReader.readConfiguration();
-        Mockito.when(s3Client.getS3Config()).thenReturn(s3Config);
-        Mockito.when(s3Client.doesBucketExist()).thenReturn(true);
-
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(clusterDiscoveryOutput).setReloadInterval(30);
-        verify(clusterDiscoveryOutput, times(0)).provideCurrentNodes(anyList());
+        verify(s3Client, never()).doesBucketExist();
+        verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
+
     }
 
     @Test
     public void test_init_no_config() {
-        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
-        s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(clusterDiscoveryOutput).setReloadInterval(30);
-        verify(clusterDiscoveryOutput, times(0)).provideCurrentNodes(anyList());
-    }
-
-    @Test
-    public void test_init_bucket_does_not_exist() throws Exception {
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
-
-        s3Client = PowerMockito.mock(S3Client.class);
-        PowerMockito.whenNew(S3Client.class).withAnyArguments().thenReturn(s3Client);
-
-        final S3Config s3Config = configurationReader.readConfiguration();
-        Mockito.when(s3Client.getS3Config()).thenReturn(s3Config);
-        Mockito.when(s3Client.doesBucketExist()).thenReturn(false);
+        temporaryFolder.delete();
 
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -147,16 +157,13 @@ public class S3DiscoveryCallbackTest {
 
     @Test
     public void test_reload_success_same_config() throws Exception {
-        test_init_success();
 
-        s3Client = PowerMockito.mock(S3Client.class);
-        PowerMockito.whenNew(S3Client.class).withAnyArguments().thenReturn(s3Client);
+        s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         final S3Config s3Config = configurationReader.readConfiguration();
         Mockito.when(s3Client.getS3Config()).thenReturn(s3Config);
         Mockito.when(s3Client.doesBucketExist()).thenReturn(true);
 
-        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
@@ -164,7 +171,7 @@ public class S3DiscoveryCallbackTest {
 
     @Test
     public void test_reload_success_new_config() throws Exception {
-        test_init_success();
+        s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         deleteFilesInTemporaryFolder();
 
@@ -177,14 +184,6 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("credentials-type:default");
         }
 
-        s3Client = PowerMockito.mock(S3Client.class);
-        PowerMockito.whenNew(S3Client.class).withAnyArguments().thenReturn(s3Client);
-
-        final S3Config s3Config = configurationReader.readConfiguration();
-        Mockito.when(s3Client.getS3Config()).thenReturn(s3Config);
-        Mockito.when(s3Client.doesBucketExist()).thenReturn(true);
-
-        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
@@ -192,7 +191,7 @@ public class S3DiscoveryCallbackTest {
 
     @Test
     public void test_reload_success_new_config_no_bucket_reuse_client() throws Exception {
-        test_init_success();
+        s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         deleteFilesInTemporaryFolder();
 
@@ -205,14 +204,6 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("credentials-type:default");
         }
 
-        s3Client = PowerMockito.mock(S3Client.class);
-        PowerMockito.whenNew(S3Client.class).withAnyArguments().thenReturn(s3Client);
-
-        final S3Config s3Config = configurationReader.readConfiguration();
-        Mockito.when(s3Client.getS3Config()).thenReturn(s3Config);
-        Mockito.when(s3Client.doesBucketExist()).thenReturn(true);
-
-        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
@@ -220,11 +211,10 @@ public class S3DiscoveryCallbackTest {
 
     @Test
     public void test_reload_no_config_reuse_client() throws Exception {
-        test_init_success();
+        s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         deleteFilesInTemporaryFolder();
 
-        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
@@ -233,9 +223,6 @@ public class S3DiscoveryCallbackTest {
     @Test
     public void test_reload_no_config_no_client() throws Exception {
         test_init_no_config();
-
-        s3Client = PowerMockito.mock(S3Client.class);
-        PowerMockito.whenNew(S3Client.class).withAnyArguments().thenReturn(s3Client);
 
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
