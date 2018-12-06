@@ -47,8 +47,8 @@ public class S3Client {
     private static Logger logger = LoggerFactory.getLogger(S3Client.class);
 
     private S3Config s3Config;
-    private final ConfigurationReader configurationReader;
-    AmazonS3 amazonS3;
+    public ConfigurationReader configurationReader;
+    public AmazonS3 amazonS3;
 
     public S3Client(@NotNull final ConfigurationReader configurationReader) {
         this.configurationReader = configurationReader;
@@ -60,6 +60,7 @@ public class S3Client {
         if (s3Config == null) {
             throw new IllegalStateException("Configuration of the S3 discovery plugin couldn't be loaded.");
         }
+        this.s3Config = newS3Config;
         logger.trace("Loaded configuration successfully.");
 
         final AuthenticationType authenticationType = AuthenticationType.fromName(s3Config.getAuthenticationTypeName());
@@ -89,7 +90,7 @@ public class S3Client {
     }
 
     @NotNull
-    private AWSCredentialsProvider getAwsCredentials(@NotNull final AuthenticationType authenticationType) {
+    AWSCredentialsProvider getAwsCredentials(@NotNull final AuthenticationType authenticationType) {
         final AWSCredentialsProvider credentialsProvider;
 
         switch (authenticationType) {
@@ -110,15 +111,15 @@ public class S3Client {
                 break;
             case ACCESS_KEY:
             case TEMPORARY_SESSION:
-                final String accessKey = s3Config.getAccessKeyId();
-                final String secretAccessKey = s3Config.getAccessKeySecret();
+                final String accessKey = getS3Config().getAccessKeyId();
+                final String secretAccessKey = getS3Config().getAccessKeySecret();
 
                 if (authenticationType == AuthenticationType.ACCESS_KEY) {
                     credentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretAccessKey));
                     break;
                 }
 
-                final String sessionToken = s3Config.getSessionToken();
+                final String sessionToken = getS3Config().getSessionToken();
                 credentialsProvider = new AWSStaticCredentialsProvider(new BasicSessionCredentials(accessKey, secretAccessKey, sessionToken));
                 break;
             default:
@@ -128,7 +129,7 @@ public class S3Client {
     }
 
     public boolean doesBucketExist() {
-        final String bucketName = s3Config.getBucketName();
+        final String bucketName = getS3Config().getBucketName();
 
         try {
             return amazonS3.doesBucketExistV2(bucketName);
@@ -144,19 +145,19 @@ public class S3Client {
         final ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(inputStream.available());
 
-        amazonS3.putObject(s3Config.getBucketName(), objectKey, inputStream, objectMetadata);
+        amazonS3.putObject(getS3Config().getBucketName(), objectKey, inputStream, objectMetadata);
     }
 
     public void deleteObject(@NotNull final String objectKey) {
-        amazonS3.deleteObject(s3Config.getBucketName(), objectKey);
+        amazonS3.deleteObject(getS3Config().getBucketName(), objectKey);
     }
 
     public S3Object getObject(@NotNull final String objectKey) {
-        return amazonS3.getObject(s3Config.getBucketName(), objectKey);
+        return amazonS3.getObject(getS3Config().getBucketName(), objectKey);
     }
 
     public ObjectListing getObjects(@NotNull final String filePrefix) {
-        return amazonS3.listObjects(s3Config.getBucketName(), filePrefix);
+        return amazonS3.listObjects(getS3Config().getBucketName(), filePrefix);
     }
 
     public ObjectListing getNextBatchOfObjects(@NotNull final ObjectListing objectListing) {

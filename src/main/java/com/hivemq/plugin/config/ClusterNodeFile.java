@@ -29,9 +29,9 @@ import java.util.Base64;
  */
 public class ClusterNodeFile {
 
-    private static final String CONTENT_SEPARATOR = "||||";
+    static final String CONTENT_SEPARATOR = "||||";
     private static final String CONTENT_SEPARATOR_REGEX = "\\|\\|\\|\\|";
-    public static final String CONTENT_VERSION = "4";
+    static final String CONTENT_VERSION = "4";
 
     private final String clusterId;
     private final ClusterNodeAddress clusterNodeAddress;
@@ -134,16 +134,12 @@ public class ClusterNodeFile {
         return clusterNodeAddress;
     }
 
-    public long getCreationTimeInMillis() {
-        return creationTimeInMillis;
-    }
-
     public boolean isExpired(final long expirationInSeconds) {
         // 0 = deactivated
         if (expirationInSeconds == 0) {
             return false;
         }
-        final long creationPlusExpirationInMillis = getCreationTimeInMillis() + (expirationInSeconds * 1_000);
+        final long creationPlusExpirationInMillis = creationTimeInMillis + (expirationInSeconds * 1_000);
         return creationPlusExpirationInMillis < System.currentTimeMillis();
     }
 
@@ -155,7 +151,7 @@ public class ClusterNodeFile {
                 + creationTimeInMillis + CONTENT_SEPARATOR
                 + clusterId + CONTENT_SEPARATOR
                 + clusterNodeAddress.getHost() + CONTENT_SEPARATOR
-                + clusterNodeAddress.getPort() + CONTENT_SEPARATOR;
+                + clusterNodeAddress.getPort();
 
         return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }

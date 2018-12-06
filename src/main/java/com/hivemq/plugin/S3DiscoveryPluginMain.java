@@ -37,7 +37,7 @@ public class S3DiscoveryPluginMain implements PluginMain {
 
     private static final Logger logger = LoggerFactory.getLogger(S3DiscoveryPluginMain.class);
 
-    private S3DiscoveryCallback s3DiscoveryCallback;
+    S3DiscoveryCallback s3DiscoveryCallback;
 
     @Override
     public void pluginStart(@NotNull final PluginStartInput pluginStartInput, @NotNull final PluginStartOutput pluginStartOutput) {

@@ -64,7 +64,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                 return;
             }
             if (!s3Client.doesBucketExist()) {
-                logger.error("Configured bucket '{}' doesn't exist.", s3Client.getS3Config().getBucketName());
+                logger.error("Configured bucket '{}' doesn't exist. Skipping initial discovery.", s3Client.getS3Config().getBucketName());
                 return;
             }
 
@@ -81,11 +81,11 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             try {
                 s3Client.createOrUpdate();
             } catch (final Exception ex) {
-                logger.error("Configuration of the S3 discovery plugin couldn't be reloaded.");
+                logger.error("Configuration of the S3 discovery plugin couldn't be reloaded. Skipping reload callback.");
                 return;
             }
             if (!s3Client.doesBucketExist()) {
-                logger.error("Configured bucket '{}' doesn't exist.", s3Client.getS3Config().getBucketName());
+                logger.error("Configured bucket '{}' doesn't exist. Skipping reload callback.", s3Client.getS3Config().getBucketName());
                 return;
             }
 
