@@ -41,7 +41,7 @@ The `s3discovery.properties` can be reloaded during runtime.
 | update-interval       |     x     | Interval in seconds in which the own information will be updated. (Must be smaller than `file-expiration`)
 | s3-endpoint           |           | Endpoint url to use other S3 compatible storage services.
 | s3-endpoint-region    |           | The region of the endpoint. (Optional)
-| s3-path-style-access  |           | De-/activate path style access.
+| s3-path-style-access  |           | De-/activate path style access. Information about path style access can be found in the https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html#access-bucket-intro[AWS documentation].
 |===
 
 .Example Configuration
