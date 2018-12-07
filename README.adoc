@@ -100,12 +100,19 @@ Uses Java system properties to specify your AWS credentials the following Java s
 * aws.accessKeyId
 * aws.secretKey
 
-
 .Example Java System Properties Config
 [source]
 ----
 credentials-type:java_system_properties
 ----
+
+You need to extend your `run.sh` or `run.bat` in order to start HiveMQ with the system properties:
+
+.Example for extendending `run.sh`
+[source]
+––––
+JAVA_OPTS=“$JAVA_OPTS -Daws.accessKeyId=<your-access-key> -Daws.secretKey=<your-secret-key>”
+––––
 
 ===== User Credentials Authentication
 
