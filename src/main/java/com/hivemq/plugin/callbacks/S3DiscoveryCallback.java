@@ -44,9 +44,9 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     private static final Logger logger = LoggerFactory.getLogger(S3DiscoveryCallback.class);
 
-    private static final int reloadInterval = 30;
+    @NotNull
+    S3Client s3Client;
 
-    @NotNull S3Client s3Client;
     private ClusterNodeFile ownNodeFile;
 
     public S3DiscoveryCallback(@NotNull final ConfigurationReader configurationReader) {
@@ -55,7 +55,6 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     @Override
     public void init(@NotNull final ClusterDiscoveryInput clusterDiscoveryInput, @NotNull final ClusterDiscoveryOutput clusterDiscoveryOutput) {
-        clusterDiscoveryOutput.setReloadInterval(reloadInterval);
         try {
             try {
                 s3Client.createOrUpdate();

@@ -225,7 +225,7 @@ public class ClusterNodeFileTest {
         ClusterNodeFile.parseClusterNodeFile("  ");
     }
 
-    private String createClusterNodeFileString(final String version, final String timeInMillis, final String nodeId, final String host, final String port) {
+    public static String createClusterNodeFileString(final String version, final String timeInMillis, final String nodeId, final String host, final String port) {
 
         final String content =
                 version + ClusterNodeFile.CONTENT_SEPARATOR

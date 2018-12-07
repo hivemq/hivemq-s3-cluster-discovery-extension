@@ -55,9 +55,8 @@ public class S3Client {
     }
 
     public void createOrUpdate(){
-
-        this.s3Config = configurationReader.readConfiguration();
-        if (s3Config == null) {
+        final S3Config newS3Config = configurationReader.readConfiguration();
+        if (newS3Config == null) {
             throw new IllegalStateException("Configuration of the S3 discovery plugin couldn't be loaded.");
         }
         this.s3Config = newS3Config;
