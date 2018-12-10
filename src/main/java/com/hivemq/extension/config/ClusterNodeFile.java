@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.hivemq.plugin.config;
+package com.hivemq.extension.config;
 
-import com.hivemq.plugin.api.annotations.NotNull;
-import com.hivemq.plugin.api.annotations.Nullable;
-import com.hivemq.plugin.api.services.cluster.parameter.ClusterNodeAddress;
+import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
+import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

@@ -1,4 +1,4 @@
-package com.hivemq.plugin.aws;
+package com.hivemq.extension.aws;
 
 import com.amazonaws.auth.*;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -7,9 +7,9 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
-import com.hivemq.plugin.api.parameter.PluginInformation;
-import com.hivemq.plugin.config.AuthenticationType;
-import com.hivemq.plugin.config.ConfigurationReader;
+import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
+import com.hivemq.extension.config.AuthenticationType;
+import com.hivemq.extension.config.ConfigurationReader;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,14 +33,14 @@ public class S3ClientTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     @Mock
-    public PluginInformation pluginInformation;
+    public ExtensionInformation extensionInformation;
 
     private S3Client s3Client;
 
     @Before
     public void setUp() throws IOException {
         MockitoAnnotations.initMocks(this);
-        when(pluginInformation.getPluginHomeFolder()).thenReturn(temporaryFolder.getRoot());
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.getRoot());
 
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
@@ -51,7 +51,7 @@ public class S3ClientTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         s3Client = new S3Client(configurationReader);
     }
 
@@ -89,7 +89,7 @@ public class S3ClientTest {
     @Test(expected = IllegalStateException.class)
     public void test_create_no_config_file() {
         temporaryFolder.delete();
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         s3Client = new S3Client(configurationReader);
         s3Client.createOrUpdate();
     }
@@ -101,7 +101,7 @@ public class S3ClientTest {
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-12345");
         }
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         s3Client = new S3Client(configurationReader);
         s3Client.createOrUpdate();
     }
@@ -139,7 +139,7 @@ public class S3ClientTest {
     @Test
     public void test_getAwsCredentials_access_key_success() throws IOException {
         deleteFilesInTemporaryFolder();
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
             printWriter.println("s3-bucket-name:hivemq123456");
@@ -161,7 +161,7 @@ public class S3ClientTest {
     @Test(expected = IllegalStateException.class)
     public void test_getAwsCredentials_access_key_missing_secret() throws IOException {
         deleteFilesInTemporaryFolder();
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
             printWriter.println("s3-bucket-name:hivemq123456");
@@ -180,7 +180,7 @@ public class S3ClientTest {
     @Test(expected = IllegalStateException.class)
     public void test_getAwsCredentials_access_key_missing_id() throws IOException {
         deleteFilesInTemporaryFolder();
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
             printWriter.println("s3-bucket-name:hivemq123456");
@@ -199,7 +199,7 @@ public class S3ClientTest {
     @Test
     public void test_getAwsCredentials_temporary_session_success() throws IOException {
         deleteFilesInTemporaryFolder();
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
             printWriter.println("s3-bucket-name:hivemq123456");
@@ -221,7 +221,7 @@ public class S3ClientTest {
 
     @Test(expected = IllegalStateException.class)
     public void test_getAwsCredentials_temporary_session_missing_token() throws IOException {deleteFilesInTemporaryFolder();
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
             printWriter.println("s3-bucket-name:hivemq123456");

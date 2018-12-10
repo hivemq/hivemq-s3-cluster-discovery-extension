@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.hivemq.plugin.config;
+package com.hivemq.extension.config;
 
-import com.hivemq.plugin.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.NotNull;
 
 /**
  * @author Florian Limpöck

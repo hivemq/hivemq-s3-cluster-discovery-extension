@@ -29,7 +29,7 @@
             <outputDirectory>/${artifactId}/</outputDirectory>
         </file>
         <file>
-            <source>src/main/resources/hivemq-plugin.xml</source>
+            <source>src/main/resources/hivemq-extension.xml</source>
             <outputDirectory>/${artifactId}/</outputDirectory>
             <filtered>true</filtered>
         </file>

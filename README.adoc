@@ -2,7 +2,7 @@
 :s3_regions: https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 :path-style-access: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html#access-bucket-intro
 
-== S3 Cluster Discovery Plugin
+== S3 Cluster Discovery Extension
 
 *Type*: Cluster Discovery
 
@@ -13,11 +13,11 @@
 
 === Purpose
 
-This plugin allows your HiveMQ cluster nodes to discover each other dynamically by exchanging their information via S3 from Amazon Web Services (AWS).
+This extension allows your HiveMQ cluster nodes to discover each other dynamically by exchanging their information via S3 from Amazon Web Services (AWS).
 Each node will place its own ip-address and port to the given bucket and will read the files from other nodes.
 The ip-address and port are taken from the `external-address` and `external-port` which is configured in the cluster `transport` (config.xml).
 If they are not set, the `bind-address` and `bind-port` will be used.
-The plugin will regularly check the configured S3 bucket for files from other HiveMQ nodes, which contains the information on how to connect to them.
+The extension will regularly check the configured S3 bucket for files from other HiveMQ nodes, which contains the information on how to connect to them.
 Additionally every broker updates its own file on a regular basis to prevent the file from expiring.
 The `s3discovery.properties` can be reloaded during runtime.
 
@@ -26,10 +26,10 @@ The `s3discovery.properties` can be reloaded during runtime.
 
 //FIXME Add missing links
 
-* Download the plugin from the HiveMQ website.
-* Copy the content of the zip file to the `plugins` folder of your HiveMQ nodes.
+* Download the extension from the HiveMQ website.
+* Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
 * Modify the `s3discovery.properties` file for your needs.
-* Change the discovery mechanism of HiveMQ to `plugin`.
+* Change the discovery mechanism of HiveMQ to `extension`.
 
 
 === Configuration
@@ -61,7 +61,7 @@ credentials-type:default
 
 
 ==== Authentication Configuration
-The plugin uses AWS API operations for exchanging cluster information.
+The extension uses AWS API operations for exchanging cluster information.
 These operations work with `Access Keys`, if you don't know what access keys are or how to generate them please look at the official {aws_credentials}[AWS documentation] about credentials.
 
 ===== Default Authentication

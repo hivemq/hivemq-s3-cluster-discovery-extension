@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.hivemq.plugin.config;
+package com.hivemq.extension.config;
 
 import com.amazonaws.services.s3.internal.Constants;
-import com.hivemq.plugin.api.annotations.NotNull;
-import com.hivemq.plugin.api.annotations.Nullable;
+import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
 import org.aeonbits.owner.Config;
 
 /**

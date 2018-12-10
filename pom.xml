@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.hivemq.plugin</groupId>
-    <artifactId>hivemq4-s3-cluster-discovery-plugin</artifactId>
+    <groupId>com.hivemq.extension</groupId>
+    <artifactId>hivemq-s3-cluster-discovery-extension</artifactId>
     <version>4.0.0</version>
 
     <properties>
-        <plugin.name>S3 Cluster Discovery Plugin</plugin.name>
+        <extension.name>S3 Cluster Discovery Extension</extension.name>
         <asciidoctor.version>1.5.7.1</asciidoctor.version>
         <output.dir>${basedir}</output.dir>
         <source.document.name>README.adoc</source.document.name>
@@ -18,7 +18,7 @@
     <dependencies>
         <dependency>
             <groupId>com.hivemq</groupId>
-            <artifactId>hivemq-plugin-api</artifactId>
+            <artifactId>hivemq-extension-sdk</artifactId>
             <version>4.0.0</version>
         </dependency>
         <dependency>
@@ -49,6 +49,11 @@
             <version>1.2.3</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -75,7 +80,7 @@
                         <configuration>
                             <artifactSet>
                                 <excludes>
-                                    <exclude>com.hivemq:hivemq-plugin-api</exclude>
+                                    <exclude>com.hivemq:hivemq-extension-sdk</exclude>
                                     <exclude>com.google.inject:*</exclude>
                                     <exclude>com.google.guava:*</exclude>
                                     <exclude>org.slf4j:*</exclude>
@@ -93,6 +98,9 @@
 
     <profiles>
         <profile>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <id>Packaging</id>
             <build>
                 <plugins>

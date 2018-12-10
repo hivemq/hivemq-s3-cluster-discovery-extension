@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.hivemq.plugin.callbacks;
+package com.hivemq.extension.callbacks;
 
 import com.amazonaws.services.s3.model.*;
-import com.hivemq.plugin.api.annotations.NotNull;
-import com.hivemq.plugin.api.annotations.Nullable;
-import com.hivemq.plugin.api.services.cluster.ClusterDiscoveryCallback;
-import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryInput;
-import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryOutput;
-import com.hivemq.plugin.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.plugin.aws.S3Client;
-import com.hivemq.plugin.config.ClusterNodeFile;
-import com.hivemq.plugin.config.ConfigurationReader;
+import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
+import com.hivemq.extension.sdk.api.services.cluster.ClusterDiscoveryCallback;
+import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
+import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
+import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
+import com.hivemq.extension.aws.S3Client;
+import com.hivemq.extension.config.ClusterNodeFile;
+import com.hivemq.extension.config.ConfigurationReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             try {
                 s3Client.createOrUpdate();
             } catch (final Exception ex) {
-                logger.error("Configuration of the S3 discovery plugin couldn't be loaded. Skipping initial discovery.");
+                logger.error("Configuration of the S3 discovery extension couldn't be loaded. Skipping initial discovery.");
                 return;
             }
             if (!s3Client.doesBucketExist()) {
@@ -80,7 +80,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             try {
                 s3Client.createOrUpdate();
             } catch (final Exception ex) {
-                logger.error("Configuration of the S3 discovery plugin couldn't be reloaded. Skipping reload callback.");
+                logger.error("Configuration of the S3 discovery extension couldn't be reloaded. Skipping reload callback.");
                 return;
             }
             if (!s3Client.doesBucketExist()) {
@@ -152,7 +152,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             }
         }
 
-        logger.debug("Found following node addresses with the S3 plugin: {}", nodeAddresses);
+        logger.debug("Found following node addresses with the S3 extension: {}", nodeAddresses);
 
         return nodeAddresses;
     }

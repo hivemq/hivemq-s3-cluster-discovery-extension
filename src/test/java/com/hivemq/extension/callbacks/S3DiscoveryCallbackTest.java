@@ -1,16 +1,16 @@
-package com.hivemq.plugin.callbacks;
+package com.hivemq.extension.callbacks;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
-import com.hivemq.plugin.api.parameter.PluginInformation;
-import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryInput;
-import com.hivemq.plugin.api.services.cluster.parameter.ClusterDiscoveryOutput;
-import com.hivemq.plugin.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.plugin.aws.S3Client;
-import com.hivemq.plugin.config.ClusterNodeFile;
-import com.hivemq.plugin.config.ClusterNodeFileTest;
-import com.hivemq.plugin.config.ConfigurationReader;
-import com.hivemq.plugin.config.S3Config;
+import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
+import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
+import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
+import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
+import com.hivemq.extension.aws.S3Client;
+import com.hivemq.extension.config.ClusterNodeFile;
+import com.hivemq.extension.config.ClusterNodeFileTest;
+import com.hivemq.extension.config.ConfigurationReader;
+import com.hivemq.extension.config.S3Config;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class S3DiscoveryCallbackTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     @Mock
-    public PluginInformation pluginInformation;
+    public ExtensionInformation extensionInformation;
     @Mock
     public S3Client s3Client;
     @Mock
@@ -51,7 +51,7 @@ public class S3DiscoveryCallbackTest {
         when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
         when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
 
-        when(pluginInformation.getPluginHomeFolder()).thenReturn(temporaryFolder.getRoot());
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.getRoot());
 
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
@@ -62,7 +62,7 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("credentials-type:default");
         }
 
-        configurationReader = new ConfigurationReader(pluginInformation);
+        configurationReader = new ConfigurationReader(extensionInformation);
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3Client.configurationReader = configurationReader;
         s3DiscoveryCallback.s3Client = s3Client;
@@ -150,7 +150,7 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("update-interval:1");
             printWriter.println("credentials-type:default");
         }
-        final S3Config s3Config = new ConfigurationReader(pluginInformation).readConfiguration();
+        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(s3Client.getS3Config()).thenReturn(s3Config);
 
         when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtended());
@@ -310,7 +310,7 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("update-interval:180");
             printWriter.println("credentials-type:default");
         }
-        final S3Config s3Config = new ConfigurationReader(pluginInformation).readConfiguration();
+        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(s3Client.getS3Config()).thenReturn(s3Config);
         doThrow(IllegalStateException.class).when(s3Client).createOrUpdate();
 
@@ -353,7 +353,7 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("update-interval:60");
             printWriter.println("credentials-type:default");
         }
-        final S3Config s3Config = new ConfigurationReader(pluginInformation).readConfiguration();
+        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(s3Client.getS3Config()).thenReturn(s3Config);
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -376,7 +376,7 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("update-interval:60");
             printWriter.println("credentials-type:default");
         }
-        final S3Config s3Config = new ConfigurationReader(pluginInformation).readConfiguration();
+        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(s3Client.getS3Config()).thenReturn(s3Config);
         when(s3Client.doesBucketExist()).thenReturn(false);
 
@@ -419,7 +419,7 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("update-interval:1");
             printWriter.println("credentials-type:default");
         }
-        final S3Config s3Config = new ConfigurationReader(pluginInformation).readConfiguration();
+        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(s3Client.getS3Config()).thenReturn(s3Config);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -445,7 +445,7 @@ public class S3DiscoveryCallbackTest {
             printWriter.println("update-interval:1");
             printWriter.println("credentials-type:default");
         }
-        final S3Config s3Config = new ConfigurationReader(pluginInformation).readConfiguration();
+        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(s3Client.getS3Config()).thenReturn(s3Config);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);

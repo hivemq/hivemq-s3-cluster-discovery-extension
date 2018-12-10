@@ -1,6 +1,6 @@
-package com.hivemq.plugin.config;
+package com.hivemq.extension.config;
 
-import com.hivemq.plugin.api.services.cluster.parameter.ClusterNodeAddress;
+import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import org.junit.Assert;
 import org.junit.Test;
 

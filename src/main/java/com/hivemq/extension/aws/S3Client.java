@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.plugin.aws;
+package com.hivemq.extension.aws;
 
 import com.amazonaws.auth.*;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -28,10 +28,10 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.StringInputStream;
-import com.hivemq.plugin.api.annotations.NotNull;
-import com.hivemq.plugin.config.AuthenticationType;
-import com.hivemq.plugin.config.ConfigurationReader;
-import com.hivemq.plugin.config.S3Config;
+import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.config.AuthenticationType;
+import com.hivemq.extension.config.ConfigurationReader;
+import com.hivemq.extension.config.S3Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,7 @@ public class S3Client {
     public void createOrUpdate(){
         final S3Config newS3Config = configurationReader.readConfiguration();
         if (newS3Config == null) {
-            throw new IllegalStateException("Configuration of the S3 discovery plugin couldn't be loaded.");
+            throw new IllegalStateException("Configuration of the S3 discovery extension couldn't be loaded.");
         }
         this.s3Config = newS3Config;
         logger.trace("Loaded configuration successfully.");
@@ -133,7 +133,7 @@ public class S3Client {
         try {
             return amazonS3.doesBucketExistV2(bucketName);
         } catch (final AmazonS3Exception ignored) {
-            logger.trace("Caught an exception from S3 Discovery plugin while checking if bucket '{}' exists. Returning false.", bucketName);
+            logger.trace("Caught an exception from S3 Discovery extension while checking if bucket '{}' exists. Returning false.", bucketName);
             return false;
         }
     }

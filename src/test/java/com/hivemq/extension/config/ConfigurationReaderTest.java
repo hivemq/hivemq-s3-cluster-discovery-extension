@@ -1,6 +1,6 @@
-package com.hivemq.plugin.config;
+package com.hivemq.extension.config;
 
-import com.hivemq.plugin.api.parameter.PluginInformation;
+import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -15,19 +15,19 @@ import java.io.PrintWriter;
 public class ConfigurationReaderTest {
 
     @Mock
-    public PluginInformation pluginInformation;
+    public ExtensionInformation extensionInformation;
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(pluginInformation.getPluginHomeFolder()).thenReturn(temporaryFolder.getRoot());
+        Mockito.when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.getRoot());
     }
 
     @Test
     public void test_readConfiguration_no_file() {
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -43,7 +43,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNotNull(configurationReader.readConfiguration());
     }
 
@@ -59,7 +59,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -75,7 +75,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -91,7 +91,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -107,7 +107,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -123,7 +123,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default1234");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -141,7 +141,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-secret-access-key:secret-access-key");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNotNull(configurationReader.readConfiguration());
     }
 
@@ -159,7 +159,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-secret-access-key:secret-access-key");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -177,7 +177,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-secret-access-key:");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -196,7 +196,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-session-token:session-token");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNotNull(configurationReader.readConfiguration());
     }
 
@@ -215,7 +215,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-session-token:");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -231,7 +231,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNotNull(configurationReader.readConfiguration());
     }
 
@@ -247,7 +247,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -263,7 +263,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -279,7 +279,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -295,7 +295,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -311,7 +311,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 
@@ -327,7 +327,7 @@ public class ConfigurationReaderTest {
             printWriter.println("credentials-type:default");
         }
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginInformation);
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         Assert.assertNull(configurationReader.readConfiguration());
     }
 }
