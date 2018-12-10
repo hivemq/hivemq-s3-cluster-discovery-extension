@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<hivemq-plugin>
+    <id>${artifactId}</id>
+    <name>${plugin.name}</name>
+    <version>${version}</version>
+    <priority>1000</priority>
+</hivemq-plugin>
