@@ -9,7 +9,7 @@
     <version>4.0.0</version>
 
     <properties>
-        <extension.name>S3 Cluster Discovery Extension</extension.name>
+        <extension.name>HiveMQ S3 Cluster Discovery Extension</extension.name>
         <asciidoctor.version>1.5.7.1</asciidoctor.version>
         <output.dir>${basedir}</output.dir>
         <source.document.name>README.adoc</source.document.name>
