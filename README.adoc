@@ -1,6 +1,8 @@
 :aws_credentials: https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys
 :s3_regions: https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 :path-style-access: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html#access-bucket-intro
+:hivemq-downloads: https://www.hivemq.com/downloads
+:hivemq-cluster-discovery: http://develop.hivemq.com/docs/4/hivemq/cluster.html#discovery
 
 == S3 Cluster Discovery Extension
 
@@ -24,12 +26,10 @@ The `s3discovery.properties` can be reloaded during runtime.
 
 === Installation
 
-//FIXME Add missing links
-
-* Download the extension from the HiveMQ website.
+* Download the extension from the {hivemq-downloads}[HiveMQ website^].
 * Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
 * Modify the `s3discovery.properties` file for your needs.
-* Change the discovery mechanism of HiveMQ to `extension`.
+* Change the {hivemq-cluster-discovery}[discovery mechanism^] of HiveMQ to `extension`.
 
 
 === Configuration
@@ -61,6 +61,7 @@ credentials-type:default
 
 
 ==== Authentication Configuration
+
 The extension uses AWS API operations for exchanging cluster information.
 These operations work with `Access Keys`, if you don't know what access keys are or how to generate them please look at the official {aws_credentials}[AWS documentation] about credentials.
 
