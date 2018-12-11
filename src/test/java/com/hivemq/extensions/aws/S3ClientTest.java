@@ -1,4 +1,4 @@
-package com.hivemq.extension.aws;
+package com.hivemq.extensions.aws;
 
 import com.amazonaws.auth.*;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -8,8 +8,8 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
-import com.hivemq.extension.config.AuthenticationType;
-import com.hivemq.extension.config.ConfigurationReader;
+import com.hivemq.extensions.config.AuthenticationType;
+import com.hivemq.extensions.config.ConfigurationReader;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;

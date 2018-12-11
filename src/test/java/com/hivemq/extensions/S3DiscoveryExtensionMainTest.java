@@ -1,4 +1,4 @@
-package com.hivemq.extension;
+package com.hivemq.extensions;
 
 import com.hivemq.extension.sdk.api.parameter.*;
 import org.junit.Assert;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extension;
+package com.hivemq.extensions;
 
 import com.hivemq.extension.sdk.api.ExtensionMain;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
@@ -23,8 +23,8 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
-import com.hivemq.extension.callbacks.S3DiscoveryCallback;
-import com.hivemq.extension.config.ConfigurationReader;
+import com.hivemq.extensions.callbacks.S3DiscoveryCallback;
+import com.hivemq.extensions.config.ConfigurationReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

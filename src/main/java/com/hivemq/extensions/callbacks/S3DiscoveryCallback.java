@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extension.callbacks;
+package com.hivemq.extensions.callbacks;
 
 import com.amazonaws.services.s3.model.*;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
@@ -23,9 +23,9 @@ import com.hivemq.extension.sdk.api.services.cluster.ClusterDiscoveryCallback;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.extension.aws.S3Client;
-import com.hivemq.extension.config.ClusterNodeFile;
-import com.hivemq.extension.config.ConfigurationReader;
+import com.hivemq.extensions.aws.S3Client;
+import com.hivemq.extensions.config.ClusterNodeFile;
+import com.hivemq.extensions.config.ConfigurationReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

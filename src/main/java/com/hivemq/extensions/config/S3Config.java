@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extension.config;
+package com.hivemq.extensions.config;
 
 import com.amazonaws.services.s3.internal.Constants;
 import com.hivemq.extension.sdk.api.annotations.NotNull;

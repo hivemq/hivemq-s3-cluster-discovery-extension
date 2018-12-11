@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extension.aws;
+package com.hivemq.extensions.aws;
 
 import com.amazonaws.auth.*;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
@@ -29,9 +29,9 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.StringInputStream;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.config.AuthenticationType;
-import com.hivemq.extension.config.ConfigurationReader;
-import com.hivemq.extension.config.S3Config;
+import com.hivemq.extensions.config.AuthenticationType;
+import com.hivemq.extensions.config.ConfigurationReader;
+import com.hivemq.extensions.config.S3Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
