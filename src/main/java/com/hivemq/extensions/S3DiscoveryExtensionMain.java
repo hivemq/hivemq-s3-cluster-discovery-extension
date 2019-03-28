@@ -40,15 +40,22 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
     S3DiscoveryCallback s3DiscoveryCallback;
 
     @Override
-    public void extensionStart(@NotNull final ExtensionStartInput extensionStartInput, @NotNull final ExtensionStartOutput extensionStartOutput) {
+    public void extensionStart(
+            final @NotNull ExtensionStartInput extensionStartInput,
+            final @NotNull ExtensionStartOutput extensionStartOutput) {
+
         try {
             final ConfigurationReader configurationReader = new ConfigurationReader(extensionStartInput.getExtensionInformation());
 
             s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
 
-            Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
+            try {
+                Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
+                logger.debug("Registered S3 discovery callback successfully.");
+            } catch (final UnsupportedOperationException e) {
+                extensionStartOutput.preventExtensionStartup(e.getMessage());
+            }
 
-            logger.debug("Registered S3 discovery callback successfully.");
         } catch (final Exception ex) {
             logger.error("Not able to start S3 Discovery Extension.", ex);
             extensionStartOutput.preventExtensionStartup("Exception caught at extension start.");
@@ -56,7 +63,9 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
     }
 
     @Override
-    public void extensionStop(@NotNull final ExtensionStopInput extensionStopInput, @NotNull final ExtensionStopOutput extensionStopOutput) {
+    public void extensionStop(
+            final @NotNull ExtensionStopInput extensionStopInput,
+            final @NotNull ExtensionStopOutput extensionStopOutput) {
 
         if (s3DiscoveryCallback != null) {
             Services.clusterService().removeDiscoveryCallback(s3DiscoveryCallback);
