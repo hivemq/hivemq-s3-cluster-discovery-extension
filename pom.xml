@@ -22,7 +22,7 @@
     <groupId>com.hivemq.extension</groupId>
     <artifactId>hivemq-s3-cluster-discovery-extension</artifactId>
     <description>HiveMQ Extension for cluster discovery with S3 buckets</description>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
 
     <properties>
         <extension.name>S3 Cluster Discovery Extension</extension.name>
