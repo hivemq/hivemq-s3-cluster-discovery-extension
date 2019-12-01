@@ -21,8 +21,9 @@
 
     <groupId>com.hivemq.extension</groupId>
     <artifactId>hivemq-s3-cluster-discovery-extension</artifactId>
+    <version>4.0.2</version>
+
     <description>HiveMQ Extension for cluster discovery with S3 buckets</description>
-    <version>4.0.1</version>
 
     <properties>
         <extension.name>S3 Cluster Discovery Extension</extension.name>
@@ -47,6 +48,7 @@
         <!-- Other properties -->
         <output.dir>${basedir}</output.dir>
         <source.document.name>README.adoc</source.document.name>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -94,6 +96,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${compiler-plugin.version}</version>
                 <configuration>
+                    <encoding>UTF-8</encoding>
                     <source>11</source>
                     <target>11</target>
                 </configuration>
