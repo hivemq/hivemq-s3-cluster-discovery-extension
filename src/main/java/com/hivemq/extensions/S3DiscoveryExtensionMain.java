@@ -18,6 +18,7 @@ package com.hivemq.extensions;
 
 import com.hivemq.extension.sdk.api.ExtensionMain;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
@@ -37,36 +38,31 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
 
     private static final Logger logger = LoggerFactory.getLogger(S3DiscoveryExtensionMain.class);
 
-    S3DiscoveryCallback s3DiscoveryCallback;
+    @Nullable S3DiscoveryCallback s3DiscoveryCallback;
 
     @Override
-    public void extensionStart(
-            final @NotNull ExtensionStartInput extensionStartInput,
-            final @NotNull ExtensionStartOutput extensionStartOutput) {
+    public void extensionStart(final @NotNull ExtensionStartInput extensionStartInput,
+                               final @NotNull ExtensionStartOutput extensionStartOutput) {
 
         try {
             final ConfigurationReader configurationReader = new ConfigurationReader(extensionStartInput.getExtensionInformation());
 
             s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
 
-            try {
-                Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
-                logger.debug("Registered S3 discovery callback successfully.");
-            } catch (final UnsupportedOperationException e) {
-                extensionStartOutput.preventExtensionStartup(e.getMessage());
-            }
+            Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
+            logger.debug("Registered S3 discovery callback successfully.");
 
-        } catch (final Exception ex) {
-            logger.error("Not able to start S3 Discovery Extension.", ex);
+        } catch (final UnsupportedOperationException e) {
+            extensionStartOutput.preventExtensionStartup(e.getMessage());
+        } catch (final Exception e) {
+            logger.error("Not able to start S3 Discovery Extension.", e);
             extensionStartOutput.preventExtensionStartup("Exception caught at extension start.");
         }
     }
 
     @Override
-    public void extensionStop(
-            final @NotNull ExtensionStopInput extensionStopInput,
-            final @NotNull ExtensionStopOutput extensionStopOutput) {
-
+    public void extensionStop(final @NotNull ExtensionStopInput extensionStopInput,
+                              final @NotNull ExtensionStopOutput extensionStopOutput) {
         if (s3DiscoveryCallback != null) {
             Services.clusterService().removeDiscoveryCallback(s3DiscoveryCallback);
         }

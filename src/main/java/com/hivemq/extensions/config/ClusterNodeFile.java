@@ -20,8 +20,11 @@ import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.regex.Pattern;
+
+import static com.hivemq.extensions.util.Preconditions.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * @author Abdullah Imal
@@ -29,66 +32,46 @@ import java.util.Base64;
  */
 public class ClusterNodeFile {
 
-    static final String CONTENT_SEPARATOR = "||||";
-    private static final String CONTENT_SEPARATOR_REGEX = "\\|\\|\\|\\|";
     static final String CONTENT_VERSION = "4";
+    static final String CONTENT_SEPARATOR = "||||";
+    private static final Pattern CONTENT_SEPARATOR_PATTERN = Pattern.compile("\\|\\|\\|\\|");
 
-    private final String clusterId;
-    private final ClusterNodeAddress clusterNodeAddress;
+    private final @NotNull String clusterId;
+    private final @NotNull ClusterNodeAddress clusterNodeAddress;
     private final long creationTimeInMillis;
 
-    public ClusterNodeFile(@NotNull final String clusterId, @NotNull final ClusterNodeAddress clusterNodeAddress) {
-        if (clusterId == null) {
-            throw new NullPointerException("ClusterId must not be null!");
-        }
-        if (clusterId.isBlank()) {
-            throw new IllegalArgumentException("ClusterId must not empty!");
-        }
-        if (clusterNodeAddress == null) {
-            throw new NullPointerException("ClusterNodeAddress must not be null!");
-        }
-
+    public ClusterNodeFile(final @NotNull String clusterId, final @NotNull ClusterNodeAddress clusterNodeAddress) {
+        checkNotNullOrBlank(clusterId, "clusterId");
+        checkNotNull(clusterNodeAddress, "clusterNodeAddress");
         this.clusterId = clusterId;
         this.clusterNodeAddress = clusterNodeAddress;
-        this.creationTimeInMillis = System.currentTimeMillis();
+        creationTimeInMillis = System.currentTimeMillis();
     }
 
-    private ClusterNodeFile(@NotNull final String clusterId, @NotNull final ClusterNodeAddress clusterNodeAddress, final long creationTimeInMillis) {
-        if (clusterId == null) {
-            throw new NullPointerException("ClusterId must not be null!");
-        }
-        if (clusterId.isBlank()) {
-            throw new IllegalArgumentException("ClusterId must not empty!");
-        }
-        if (clusterNodeAddress == null) {
-            throw new NullPointerException("ClusterNodeAddress must not be null!");
-        }
-        if (creationTimeInMillis < 0) {
-            throw new IllegalArgumentException("CreationTimeInMillis must not be zero or negative!");
-        }
+    private ClusterNodeFile(final @NotNull String clusterId,
+                            final @NotNull ClusterNodeAddress clusterNodeAddress,
+                            final long creationTimeInMillis) {
+
+        checkNotNullOrBlank(clusterId, "clusterId");
+        checkNotNull(clusterNodeAddress, "clusterNodeAddress");
+        checkArgument(creationTimeInMillis > 0, "CreationTimeInMillis must not be zero or negative!");
 
         this.clusterId = clusterId;
         this.clusterNodeAddress = clusterNodeAddress;
         this.creationTimeInMillis = creationTimeInMillis;
     }
 
-    @Nullable
-    public static ClusterNodeFile parseClusterNodeFile(@NotNull final String fileContent) {
-        if (fileContent == null) {
-            throw new NullPointerException("FileContent must not be null!");
-        }
-        if (fileContent.isBlank()) {
-            throw new IllegalArgumentException("FileContent must not be empty!");
-        }
+    public static @Nullable ClusterNodeFile parseClusterNodeFile(final @NotNull String fileContent) {
+        checkNotNullOrBlank(fileContent, "fileContent");
 
         final String content;
         try {
-            content = new String(Base64.getDecoder().decode(fileContent), StandardCharsets.UTF_8);
+            content = new String(Base64.getDecoder().decode(fileContent), UTF_8);
         } catch (final IllegalArgumentException ignored) {
             return null;
         }
 
-        final String[] splitContent = content.split(CONTENT_SEPARATOR_REGEX);
+        final String[] splitContent = CONTENT_SEPARATOR_PATTERN.split(content);
         if (splitContent.length != 5) {
             return null;
         }
@@ -124,13 +107,11 @@ public class ClusterNodeFile {
         return new ClusterNodeFile(clusterId, new ClusterNodeAddress(host, port), creationTimeInMillis);
     }
 
-    @NotNull
-    public String getClusterId() {
+    public @NotNull String getClusterId() {
         return clusterId;
     }
 
-    @NotNull
-    public ClusterNodeAddress getClusterNodeAddress() {
+    public @NotNull ClusterNodeAddress getClusterNodeAddress() {
         return clusterNodeAddress;
     }
 
@@ -153,6 +134,6 @@ public class ClusterNodeFile {
                 + clusterNodeAddress.getHost() + CONTENT_SEPARATOR
                 + clusterNodeAddress.getPort();
 
-        return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+        return new String(Base64.getEncoder().encode(content.getBytes(UTF_8)), UTF_8);
     }
 }

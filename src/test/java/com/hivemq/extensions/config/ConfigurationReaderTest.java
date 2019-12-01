@@ -1,7 +1,6 @@
 package com.hivemq.extensions.config;
 
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,6 +10,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.PrintWriter;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class ConfigurationReaderTest {
 
@@ -28,7 +30,7 @@ public class ConfigurationReaderTest {
     @Test
     public void test_readConfiguration_no_file() {
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -44,7 +46,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNotNull(configurationReader.readConfiguration());
+        assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -60,7 +62,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -76,7 +78,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -92,7 +94,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -108,7 +110,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -124,7 +126,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -142,7 +144,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNotNull(configurationReader.readConfiguration());
+        assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -160,7 +162,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -178,7 +180,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -197,7 +199,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNotNull(configurationReader.readConfiguration());
+        assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -216,7 +218,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -232,7 +234,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNotNull(configurationReader.readConfiguration());
+        assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -248,7 +250,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -264,7 +266,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -280,7 +282,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -296,7 +298,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -312,7 +314,7 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 
     @Test
@@ -328,6 +330,6 @@ public class ConfigurationReaderTest {
         }
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        Assert.assertNull(configurationReader.readConfiguration());
+        assertNull(configurationReader.readConfiguration());
     }
 }

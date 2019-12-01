@@ -10,7 +10,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extensions.config.AuthenticationType;
 import com.hivemq.extensions.config.ConfigurationReader;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,8 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -58,8 +56,8 @@ public class S3ClientTest {
     @Test
     public void test_create_successful() {
         s3Client.createOrUpdate();
-        Assert.assertNotNull(s3Client.getS3Config());
-        Assert.assertNotNull(s3Client.amazonS3);
+        assertNotNull(s3Client.getS3Config());
+        assertNotNull(s3Client.amazonS3);
     }
 
     @Test
@@ -69,7 +67,7 @@ public class S3ClientTest {
         s3Client.amazonS3 = amazonS3;
 
         when(amazonS3.doesBucketExistV2(anyString())).thenReturn(true);
-        final boolean bucketExist = s3Client.doesBucketExist();
+        final boolean bucketExist = s3Client.existsBucket();
 
         assertTrue(bucketExist);
     }
@@ -81,7 +79,7 @@ public class S3ClientTest {
         s3Client.amazonS3 = amazonS3;
 
         when(amazonS3.doesBucketExistV2(anyString())).thenThrow(new AmazonS3Exception("Bucket not found!"));
-        final boolean bucketExist = s3Client.doesBucketExist();
+        final boolean bucketExist = s3Client.existsBucket();
 
         assertFalse(bucketExist);
     }
@@ -220,7 +218,8 @@ public class S3ClientTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void test_getAwsCredentials_temporary_session_missing_token() throws IOException {deleteFilesInTemporaryFolder();
+    public void test_getAwsCredentials_temporary_session_missing_token() throws IOException {
+        deleteFilesInTemporaryFolder();
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
             printWriter.println("s3-bucket-region:us-east-1");
@@ -278,7 +277,7 @@ public class S3ClientTest {
 
         when(amazonS3.getObject(anyString(), any())).thenReturn(new S3Object());
         final S3Object abcd = s3Client.getObject("abcd");
-        Assert.assertNotNull(abcd);
+        assertNotNull(abcd);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -323,7 +322,7 @@ public class S3ClientTest {
 
         when(amazonS3.listObjects(any(), any())).thenReturn(new ObjectListing());
         final ObjectListing abcd = s3Client.getObjects("abcd");
-        Assert.assertNotNull(abcd);
+        assertNotNull(abcd);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -346,7 +345,7 @@ public class S3ClientTest {
 
         when(amazonS3.listNextBatchOfObjects(any(ObjectListing.class))).thenReturn(new ObjectListing());
         final ObjectListing nextBatchOfObjects = s3Client.getNextBatchOfObjects(new ObjectListing());
-        Assert.assertNotNull(nextBatchOfObjects);
+        assertNotNull(nextBatchOfObjects);
     }
 
     @Test(expected = IllegalArgumentException.class)
