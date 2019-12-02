@@ -9,7 +9,7 @@
 
 *Extension Type*: Integration
 
-*Version*: 4.0.2
+*Version*: 4.0.1
 
 *License*: Apache License 2.0
 

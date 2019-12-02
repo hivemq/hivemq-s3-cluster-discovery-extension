@@ -152,7 +152,7 @@ public class ConfigurationReader {
             return false;
         }
 
-        final Long fileUpdateIntervalInSeconds;
+        final long fileUpdateIntervalInSeconds;
         try {
             fileUpdateIntervalInSeconds = s3Config.getFileUpdateIntervalInSeconds();
         } catch (final UnsupportedOperationException e) {
@@ -166,7 +166,7 @@ public class ConfigurationReader {
 
         if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
 
-            if (fileUpdateIntervalInSeconds.equals(fileExpirationInSeconds)) {
+            if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
                 logger.error("S3 Discovery Extension - File update interval is the same as the expiration interval!");
                 return false;
             }
