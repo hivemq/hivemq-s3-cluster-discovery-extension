@@ -21,14 +21,33 @@
 
     <groupId>com.hivemq.extension</groupId>
     <artifactId>hivemq-s3-cluster-discovery-extension</artifactId>
-    <description>HiveMQ Extension for cluster discovery with S3 buckets</description>
     <version>4.0.1</version>
+
+    <description>HiveMQ Extension for cluster discovery with S3 buckets</description>
 
     <properties>
         <extension.name>S3 Cluster Discovery Extension</extension.name>
+
+        <!-- Dependency versions -->
+        <hivemq-extension-sdk.version>4.0.0</hivemq-extension-sdk.version>
+        <aws-java-sdk-s3.version>1.11.461</aws-java-sdk-s3.version>
+        <owner.version>1.0.10</owner.version>
+
+        <!-- Test dependency versions -->
+        <junit.version>4.12</junit.version>
+        <mockito.version>1.10.19</mockito.version>
+        <logback.version>1.2.3</logback.version>
+
+        <!-- Maven plugin versions -->
+        <compiler-plugin.version>3.8.1</compiler-plugin.version>
+        <shade-plugin.version>3.2.1</shade-plugin.version>
+        <assembly-plugin.version>3.2.0</assembly-plugin.version>
         <asciidoctor.version>1.5.7.1</asciidoctor.version>
+
+        <!-- Other properties -->
         <output.dir>${basedir}</output.dir>
         <source.document.name>README.adoc</source.document.name>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -40,35 +59,32 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.11.461</version>
+            <version>${aws-java-sdk-s3.version}</version>
         </dependency>
         <dependency>
             <groupId>org.aeonbits.owner</groupId>
             <artifactId>owner</artifactId>
-            <version>1.0.10</version>
+            <version>${owner.version}</version>
         </dependency>
+
+        <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.3</version>
+            <version>${logback.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
         </dependency>
     </dependencies>
 
@@ -77,8 +93,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
+                <version>${compiler-plugin.version}</version>
                 <configuration>
+                    <encoding>UTF-8</encoding>
                     <source>11</source>
                     <target>11</target>
                 </configuration>
@@ -86,7 +103,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${shade-plugin.version}</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -109,63 +126,50 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${assembly-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <version>${asciidoctor.version}</version>
+                <executions>
+                    <execution>
+                        <id>output-html</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                        <configuration>
+                            <backend>html</backend>
+                            <doctype>xhtml</doctype>
+                            <headerFooter>true</headerFooter>
+                            <sourceDirectory>${basedir}</sourceDirectory>
+                            <outputDirectory>${output.dir}${file.separator}target</outputDirectory>
+                            <sourceDocumentName>${source.document.name}</sourceDocumentName>
+                            <attributes>
+                                <icons>font</icons>
+                                <toc2/>
+                            </attributes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <id>Packaging</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>assembly</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptors>
-                                        <descriptor>assembly.xml</descriptor>
-                                    </descriptors>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.asciidoctor</groupId>
-                        <artifactId>asciidoctor-maven-plugin</artifactId>
-                        <version>${asciidoctor.version}</version>
-                        <executions>
-                            <execution>
-                                <id>output-html</id>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>process-asciidoc</goal>
-                                </goals>
-                                <configuration>
-                                    <backend>html</backend>
-                                    <doctype>xhtml</doctype>
-                                    <headerFooter>true</headerFooter>
-                                    <sourceDirectory>${basedir}</sourceDirectory>
-                                    <outputDirectory>${output.dir}/target</outputDirectory>
-                                    <sourceDocumentName>${source.document.name}</sourceDocumentName>
-                                    <attributes>
-                                        <icons>font</icons>
-                                        <toc2/>
-                                    </attributes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 </project>

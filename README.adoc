@@ -2,7 +2,7 @@
 :s3_regions: https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 :path-style-access: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html#access-bucket-intro
 :hivemq-downloads: https://www.hivemq.com/downloads
-:hivemq-cluster-discovery: http://develop.hivemq.com/docs/4/hivemq/cluster.html#discovery
+:hivemq-cluster-discovery: https://www.hivemq.com/docs/latest/hivemq/cluster.html#discovery
 :hivemq-support: http://www.hivemq.com/support/
 
 == S3 Cluster Discovery Extension
@@ -13,14 +13,13 @@
 
 *License*: Apache License 2.0
 
-
 === Purpose
 
 This HiveMQ extension allows your HiveMQ cluster nodes to discover each other dynamically by regularly exchanging their information via S3 from Amazon Web Services (AWS).
 
-
-HiveMQ instances are added at runtime as soon as they become available by placing their information, on how to connect to them, to the configured bucket. The extension will regularly check the configured S3 bucket for files from other HiveMQ nodes. Additionally every broker updates its own file on a regular basis to prevent the file from expiring.
-
+HiveMQ instances are added at runtime as soon as they become available by placing their information, on how to connect to them, to the configured bucket.
+The extension will regularly check the configured S3 bucket for files from other HiveMQ nodes.
+Additionally every broker updates its own file on a regular basis to prevent the file from expiring.
 
 === Installation
 
@@ -29,8 +28,8 @@ HiveMQ instances are added at runtime as soon as they become available by placin
 * Modify the `s3discovery.properties` file for your needs.
 * Change the {hivemq-cluster-discovery}[discovery mechanism^] of HiveMQ to `extension`.
 
-
 === Configuration
+
 The information each node writes into the bucket consists of an ip-address and a port.
 The ip-address and port are taken from the `external-address` and `external-port` which is configured in the cluster `transport` (config.xml).
 If they are not set, the `bind-address` and `bind-port` will be used.
@@ -61,7 +60,6 @@ file-expiration:360
 update-interval:180
 credentials-type:default
 ----
-
 
 ==== Authentication Configuration
 
@@ -128,7 +126,8 @@ JAVA_OPTS="$JAVA_OPTS -Daws.accessKeyId=<your-access-key> -Daws.secretKey=<your-
 ===== User Credentials Authentication
 
 Uses the credentials file which can be created by calling 'aws configure' (AWS CLI).
-This file is usually located at ~/.aws/credentials. The exact location can vary based on the platform.
+This file is usually located at ~/.aws/credentials.
+The exact location can vary based on the platform.
 The location of the file can be configured by setting the environment variable `AWS_CREDENTIAL_PROFILE_FILE` to the location of your file.
 
 .Example Java System Properties Config
@@ -142,7 +141,6 @@ credentials-type:user_credentials_file
 Uses the IAM Roles assigned to the EC2 instance running HiveMQ to access S3.
 
 WARNING: This only works if HiveMQ is running on an EC2 instance and your EC2 instance has configured the right IAM Role to access S3!
-
 
 .Example Instance Profile Credentials Config
 [source]
@@ -186,7 +184,6 @@ credentials-secret-access-key:<your-secret_access_key>
 credentials-session-token:<your-session_token>
 ----
 
-
 === First Steps
 
 * Create a S3 bucket with the configured name.
@@ -195,7 +192,8 @@ credentials-session-token:<your-session_token>
 
 ==== Need help?
 
-If you encounter any problems, we are happy to help. The best place to get in contact is our {hivemq-support}[support^].
+If you encounter any problems, we are happy to help.
+The best place to get in contact is our {hivemq-support}[support^].
 
 = Contributing
 
@@ -203,4 +201,5 @@ If you want to contribute to HiveMQ S3 Cluster Discovery Extension, see the link
 
 = License
 
-HiveMQ S3 Cluster Discovery Extension is licensed under the `APACHE LICENSE, VERSION 2.0`. A copy of the license can be found link:LICENSE.txt[here].
+HiveMQ S3 Cluster Discovery Extension is licensed under the `APACHE LICENSE, VERSION 2.0`.
+A copy of the license can be found link:LICENSE.txt[here].

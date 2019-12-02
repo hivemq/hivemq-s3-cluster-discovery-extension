@@ -1,12 +1,14 @@
 package com.hivemq.extensions.config;
 
+import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.*;
 
 public class ClusterNodeFileTest {
 
@@ -16,19 +18,19 @@ public class ClusterNodeFileTest {
     @Test
     public void test_cluster_node_file_successful_create() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        Assert.assertNotNull(clusterNodeFile);
+        assertNotNull(clusterNodeFile);
     }
 
     @Test
     public void test_cluster_node_file_successful_get_node_address() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        Assert.assertNotNull(clusterNodeFile.getClusterNodeAddress());
+        assertNotNull(clusterNodeFile.getClusterNodeAddress());
     }
 
     @Test
     public void test_cluster_node_file_successful_get_cluster_id() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        Assert.assertNotNull(clusterNodeFile.getClusterId());
+        assertNotNull(clusterNodeFile.getClusterId());
     }
 
     @Test
@@ -36,14 +38,14 @@ public class ClusterNodeFileTest {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         final String clusterNodeFileString = clusterNodeFile.toString();
         final ClusterNodeFile newClusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertTrue(clusterNodeFile.toString().contentEquals(newClusterNodeFile.toString()));
+        assertTrue(clusterNodeFile.toString().contentEquals(newClusterNodeFile.toString()));
     }
 
     @Test
     public void test_cluster_node_file_not_equal() {
         final ClusterNodeFile clusterNodeFile1 = new ClusterNodeFile(nodeId + 1, clusterNodeAddress);
         final ClusterNodeFile clusterNodeFile2 = new ClusterNodeFile(nodeId + 2, clusterNodeAddress);
-        Assert.assertFalse(clusterNodeFile1.toString().contentEquals(clusterNodeFile2.toString()));
+        assertFalse(clusterNodeFile1.toString().contentEquals(clusterNodeFile2.toString()));
     }
 
     @Test(expected = NullPointerException.class)
@@ -65,27 +67,27 @@ public class ClusterNodeFileTest {
     @Test
     public void test_cluster_node_file_expiration_deactivated() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        Assert.assertFalse(clusterNodeFile.isExpired(0));
+        assertFalse(clusterNodeFile.isExpired(0));
     }
 
     @Test
     public void test_cluster_node_file_expired() throws Exception {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         TimeUnit.SECONDS.sleep(2);
-        Assert.assertTrue(clusterNodeFile.isExpired(1));
+        assertTrue(clusterNodeFile.isExpired(1));
     }
 
     @Test
     public void test_cluster_node_file_not_expired() {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        Assert.assertFalse(clusterNodeFile.isExpired(1));
+        assertFalse(clusterNodeFile.isExpired(1));
     }
 
     @Test
     public void test_cluster_node_file_not_expired_sleep() throws Exception {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         TimeUnit.SECONDS.sleep(1);
-        Assert.assertFalse(clusterNodeFile.isExpired(2));
+        assertFalse(clusterNodeFile.isExpired(2));
     }
 
     @Test
@@ -93,7 +95,7 @@ public class ClusterNodeFileTest {
         final ClusterNodeFile clusterNodeFile1 = new ClusterNodeFile(nodeId, clusterNodeAddress);
         final String clusterNodeFile1String = clusterNodeFile1.toString();
         final ClusterNodeFile clusterNodeFile2 = ClusterNodeFile.parseClusterNodeFile(clusterNodeFile1String);
-        Assert.assertTrue(clusterNodeFile1.toString().contentEquals(clusterNodeFile2.toString()));
+        assertTrue(clusterNodeFile1.toString().contentEquals(clusterNodeFile2.toString()));
     }
 
     @Test
@@ -107,14 +109,14 @@ public class ClusterNodeFileTest {
                         Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertNull(clusterNodeFile);
+        assertNull(clusterNodeFile);
     }
 
     @Test
     public void test_parseClusterNodeFile_false_charset() {
         final String clusterNodeFileString = new String("abcd".getBytes(), StandardCharsets.UTF_16);
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertNull(clusterNodeFile);
+        assertNull(clusterNodeFile);
     }
 
     @Test
@@ -128,7 +130,7 @@ public class ClusterNodeFileTest {
                         Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertNull(clusterNodeFile);
+        assertNull(clusterNodeFile);
     }
 
     @Test
@@ -142,7 +144,7 @@ public class ClusterNodeFileTest {
                         Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertNull(clusterNodeFile);
+        assertNull(clusterNodeFile);
     }
 
     @Test
@@ -156,7 +158,7 @@ public class ClusterNodeFileTest {
                         Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertNull(clusterNodeFile);
+        assertNull(clusterNodeFile);
     }
 
     @Test
@@ -170,7 +172,7 @@ public class ClusterNodeFileTest {
                         "abcd");
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertNull(clusterNodeFile);
+        assertNull(clusterNodeFile);
     }
 
     @Test
@@ -184,7 +186,7 @@ public class ClusterNodeFileTest {
                         Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertNull(clusterNodeFile);
+        assertNull(clusterNodeFile);
     }
 
     @Test
@@ -198,7 +200,7 @@ public class ClusterNodeFileTest {
                         Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertNull(clusterNodeFile);
+        assertNull(clusterNodeFile);
     }
 
     @Test
@@ -212,7 +214,7 @@ public class ClusterNodeFileTest {
                         Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        Assert.assertNull(clusterNodeFile);
+        assertNull(clusterNodeFile);
     }
 
     @Test(expected = NullPointerException.class)
@@ -225,36 +227,45 @@ public class ClusterNodeFileTest {
         ClusterNodeFile.parseClusterNodeFile("  ");
     }
 
-    public static String createClusterNodeFileString(final String version, final String timeInMillis, final String nodeId, final String host, final String port) {
-
+    public static @NotNull String createClusterNodeFileString(final String version,
+                                                              final String timeInMillis,
+                                                              final String nodeId,
+                                                              final String host,
+                                                              final String port) {
         final String content =
                 version + ClusterNodeFile.CONTENT_SEPARATOR
-                + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR
-                + nodeId + ClusterNodeFile.CONTENT_SEPARATOR
-                + host + ClusterNodeFile.CONTENT_SEPARATOR
-                + port + ClusterNodeFile.CONTENT_SEPARATOR;
+                        + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR
+                        + nodeId + ClusterNodeFile.CONTENT_SEPARATOR
+                        + host + ClusterNodeFile.CONTENT_SEPARATOR
+                        + port + ClusterNodeFile.CONTENT_SEPARATOR;
 
         return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }
 
-    private String createClusterNodeFileStringTooLong(final String version, final String timeInMillis, final String nodeId, final String host, final String port) {
-
+    private static @NotNull String createClusterNodeFileStringTooLong(final String version,
+                                                                      final String timeInMillis,
+                                                                      final String nodeId,
+                                                                      final String host,
+                                                                      final String port) {
         final String content =
                 version + ClusterNodeFile.CONTENT_SEPARATOR
-                + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR
-                + nodeId + ClusterNodeFile.CONTENT_SEPARATOR
-                + host + ClusterNodeFile.CONTENT_SEPARATOR
-                + port + ClusterNodeFile.CONTENT_SEPARATOR
-                + port + ClusterNodeFile.CONTENT_SEPARATOR;
+                        + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR
+                        + nodeId + ClusterNodeFile.CONTENT_SEPARATOR
+                        + host + ClusterNodeFile.CONTENT_SEPARATOR
+                        + port + ClusterNodeFile.CONTENT_SEPARATOR
+                        + port + ClusterNodeFile.CONTENT_SEPARATOR;
 
         return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }
 
-    private String createClusterNodeFileStringTooShort(final String version, final String timeInMillis, final String nodeId, final String host, final String port) {
-
+    private static @NotNull String createClusterNodeFileStringTooShort(final String version,
+                                                                       final String timeInMillis,
+                                                                       final String nodeId,
+                                                                       final String host,
+                                                                       final String port) {
         final String content =
                 version + ClusterNodeFile.CONTENT_SEPARATOR
-                + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR;
+                        + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR;
 
         return new String(Base64.getEncoder().encode(content.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
     }

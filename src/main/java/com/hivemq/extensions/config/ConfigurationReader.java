@@ -24,11 +24,10 @@ import org.aeonbits.owner.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
+
+import static com.hivemq.extensions.util.StringUtil.isNullOrBlank;
 
 /**
  * @author Abdullah Imal
@@ -40,14 +39,14 @@ public class ConfigurationReader {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationReader.class);
 
-    private final File extensionHomeFolder;
+    private final @NotNull File extensionHomeFolder;
 
-    public ConfigurationReader(@NotNull final ExtensionInformation extensionInformation) {
-        this.extensionHomeFolder = extensionInformation.getExtensionHomeFolder();
+    public ConfigurationReader(final @NotNull ExtensionInformation extensionInformation) {
+        extensionHomeFolder = extensionInformation.getExtensionHomeFolder();
     }
 
-    @Nullable
-    public S3Config readConfiguration() {
+    public @Nullable S3Config readConfiguration() {
+
         final File propertiesFile = new File(extensionHomeFolder, S3_CONFIG_FILE);
 
         if (!propertiesFile.exists()) {
@@ -74,22 +73,25 @@ public class ConfigurationReader {
             logger.trace("Read properties file '{}' successfully.", propertiesFile.getAbsolutePath());
             return s3Config;
 
-        } catch (final IOException ex) {
-            logger.error("An error occurred while reading the properties file {}", propertiesFile.getAbsolutePath(), ex);
+        } catch (final FileNotFoundException e) {
+            logger.error("Could not find the properties file '{}'", propertiesFile.getAbsolutePath());
+        } catch (final IOException e) {
+            logger.error("An error occurred while reading the properties file {}", propertiesFile.getAbsolutePath(), e);
         }
 
         return null;
     }
 
-    private boolean isValid(@NotNull final S3Config s3Config) {
+    private static boolean isValid(final @NotNull S3Config s3Config) {
+
         final String bucketName = s3Config.getBucketName();
-        if (bucketName == null || bucketName.isBlank()) {
+        if (isNullOrBlank(bucketName)) {
             logger.error("S3 Discovery Extension - Bucket name is empty!");
             return false;
         }
 
         final String bucketRegionName = s3Config.getBucketRegionName();
-        if (bucketRegionName == null || bucketRegionName.isEmpty()) {
+        if (isNullOrBlank(bucketRegionName)) {
             logger.error("S3 Discovery Extension - Bucket region is empty!");
             return false;
         }
@@ -102,7 +104,7 @@ public class ConfigurationReader {
         }
 
         final String authenticationTypeName = s3Config.getAuthenticationTypeName();
-        if (authenticationTypeName == null || authenticationTypeName.isEmpty()) {
+        if (isNullOrBlank(authenticationTypeName)) {
             logger.error("S3 Discovery Extension - Authentication type is empty!");
             return false;
         }
@@ -118,30 +120,30 @@ public class ConfigurationReader {
         if (authenticationType == AuthenticationType.ACCESS_KEY || authenticationType == AuthenticationType.TEMPORARY_SESSION) {
 
             final String accessKeyId = s3Config.getAccessKeyId();
-            if (accessKeyId == null || accessKeyId.isEmpty()) {
+            if (isNullOrBlank(accessKeyId)) {
                 logger.error("S3 Discovery Extension - Access key id is empty!");
                 return false;
             }
 
             final String accessKeySecret = s3Config.getAccessKeySecret();
-            if (accessKeySecret == null || accessKeySecret.isEmpty()) {
+            if (isNullOrBlank(accessKeySecret)) {
                 logger.error("S3 Discovery Extension - Access key secret is empty!");
                 return false;
             }
 
             if (authenticationType == AuthenticationType.TEMPORARY_SESSION) {
                 final String sessionToken = s3Config.getSessionToken();
-                if (sessionToken == null || sessionToken.isEmpty()) {
+                if (isNullOrBlank(sessionToken)) {
                     logger.error("S3 Discovery Extension - Session token is empty!");
                     return false;
                 }
             }
         }
 
-        final Long fileExpirationInSeconds;
+        final long fileExpirationInSeconds;
         try {
             fileExpirationInSeconds = s3Config.getFileExpirationInSeconds();
-        } catch (final UnsupportedOperationException ex) {
+        } catch (final UnsupportedOperationException e) {
             logger.error("S3 Discovery Extension - File expiration interval is not set!");
             return false;
         }
@@ -150,10 +152,10 @@ public class ConfigurationReader {
             return false;
         }
 
-        final Long fileUpdateIntervalInSeconds;
+        final long fileUpdateIntervalInSeconds;
         try {
             fileUpdateIntervalInSeconds = s3Config.getFileUpdateIntervalInSeconds();
-        } catch (final UnsupportedOperationException ex) {
+        } catch (final UnsupportedOperationException e) {
             logger.error("S3 Discovery Extension - File update interval is not set!");
             return false;
         }
@@ -164,7 +166,7 @@ public class ConfigurationReader {
 
         if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
 
-            if (fileUpdateIntervalInSeconds.equals(fileExpirationInSeconds)) {
+            if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
                 logger.error("S3 Discovery Extension - File update interval is the same as the expiration interval!");
                 return false;
             }

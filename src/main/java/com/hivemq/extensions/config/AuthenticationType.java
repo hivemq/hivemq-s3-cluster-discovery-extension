@@ -33,14 +33,13 @@ public enum AuthenticationType {
     ACCESS_KEY("access_key"),
     TEMPORARY_SESSION("temporary_session");
 
-    private final String name;
+    private final @NotNull String name;
 
-    AuthenticationType(@NotNull final String name) {
+    AuthenticationType(final @NotNull String name) {
         this.name = name;
     }
 
-    @NotNull
-    public static AuthenticationType fromName(@NotNull final String name) throws IllegalArgumentException {
+    public static @NotNull AuthenticationType fromName(final @NotNull String name) throws IllegalArgumentException {
         for (final AuthenticationType type : values()) {
             if (name.contentEquals(type.getName())) {
                 return type;
@@ -49,8 +48,7 @@ public enum AuthenticationType {
         throw new IllegalArgumentException("Unknown credentials type " + name);
     }
 
-    @NotNull
-    public String getName() {
+    public @NotNull String getName() {
         return name;
     }
 }

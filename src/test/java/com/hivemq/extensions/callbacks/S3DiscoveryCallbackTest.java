@@ -1,7 +1,10 @@
 package com.hivemq.extensions.callbacks;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
@@ -18,7 +21,10 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -72,7 +78,7 @@ public class S3DiscoveryCallbackTest {
 
         s3Config = configurationReader.readConfiguration();
         when(s3Client.getS3Config()).thenReturn(s3Config);
-        when(s3Client.doesBucketExist()).thenReturn(true);
+        when(s3Client.existsBucket()).thenReturn(true);
     }
 
     @Test
@@ -83,7 +89,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
     }
@@ -95,7 +101,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
@@ -108,7 +114,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
@@ -121,7 +127,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
@@ -133,7 +139,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
@@ -162,7 +168,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
@@ -176,7 +182,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
     }
@@ -189,7 +195,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
@@ -202,7 +208,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
@@ -215,7 +221,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
@@ -228,7 +234,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
@@ -240,7 +246,7 @@ public class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
@@ -248,12 +254,12 @@ public class S3DiscoveryCallbackTest {
     @Test
     public void test_init_bucket_does_not_exist() {
 
-        when(s3Client.doesBucketExist()).thenReturn(false);
+        when(s3Client.existsBucket()).thenReturn(false);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
@@ -265,7 +271,7 @@ public class S3DiscoveryCallbackTest {
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client, never()).doesBucketExist();
+        verify(s3Client, never()).existsBucket();
         verify(s3Client).createOrUpdate();
 
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
@@ -278,7 +284,7 @@ public class S3DiscoveryCallbackTest {
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client, never()).doesBucketExist();
+        verify(s3Client, never()).existsBucket();
         verify(s3Client).createOrUpdate();
 
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
@@ -287,12 +293,12 @@ public class S3DiscoveryCallbackTest {
     @Test
     public void test_init_bucket_check_failed() {
 
-        when(s3Client.doesBucketExist()).thenReturn(false);
+        when(s3Client.existsBucket()).thenReturn(false);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(s3Client).createOrUpdate();
-        verify(s3Client).doesBucketExist();
+        verify(s3Client).existsBucket();
 
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
@@ -316,7 +322,7 @@ public class S3DiscoveryCallbackTest {
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client, never()).doesBucketExist();
+        verify(s3Client, never()).existsBucket();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
@@ -378,7 +384,7 @@ public class S3DiscoveryCallbackTest {
         }
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(s3Client.getS3Config()).thenReturn(s3Config);
-        when(s3Client.doesBucketExist()).thenReturn(false);
+        when(s3Client.existsBucket()).thenReturn(false);
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -560,6 +566,7 @@ public class S3DiscoveryCallbackTest {
         public boolean isTruncated() {
             return true;
         }
+
         @Override
         public List<S3ObjectSummary> getObjectSummaries() {
             return createObjectListing();

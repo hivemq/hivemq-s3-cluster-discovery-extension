@@ -1,7 +1,6 @@
 package com.hivemq.extensions;
 
 import com.hivemq.extension.sdk.api.parameter.*;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -9,7 +8,9 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.when;
 
 public class S3DiscoveryExtensionMainTest {
 
@@ -29,7 +30,7 @@ public class S3DiscoveryExtensionMainTest {
     private S3DiscoveryExtensionMain s3DiscoveryExtensionMain;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(extensionStartInput.getExtensionInformation()).thenReturn(extensionInformation);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.getRoot());
@@ -39,14 +40,14 @@ public class S3DiscoveryExtensionMainTest {
     @Test
     public void test_start_success() {
         s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        Assert.assertNotNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
+        assertNotNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
     }
 
     @Test
     public void test_start_failed() {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
         s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        Assert.assertNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
+        assertNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
     }
 
     @Test(expected = RuntimeException.class)
@@ -60,6 +61,6 @@ public class S3DiscoveryExtensionMainTest {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
         s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
         s3DiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
-        Assert.assertNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
+        assertNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
     }
 }

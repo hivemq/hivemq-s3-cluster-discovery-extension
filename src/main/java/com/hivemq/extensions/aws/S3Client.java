@@ -29,12 +29,14 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.StringInputStream;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extensions.config.AuthenticationType;
 import com.hivemq.extensions.config.ConfigurationReader;
 import com.hivemq.extensions.config.S3Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -44,22 +46,25 @@ import java.io.InputStream;
  */
 public class S3Client {
 
-    private static Logger logger = LoggerFactory.getLogger(S3Client.class);
+    private static final Logger logger = LoggerFactory.getLogger(S3Client.class);
 
-    private S3Config s3Config;
-    public ConfigurationReader configurationReader;
-    public AmazonS3 amazonS3;
+    public @NotNull ConfigurationReader configurationReader;
 
-    public S3Client(@NotNull final ConfigurationReader configurationReader) {
+    private @Nullable S3Config s3Config;
+
+    public @Nullable AmazonS3 amazonS3;
+
+    public S3Client(final @NotNull ConfigurationReader configurationReader) {
         this.configurationReader = configurationReader;
     }
 
-    public void createOrUpdate(){
+    public void createOrUpdate() {
+
         final S3Config newS3Config = configurationReader.readConfiguration();
         if (newS3Config == null) {
             throw new IllegalStateException("Configuration of the S3 discovery extension couldn't be loaded.");
         }
-        this.s3Config = newS3Config;
+        s3Config = newS3Config;
         logger.trace("Loaded configuration successfully.");
 
         final AuthenticationType authenticationType = AuthenticationType.fromName(s3Config.getAuthenticationTypeName());
@@ -76,20 +81,21 @@ public class S3Client {
         if (s3Config.getEndpoint().contentEquals(Constants.S3_HOSTNAME)) {
             amazonS3ClientBuilder.withRegion(regions);
         } else {
-            amazonS3ClientBuilder.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(s3Config.getEndpoint(), s3Config.getEndpointRegionName()));
+            amazonS3ClientBuilder.withEndpointConfiguration(
+                    new AwsClientBuilder.EndpointConfiguration(s3Config.getEndpoint(), s3Config.getEndpointRegionName())
+            );
         }
 
-        this.amazonS3 = amazonS3ClientBuilder.build();
-        logger.trace("Created AmazonS3 successfully.");
+        amazonS3 = amazonS3ClientBuilder.build();
+        logger.trace("Created AmazonS3 Client successfully.");
     }
 
-    @NotNull
-    public S3Config getS3Config() {
+    public @NotNull S3Config getS3Config() {
         return s3Config;
     }
 
-    @NotNull
-    AWSCredentialsProvider getAwsCredentials(@NotNull final AuthenticationType authenticationType) {
+    @NotNull AWSCredentialsProvider getAwsCredentials(final @NotNull AuthenticationType authenticationType) {
+
         final AWSCredentialsProvider credentialsProvider;
 
         switch (authenticationType) {
@@ -110,15 +116,15 @@ public class S3Client {
                 break;
             case ACCESS_KEY:
             case TEMPORARY_SESSION:
-                final String accessKey = getS3Config().getAccessKeyId();
-                final String secretAccessKey = getS3Config().getAccessKeySecret();
+                final String accessKey = s3Config.getAccessKeyId();
+                final String secretAccessKey = s3Config.getAccessKeySecret();
 
                 if (authenticationType == AuthenticationType.ACCESS_KEY) {
                     credentialsProvider = new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretAccessKey));
                     break;
                 }
 
-                final String sessionToken = getS3Config().getSessionToken();
+                final String sessionToken = s3Config.getSessionToken();
                 credentialsProvider = new AWSStaticCredentialsProvider(new BasicSessionCredentials(accessKey, secretAccessKey, sessionToken));
                 break;
             default:
@@ -127,8 +133,8 @@ public class S3Client {
         return credentialsProvider;
     }
 
-    public boolean doesBucketExist() {
-        final String bucketName = getS3Config().getBucketName();
+    public boolean existsBucket() {
+        final String bucketName = s3Config.getBucketName();
 
         try {
             return amazonS3.doesBucketExistV2(bucketName);
@@ -138,28 +144,28 @@ public class S3Client {
         }
     }
 
-    public void saveObject(@NotNull final String objectKey, @NotNull final String content) throws Exception {
+    public void saveObject(final @NotNull String objectKey, final @NotNull String content) throws IOException {
         final InputStream inputStream = new StringInputStream(content);
 
         final ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentLength(inputStream.available());
 
-        amazonS3.putObject(getS3Config().getBucketName(), objectKey, inputStream, objectMetadata);
+        amazonS3.putObject(s3Config.getBucketName(), objectKey, inputStream, objectMetadata);
     }
 
-    public void deleteObject(@NotNull final String objectKey) {
-        amazonS3.deleteObject(getS3Config().getBucketName(), objectKey);
+    public void deleteObject(final @NotNull String objectKey) {
+        amazonS3.deleteObject(s3Config.getBucketName(), objectKey);
     }
 
-    public S3Object getObject(@NotNull final String objectKey) {
-        return amazonS3.getObject(getS3Config().getBucketName(), objectKey);
+    public S3Object getObject(final @NotNull String objectKey) {
+        return amazonS3.getObject(s3Config.getBucketName(), objectKey);
     }
 
-    public ObjectListing getObjects(@NotNull final String filePrefix) {
-        return amazonS3.listObjects(getS3Config().getBucketName(), filePrefix);
+    public ObjectListing getObjects(final @NotNull String filePrefix) {
+        return amazonS3.listObjects(s3Config.getBucketName(), filePrefix);
     }
 
-    public ObjectListing getNextBatchOfObjects(@NotNull final ObjectListing objectListing) {
+    public ObjectListing getNextBatchOfObjects(final @NotNull ObjectListing objectListing) {
         return amazonS3.listNextBatchOfObjects(objectListing);
     }
 }
