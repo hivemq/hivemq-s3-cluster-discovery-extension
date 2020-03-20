@@ -21,7 +21,7 @@
 
     <groupId>com.hivemq.extension</groupId>
     <artifactId>hivemq-s3-cluster-discovery-extension</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
 
     <description>HiveMQ Extension for cluster discovery with S3 buckets</description>
 
