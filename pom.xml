@@ -30,7 +30,7 @@
 
         <!-- Dependency versions -->
         <hivemq-extension-sdk.version>4.0.0</hivemq-extension-sdk.version>
-        <aws-java-sdk-s3.version>1.11.461</aws-java-sdk-s3.version>
+        <aws-java-sdk-s3.version>1.12.261</aws-java-sdk-s3.version>
         <owner.version>1.0.10</owner.version>
 
         <!-- Test dependency versions -->
