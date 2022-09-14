@@ -35,7 +35,7 @@ import static com.hivemq.extensions.util.StringUtil.isNullOrBlank;
  */
 public class ConfigurationReader {
 
-    public static final String S3_CONFIG_FILE = "s3discovery.properties";
+    public static final String S3_CONFIG_FILE = "src/hivemq-extension/s3discovery.properties";
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationReader.class);
 
