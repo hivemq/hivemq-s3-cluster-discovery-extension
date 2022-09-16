@@ -5,7 +5,7 @@ plugins {
     id("org.asciidoctor.jvm.convert")
 }
 
-group = "com.hivemq.extensions" //TODO: Used to be extension
+group = "com.hivemq.extensions"
 description = "HiveMQ Extension for cluster discovery with S3 buckets"
 
 hivemqExtension {
@@ -18,7 +18,8 @@ hivemqExtension {
 
 dependencies {
     implementation("org.aeonbits.owner:owner:${property("owner.version")}")
-    implementation("software.amazon.awssdk:s3:${property("aws-s3.version")}")
+    implementation(platform("software.amazon.awssdk:bom:${property("aws-bom.version")}"))
+    implementation("software.amazon.awssdk:s3")
 }
 
 /* ******************** resources ******************** */
