@@ -16,7 +16,6 @@
 
 package com.hivemq.extensions.config;
 
-import com.amazonaws.services.s3.internal.Constants;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
 import org.aeonbits.owner.Config;
@@ -28,12 +27,10 @@ import org.aeonbits.owner.Config;
 public interface S3Config extends Config {
 
     @Key("s3-bucket-name")
-    @NotNull
-    String getBucketName();
+    @NotNull String getBucketName();
 
     @Key("s3-bucket-region")
-    @NotNull
-    String getBucketRegionName();
+    @NotNull String getBucketRegionName();
 
     @Key("file-prefix")
     @NotNull
@@ -41,39 +38,31 @@ public interface S3Config extends Config {
     String getFilePrefix();
 
     @Key("file-expiration")
-    @NotNull
-    Long getFileExpirationInSeconds();
+    @NotNull Long getFileExpirationInSeconds();
 
     @Key("update-interval")
-    @NotNull
-    Long getFileUpdateIntervalInSeconds();
+    @NotNull Long getFileUpdateIntervalInSeconds();
 
     @Key("s3-endpoint")
     @NotNull
-    @DefaultValue(Constants.S3_HOSTNAME)
+    @DefaultValue("s3.amazonaws.com")
     String getEndpoint();
 
     @Key("s3-endpoint-region")
-    @Nullable
-    String getEndpointRegionName();
+    @Nullable String getEndpointRegionName();
 
     @Key("s3-path-style-access")
-    @Nullable
-    Boolean getPathStyleAccess();
+    @Nullable Boolean getPathStyleAccess();
 
     @Key("credentials-type")
-    @NotNull
-    String getAuthenticationTypeName();
+    @NotNull String getAuthenticationTypeName();
 
     @Key("credentials-access-key-id")
-    @Nullable
-    String getAccessKeyId();
+    @Nullable String getAccessKeyId();
 
     @Key("credentials-secret-access-key")
-    @Nullable
-    String getAccessKeySecret();
+    @Nullable String getAccessKeySecret();
 
     @Key("credentials-session-token")
-    @Nullable
-    String getSessionToken();
+    @Nullable String getSessionToken();
 }
