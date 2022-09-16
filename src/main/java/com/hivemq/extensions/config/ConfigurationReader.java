@@ -16,15 +16,19 @@
 
 package com.hivemq.extensions.config;
 
-import com.amazonaws.regions.Regions;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.aeonbits.owner.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.regions.Region;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import static com.hivemq.extensions.util.StringUtil.isNullOrBlank;
@@ -35,9 +39,9 @@ import static com.hivemq.extensions.util.StringUtil.isNullOrBlank;
  */
 public class ConfigurationReader {
 
-    public static final String S3_CONFIG_FILE = "src/hivemq-extension/s3discovery.properties";
+    public static final @NotNull String S3_CONFIG_FILE = "src/hivemq-extension/s3discovery.properties";
 
-    private static final Logger logger = LoggerFactory.getLogger(ConfigurationReader.class);
+    private static final @NotNull Logger logger = LoggerFactory.getLogger(ConfigurationReader.class);
 
     private final @NotNull File extensionHomeFolder;
 
@@ -46,21 +50,23 @@ public class ConfigurationReader {
     }
 
     public @Nullable S3Config readConfiguration() {
-
         final File propertiesFile = new File(extensionHomeFolder, S3_CONFIG_FILE);
 
         if (!propertiesFile.exists()) {
-            logger.error("Could not find '{}'. Please verify that the properties file is located under '{}'.", S3_CONFIG_FILE, extensionHomeFolder);
+            logger.error("Could not find '{}'. Please verify that the properties file is located under '{}'.",
+                    S3_CONFIG_FILE,
+                    extensionHomeFolder);
             return null;
         }
 
         if (!propertiesFile.canRead()) {
-            logger.error("Could not read '{}'. Please verify that the user running HiveMQ has reading permissions for it.", propertiesFile.getAbsolutePath());
+            logger.error(
+                    "Could not read '{}'. Please verify that the user running HiveMQ has reading permissions for it.",
+                    propertiesFile.getAbsolutePath());
             return null;
         }
 
         try (final InputStream inputStream = new FileInputStream(propertiesFile)) {
-
             logger.debug("Reading properties file '{}'.", propertiesFile.getAbsolutePath());
             final Properties properties = new Properties();
             properties.load(inputStream);
@@ -78,12 +84,10 @@ public class ConfigurationReader {
         } catch (final IOException e) {
             logger.error("An error occurred while reading the properties file {}", propertiesFile.getAbsolutePath(), e);
         }
-
         return null;
     }
 
     private static boolean isValid(final @NotNull S3Config s3Config) {
-
         final String bucketName = s3Config.getBucketName();
         if (isNullOrBlank(bucketName)) {
             logger.error("S3 Discovery Extension - Bucket name is empty!");
@@ -97,7 +101,7 @@ public class ConfigurationReader {
         }
 
         try {
-            Regions.fromName(bucketRegionName);
+            Region.of(bucketRegionName);
         } catch (final IllegalArgumentException ignored) {
             logger.error("S3 Discovery Extension - Given bucket region is not a valid region!");
             return false;
@@ -117,8 +121,8 @@ public class ConfigurationReader {
             return false;
         }
 
-        if (authenticationType == AuthenticationType.ACCESS_KEY || authenticationType == AuthenticationType.TEMPORARY_SESSION) {
-
+        if (authenticationType == AuthenticationType.ACCESS_KEY ||
+                authenticationType == AuthenticationType.TEMPORARY_SESSION) {
             final String accessKeyId = s3Config.getAccessKeyId();
             if (isNullOrBlank(accessKeyId)) {
                 logger.error("S3 Discovery Extension - Access key id is empty!");
@@ -165,7 +169,6 @@ public class ConfigurationReader {
         }
 
         if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
-
             if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
                 logger.error("S3 Discovery Extension - File update interval is the same as the expiration interval!");
                 return false;
@@ -186,7 +189,6 @@ public class ConfigurationReader {
                 return false;
             }
         }
-
         return true;
     }
 }

@@ -23,7 +23,9 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddres
 import java.util.Base64;
 import java.util.regex.Pattern;
 
-import static com.hivemq.extensions.util.Preconditions.*;
+import static com.hivemq.extensions.util.Preconditions.checkArgument;
+import static com.hivemq.extensions.util.Preconditions.checkNotNull;
+import static com.hivemq.extensions.util.Preconditions.checkNotNullOrBlank;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -32,9 +34,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class ClusterNodeFile {
 
-    static final String CONTENT_VERSION = "4";
-    static final String CONTENT_SEPARATOR = "||||";
-    private static final Pattern CONTENT_SEPARATOR_PATTERN = Pattern.compile("\\|\\|\\|\\|");
+    public static final @NotNull String CONTENT_VERSION = "4";
+    public static final @NotNull String CONTENT_SEPARATOR = "||||";
+    private static final @NotNull Pattern CONTENT_SEPARATOR_PATTERN = Pattern.compile("\\|\\|\\|\\|");
 
     private final @NotNull String clusterId;
     private final @NotNull ClusterNodeAddress clusterNodeAddress;
@@ -48,9 +50,10 @@ public class ClusterNodeFile {
         creationTimeInMillis = System.currentTimeMillis();
     }
 
-    private ClusterNodeFile(final @NotNull String clusterId,
-                            final @NotNull ClusterNodeAddress clusterNodeAddress,
-                            final long creationTimeInMillis) {
+    private ClusterNodeFile(
+            final @NotNull String clusterId,
+            final @NotNull ClusterNodeAddress clusterNodeAddress,
+            final long creationTimeInMillis) {
 
         checkNotNullOrBlank(clusterId, "clusterId");
         checkNotNull(clusterNodeAddress, "clusterNodeAddress");
@@ -125,15 +128,16 @@ public class ClusterNodeFile {
     }
 
     @Override
-    public String toString() {
-
-        final String content =
-                CONTENT_VERSION + CONTENT_SEPARATOR
-                + creationTimeInMillis + CONTENT_SEPARATOR
-                + clusterId + CONTENT_SEPARATOR
-                + clusterNodeAddress.getHost() + CONTENT_SEPARATOR
-                + clusterNodeAddress.getPort();
-
+    public @NotNull String toString() {
+        final String content = CONTENT_VERSION +
+                CONTENT_SEPARATOR +
+                creationTimeInMillis +
+                CONTENT_SEPARATOR +
+                clusterId +
+                CONTENT_SEPARATOR +
+                clusterNodeAddress.getHost() +
+                CONTENT_SEPARATOR +
+                clusterNodeAddress.getPort();
         return new String(Base64.getEncoder().encode(content.getBytes(UTF_8)), UTF_8);
     }
 }

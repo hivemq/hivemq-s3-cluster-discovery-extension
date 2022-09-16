@@ -36,22 +36,22 @@ import org.slf4j.LoggerFactory;
  */
 public class S3DiscoveryExtensionMain implements ExtensionMain {
 
-    private static final Logger logger = LoggerFactory.getLogger(S3DiscoveryExtensionMain.class);
+    private static final @NotNull Logger logger = LoggerFactory.getLogger(S3DiscoveryExtensionMain.class);
 
     @Nullable S3DiscoveryCallback s3DiscoveryCallback;
 
     @Override
-    public void extensionStart(final @NotNull ExtensionStartInput extensionStartInput,
-                               final @NotNull ExtensionStartOutput extensionStartOutput) {
+    public void extensionStart(
+            final @NotNull ExtensionStartInput extensionStartInput,
+            final @NotNull ExtensionStartOutput extensionStartOutput) {
 
         try {
-            final ConfigurationReader configurationReader = new ConfigurationReader(extensionStartInput.getExtensionInformation());
-
+            final ConfigurationReader configurationReader =
+                    new ConfigurationReader(extensionStartInput.getExtensionInformation());
             s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
 
             Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
             logger.debug("Registered S3 discovery callback successfully.");
-
         } catch (final UnsupportedOperationException e) {
             extensionStartOutput.preventExtensionStartup(e.getMessage());
         } catch (final Exception e) {
@@ -61,8 +61,9 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
     }
 
     @Override
-    public void extensionStop(final @NotNull ExtensionStopInput extensionStopInput,
-                              final @NotNull ExtensionStopOutput extensionStopOutput) {
+    public void extensionStop(
+            final @NotNull ExtensionStopInput extensionStopInput,
+            final @NotNull ExtensionStopOutput extensionStopOutput) {
         if (s3DiscoveryCallback != null) {
             Services.clusterService().removeDiscoveryCallback(s3DiscoveryCallback);
         }

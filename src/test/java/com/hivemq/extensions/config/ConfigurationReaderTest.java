@@ -1,333 +1,331 @@
 package com.hivemq.extensions.config;
 
+import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
-import java.io.PrintWriter;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 
-public class ConfigurationReaderTest {
+class ConfigurationReaderTest {
 
-    @Mock
-    public ExtensionInformation extensionInformation;
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    private @NotNull ExtensionInformation extensionInformation;
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        Mockito.when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.getRoot());
+    @BeforeEach
+    void setUp(@TempDir final @NotNull File tempDir) {
+        extensionInformation = mock(ExtensionInformation.class);
+        Mockito.when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
     }
 
     @Test
-    public void test_readConfiguration_no_file() {
+    void test_readConfiguration_no_file() {
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_successful() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
+    void test_readConfiguration_successful() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_missing_bucket_name() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
-
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        assertNull(configurationReader.readConfiguration());
-    }
-
-    @Test
-    public void test_readConfiguration_missing_bucket_region() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
+    void test_readConfiguration_missing_bucket_name() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_invalid_bucket_region() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-123456");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
-
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        assertNull(configurationReader.readConfiguration());
-    }
-
-    @Test
-    public void test_readConfiguration_missing_credentials_type() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:");
-        }
+    void test_readConfiguration_missing_bucket_region() throws Exception {
+        final String configuration = "s3-bucket-region:\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_invalid_credentials_type() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default1234");
-        }
+    void test_readConfiguration_invalid_bucket_region() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-123456\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_credentials_type_access_key_successful() throws Exception {
+    void test_readConfiguration_missing_credentials_type() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:access_key");
-            printWriter.println("credentials-access-key-id:access-key-id");
-            printWriter.println("credentials-secret-access-key:secret-access-key");
-        }
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        assertNull(configurationReader.readConfiguration());
+    }
+
+    @Test
+    void test_readConfiguration_invalid_credentials_type() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default1234";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        assertNull(configurationReader.readConfiguration());
+    }
+
+    @Test
+    void test_readConfiguration_credentials_type_access_key_successful() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:access_key\n" +
+                "credentials-access-key-id:access-key-id\n" +
+                "credentials-secret-access-key:secret-access-key";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_credentials_type_access_key_missing_key() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:access_key");
-            printWriter.println("credentials-access-key-id:");
-            printWriter.println("credentials-secret-access-key:secret-access-key");
-        }
-
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        assertNull(configurationReader.readConfiguration());
-    }
-
-    @Test
-    public void test_readConfiguration_credentials_type_access_key_missing_secret() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:access_key");
-            printWriter.println("credentials-access-key-id:access-key-id");
-            printWriter.println("credentials-secret-access-key:");
-        }
+    void test_readConfiguration_credentials_type_access_key_missing_key() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:access_key\n" +
+                "credentials-access-key-id:\n" +
+                "credentials-secret-access-key:secret-access-key";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_credentials_type_temporary_session_successful() throws Exception {
+    void test_readConfiguration_credentials_type_access_key_missing_secret() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:access_key\n" +
+                "credentials-access-key-id:access-key-id\n" +
+                "credentials-secret-access-key:";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:temporary_session");
-            printWriter.println("credentials-access-key-id:access-key-id");
-            printWriter.println("credentials-secret-access-key:secret-access-key");
-            printWriter.println("credentials-session-token:session-token");
-        }
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        assertNull(configurationReader.readConfiguration());
+    }
+
+    @Test
+    void test_readConfiguration_credentials_type_temporary_session_successful() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:temporary_session\n" +
+                "credentials-access-key-id:access-key-id\n" +
+                "credentials-secret-access-key:secret-access-key\n" +
+                "credentials-session-token:session-token";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_credentials_type_temporary_session_missing_session_token() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:temporary_session");
-            printWriter.println("credentials-access-key-id:access-key-id");
-            printWriter.println("credentials-secret-access-key:secret-access-key");
-            printWriter.println("credentials-session-token:");
-        }
+    void test_readConfiguration_credentials_type_temporary_session_missing_session_token() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:temporary_session\n" +
+                "credentials-access-key-id:access-key-id\n" +
+                "credentials-secret-access-key:secret-access-key\n" +
+                "credentials-session-token:";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_both_intervals_zero_successful() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:0");
-            printWriter.println("update-interval:0");
-            printWriter.println("credentials-type:default");
-        }
+    void test_readConfiguration_both_intervals_zero_successful() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:0\n" +
+                "update-interval:0\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_both_intervals_same_value() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:180");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
-
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        assertNull(configurationReader.readConfiguration());
-    }
-
-    @Test
-    public void test_readConfiguration_update_interval_larger() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:150");
-            printWriter.println("update-interval:300");
-            printWriter.println("credentials-type:default");
-        }
+    void test_readConfiguration_both_intervals_same_value() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:180\n" +
+                "update-interval:180\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_update_deactivated() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:180");
-            printWriter.println("update-interval:0");
-            printWriter.println("credentials-type:default");
-        }
-
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        assertNull(configurationReader.readConfiguration());
-    }
-
-    @Test
-    public void test_readConfiguration_expiration_deactivated() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:0");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
+    void test_readConfiguration_update_interval_larger() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:150\n" +
+                "update-interval:300\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_missing_expiration() throws Exception {
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
+    void test_readConfiguration_update_deactivated() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:180\n" +
+                "update-interval:0\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
     }
 
     @Test
-    public void test_readConfiguration_missing_update() throws Exception {
+    void test_readConfiguration_expiration_deactivated() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:0\n" +
+                "update-interval:180\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:180");
-            printWriter.println("update-interval:");
-            printWriter.println("credentials-type:default");
-        }
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        assertNull(configurationReader.readConfiguration());
+    }
+
+    @Test
+    void test_readConfiguration_missing_expiration() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:\n" +
+                "update-interval:180\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        assertNull(configurationReader.readConfiguration());
+    }
+
+    @Test
+    void test_readConfiguration_missing_update() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());

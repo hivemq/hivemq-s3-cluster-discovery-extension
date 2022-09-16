@@ -1,334 +1,315 @@
 package com.hivemq.extensions.callbacks;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.extensions.aws.S3Client;
+import com.hivemq.extensions.aws.HiveMQS3Client;
 import com.hivemq.extensions.config.ClusterNodeFile;
-import com.hivemq.extensions.config.ClusterNodeFileTest;
 import com.hivemq.extensions.config.ConfigurationReader;
 import com.hivemq.extensions.config.S3Config;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import com.hivemq.extensions.util.ClusterNodeFileUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class S3DiscoveryCallbackTest {
+class S3DiscoveryCallbackTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
-    @Mock
-    public ExtensionInformation extensionInformation;
-    @Mock
-    public S3Client s3Client;
-    @Mock
-    AmazonS3 amazonS3;
-    @Mock
-    public ClusterDiscoveryInput clusterDiscoveryInput;
-    @Mock
-    public ClusterDiscoveryOutput clusterDiscoveryOutput;
+    private @NotNull ExtensionInformation extensionInformation;
+    private @NotNull ClusterDiscoveryInput clusterDiscoveryInput;
+    private @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput;
+    private @NotNull HiveMQS3Client hiveMQS3Client;
+    private @NotNull S3DiscoveryCallback s3DiscoveryCallback;
+    private @NotNull ConfigurationReader configurationReader;
 
-    private S3DiscoveryCallback s3DiscoveryCallback;
-    private ConfigurationReader configurationReader;
-    private S3Config s3Config;
-
-    @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-
+    @BeforeEach
+    void setUp(@TempDir final @NotNull File tempDir) throws Exception {
+        extensionInformation = mock(ExtensionInformation.class);
+        clusterDiscoveryInput = mock(ClusterDiscoveryInput.class);
+        clusterDiscoveryOutput = mock(ClusterDiscoveryOutput.class);
+        hiveMQS3Client = mock(HiveMQS3Client.class);
         when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
         when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
 
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(temporaryFolder.getRoot());
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq123456");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         configurationReader = new ConfigurationReader(extensionInformation);
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
-        s3Client.configurationReader = configurationReader;
-        s3DiscoveryCallback.s3Client = s3Client;
+        hiveMQS3Client.configurationReader = configurationReader;
+        s3DiscoveryCallback.hiveMQS3Client = hiveMQS3Client;
 
-        s3Client.configurationReader.readConfiguration();
-        s3Client.amazonS3 = amazonS3;
+        hiveMQS3Client.configurationReader.readConfiguration();
+        hiveMQS3Client.s3Client = mock(S3Client.class);
 
-        s3Config = configurationReader.readConfiguration();
-        when(s3Client.getS3Config()).thenReturn(s3Config);
-        when(s3Client.existsBucket()).thenReturn(true);
+        final S3Config s3Config = Objects.requireNonNull(configurationReader.readConfiguration());
+        when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
+        when(hiveMQS3Client.existsBucket()).thenReturn(true);
     }
 
     @Test
-    public void test_init_success() {
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtended());
-        when(s3Client.getObject(any())).thenReturn(createS3Object());
+    void test_init_success() {
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObject(any())).thenReturn(createS3Object());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_init_provide_current_nodes_exception_getting_node_files() {
-        doThrow(AmazonS3Exception.class).when(s3Client).getObjects(any());
+    void test_init_provide_current_nodes_exception_getting_node_files() {
+        doThrow(S3Exception.class).when(hiveMQS3Client).getObjects();
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
     @Test
-    public void test_init_provide_current_nodes_amazons3exception_getting_node_file() {
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtended());
-        doThrow(AmazonS3Exception.class).when(s3Client).getObject(any());
+    void test_init_provide_current_nodes_amazons3exception_getting_node_file() {
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        doThrow(S3Exception.class).when(hiveMQS3Client).getObject(any());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
     @Test
-    public void test_init_provide_current_nodes_exception_getting_node_file() {
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtended());
-        doThrow(Exception.class).when(s3Client).getObject(any());
+    void test_init_provide_current_nodes_exception_getting_node_file() {
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        doThrow(Exception.class).when(hiveMQS3Client).getObject(any());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
     @Test
-    public void test_init_provide_current_nodes_s3objectsummary_null() {
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtendedNullObjects());
+    void test_init_provide_current_nodes_s3objectsummary_null() {
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectNullList());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
     @Test
-    public void test_init_provide_current_nodes_expired_files() throws Exception {
-        deleteFilesInTemporaryFolder();
+    void test_init_provide_current_nodes_expired_files() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-2\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:2\n" +
+                "update-interval:1\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-2");
-            printWriter.println("s3-bucket-name:hivemq123456");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:2");
-            printWriter.println("update-interval:1");
-            printWriter.println("credentials-type:default");
-        }
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
-        when(s3Client.getS3Config()).thenReturn(s3Config);
-
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtended());
-        when(s3Client.getObject(any())).thenReturn(createS3Object());
+        when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObject(any())).thenReturn(createS3Object());
 
         // Wait for files to expire
         TimeUnit.SECONDS.sleep(2);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
     @Test
-    public void test_init_provide_current_nodes_truncated() {
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingTruncated());
-        when(s3Client.getObject(any())).thenReturn(createS3Object());
-        when(s3Client.getNextBatchOfObjects(any())).thenReturn(new ObjectListingNotTruncated());
+    void test_init_provide_current_nodes_truncated() {
+        when(hiveMQS3Client.getObject(any())).thenReturn(createS3Object());
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectListTruncated());
+        when(hiveMQS3Client.getNextBatchOfObjects(any())).thenReturn(extendedObjectListNotTruncated());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_init_provide_current_nodes_s3object_null() {
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtended());
-        when(s3Client.getObject(any())).thenReturn(null);
+    void test_init_provide_current_nodes_s3object_null() {
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObject(any())).thenReturn(null);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
     @Test
-    public void test_init_provide_current_nodes_s3object_content_blank() {
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtended());
-        when(s3Client.getObject(any())).thenReturn(createS3ObjectBlankContent());
+    void test_init_provide_current_nodes_s3object_content_blank() {
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObject(any())).thenReturn(createS3ObjectBlankContent());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
     @Test
-    public void test_init_provide_current_nodes_s3object_content_null() {
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtended());
-        when(s3Client.getObject(any())).thenReturn(createS3ObjectNullContent());
+    void test_init_provide_current_nodes_s3object_content_null() {
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObject(any())).thenReturn(createS3ObjectNullContent());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
     @Test
-    public void test_init_provide_current_nodes_parse_failed() {
-        when(s3Client.getObjects(any())).thenReturn(new ObjectListingExtended());
-        when(s3Client.getObject(any())).thenReturn(createS3ObjectInvalid());
+    void test_init_provide_current_nodes_parse_failed() {
+        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObject(any())).thenReturn(createS3ObjectInvalid());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
     @Test
-    public void test_init_save_own_file_failed() throws Exception {
-        doThrow(AmazonS3Exception.class).when(s3Client).saveObject(any(), any());
+    void test_init_save_own_file_failed() {
+        doThrow(S3Exception.class).when(hiveMQS3Client).saveObject(any(), any());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_init_bucket_does_not_exist() {
-
-        when(s3Client.existsBucket()).thenReturn(false);
+    void test_init_bucket_does_not_exist() {
+        when(hiveMQS3Client.existsBucket()).thenReturn(false);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_init_create_failed_config() {
-
-        doThrow(new IllegalStateException("Config is not valid.")).when(s3Client).createOrUpdate();
+    void test_init_create_failed_config() {
+        doThrow(new IllegalStateException("Config is not valid.")).when(hiveMQS3Client).createOrUpdate();
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client, never()).existsBucket();
-        verify(s3Client).createOrUpdate();
-
+        verify(hiveMQS3Client, never()).existsBucket();
+        verify(hiveMQS3Client).createOrUpdate();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_init_create_failed_by_amazons3() {
-
-        doThrow(new AmazonS3Exception("AmazonS3 couldn't be build.")).when(s3Client).createOrUpdate();
+    void test_init_create_failed_by_amazons3() {
+        doThrow(S3Exception.builder().message("AmazonS3 couldn't be build.").build()).when(hiveMQS3Client)
+                .createOrUpdate();
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client, never()).existsBucket();
-        verify(s3Client).createOrUpdate();
-
+        verify(hiveMQS3Client, never()).existsBucket();
+        verify(hiveMQS3Client).createOrUpdate();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_init_bucket_check_failed() {
-
-        when(s3Client.existsBucket()).thenReturn(false);
+    void test_init_bucket_check_failed() {
+        when(hiveMQS3Client.existsBucket()).thenReturn(false);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client).createOrUpdate();
-        verify(s3Client).existsBucket();
-
+        verify(hiveMQS3Client).createOrUpdate();
+        verify(hiveMQS3Client).existsBucket();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_init_config_invalid() throws Exception {
+    void test_init_config_invalid() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq1234\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
-        deleteFilesInTemporaryFolder();
-
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-1");
-            printWriter.println("s3-bucket-name:hivemq1234");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:360");
-            printWriter.println("update-interval:180");
-            printWriter.println("credentials-type:default");
-        }
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
-        when(s3Client.getS3Config()).thenReturn(s3Config);
-        doThrow(IllegalStateException.class).when(s3Client).createOrUpdate();
+        when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
+        doThrow(IllegalStateException.class).when(hiveMQS3Client).createOrUpdate();
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(s3Client, never()).existsBucket();
+        verify(hiveMQS3Client, never()).existsBucket();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_init_no_config() {
-        temporaryFolder.delete();
+    void test_init_no_config() {
+        assertTrue(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE)
+                .toFile()
+                .delete());
 
         s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -337,8 +318,7 @@ public class S3DiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_success_same_config() throws Exception {
-
+    void test_reload_success_same_config() {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -346,21 +326,21 @@ public class S3DiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_success_new_config() throws Exception {
+    void test_reload_success_new_config() throws Exception {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        deleteFilesInTemporaryFolder();
+        final String configuration = "s3-bucket-region:us-east-2\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:120\n" +
+                "update-interval:60\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-2");
-            printWriter.println("s3-bucket-name:hivemq123456");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:120");
-            printWriter.println("update-interval:60");
-            printWriter.println("credentials-type:default");
-        }
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
-        when(s3Client.getS3Config()).thenReturn(s3Config);
+        when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -368,215 +348,193 @@ public class S3DiscoveryCallbackTest {
     }
 
     @Test
-    public void test_reload_new_config_no_bucket_no_existing_client() throws Exception {
+    void test_reload_new_config_no_bucket_no_existing_client() throws Exception {
+        assertTrue(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE)
+                .toFile()
+                .delete());
 
-        temporaryFolder.delete();
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
-        deleteFilesInTemporaryFolder();
+        final String configuration = "s3-bucket-region:us-east-2\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:120\n" +
+                "update-interval:60\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-2");
-            printWriter.println("s3-bucket-name:hivemq123456");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:120");
-            printWriter.println("update-interval:60");
-            printWriter.println("credentials-type:default");
-        }
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
-        when(s3Client.getS3Config()).thenReturn(s3Config);
-        when(s3Client.existsBucket()).thenReturn(false);
+        when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
+        when(hiveMQS3Client.existsBucket()).thenReturn(false);
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
-
         verify(clusterDiscoveryOutput, times(1)).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_reload_config_missing_init_success() {
+    void test_reload_config_missing_init_success() {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        deleteFilesInTemporaryFolder();
+        assertTrue(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE)
+                .toFile()
+                .delete());
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
-
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_reload_config_still_missing() {
-        temporaryFolder.delete();
-        when(s3Client.getS3Config()).thenReturn(null);
-        doThrow(IllegalStateException.class).when(s3Client).createOrUpdate();
+    void test_reload_config_still_missing() {
+        assertTrue(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE)
+                .toFile()
+                .delete());
+        when(hiveMQS3Client.getS3Config()).thenReturn(null);
+        doThrow(IllegalStateException.class).when(hiveMQS3Client).createOrUpdate();
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
-
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_reload_file_expired() throws Exception {
-        deleteFilesInTemporaryFolder();
+    void test_reload_file_expired() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-2\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:5\n" +
+                "update-interval:1\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-2");
-            printWriter.println("s3-bucket-name:hivemq123456");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:5");
-            printWriter.println("update-interval:1");
-            printWriter.println("credentials-type:default");
-        }
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
-        when(s3Client.getS3Config()).thenReturn(s3Config);
-
+        when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         // Wait for file to expire
         TimeUnit.SECONDS.sleep(1);
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
-
-        verify(s3Client, times(2)).saveObject(any(), any());
+        verify(hiveMQS3Client, times(2)).saveObject(any(), any());
         verify(clusterDiscoveryOutput, times(2)).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_reload_file_exception() throws Exception {
-        deleteFilesInTemporaryFolder();
+    void test_reload_file_exception() throws Exception {
+        final String configuration = "s3-bucket-region:us-east-2\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:5\n" +
+                "update-interval:1\n" +
+                "credentials-type:default";
+        Files.writeString(extensionInformation.getExtensionHomeFolder()
+                .toPath()
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
-        try (final PrintWriter printWriter = new PrintWriter(temporaryFolder.newFile(ConfigurationReader.S3_CONFIG_FILE))) {
-            printWriter.println("s3-bucket-region:us-east-2");
-            printWriter.println("s3-bucket-name:hivemq123456");
-            printWriter.println("file-prefix:hivemq/cluster/nodes/");
-            printWriter.println("file-expiration:5");
-            printWriter.println("update-interval:1");
-            printWriter.println("credentials-type:default");
-        }
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
-        when(s3Client.getS3Config()).thenReturn(s3Config);
-
+        when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         // Wait for file to expire
         TimeUnit.SECONDS.sleep(1);
-        doThrow(AmazonS3Exception.class).when(s3Client).saveObject(any(), any());
+        doThrow(S3Exception.class).when(hiveMQS3Client).saveObject(any(), any());
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
-
-        verify(s3Client, times(2)).saveObject(any(), any());
+        verify(hiveMQS3Client, times(2)).saveObject(any(), any());
         verify(clusterDiscoveryOutput, times(1)).provideCurrentNodes(anyList());
     }
 
     @Test
-    public void test_destroy_success() {
+    void test_destroy_success() {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
         s3DiscoveryCallback.destroy(clusterDiscoveryInput);
 
-        verify(s3Client, times(1)).deleteObject(any());
+        verify(hiveMQS3Client, times(1)).deleteObject(any());
     }
 
     @Test
-    public void test_destroy_no_own_file() {
+    void test_destroy_no_own_file() {
         s3DiscoveryCallback.destroy(clusterDiscoveryInput);
-        verify(s3Client, never()).deleteObject(any());
+        verify(hiveMQS3Client, never()).deleteObject(any());
     }
 
     @Test
-    public void test_destroy_delete_own_file_failed() {
+    void test_destroy_delete_own_file_failed() {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        when(s3Client.getObject(any())).thenReturn(new S3Object());
+        when(hiveMQS3Client.getObject(any())).thenReturn(createS3Object());
 
-        doThrow(AmazonS3Exception.class).when(s3Client).deleteObject(any());
+        doThrow(S3Exception.class).when(hiveMQS3Client).deleteObject(any());
         s3DiscoveryCallback.destroy(clusterDiscoveryInput);
 
-        verify(s3Client, times(1)).deleteObject(any());
+        verify(hiveMQS3Client, times(1)).deleteObject(any());
     }
 
-    private void deleteFilesInTemporaryFolder() {
-        final String root = temporaryFolder.getRoot().getAbsolutePath();
-        // deletes also root folder
-        temporaryFolder.delete();
-        // restore root folder
-        new File(root).mkdir();
+    private @NotNull String createS3Object() {
+        final ClusterNodeFile clusterNodeFile =
+                new ClusterNodeFile("ABCD12", new ClusterNodeAddress("127.0.0.1", 1883));
+        return clusterNodeFile.toString();
     }
 
-    private S3Object createS3Object() {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile("ABCD12", new ClusterNodeAddress("127.0.0.1", 1883));
-        final InputStream inputStream = new ByteArrayInputStream(clusterNodeFile.toString().getBytes());
-
-        final S3Object s3Object = new S3Object();
-        s3Object.setObjectContent(inputStream);
-        return s3Object;
+    private @NotNull String createS3ObjectInvalid() {
+        return ClusterNodeFileUtil.createClusterNodeFileString("3", "3", "3", "3", "3");
     }
 
-    private S3Object createS3ObjectInvalid() {
-        final String clusterNodeFileString = ClusterNodeFileTest.createClusterNodeFileString("3", "3", "3", "3", "3");
-        final InputStream inputStream = new ByteArrayInputStream(clusterNodeFileString.getBytes());
-
-        final S3Object s3Object = new S3Object();
-        s3Object.setObjectContent(inputStream);
-        return s3Object;
+    private @NotNull String createS3ObjectBlankContent() {
+        return "  ";
     }
 
-    private S3Object createS3ObjectBlankContent() {
-        final InputStream inputStream = new ByteArrayInputStream("  ".getBytes());
-
-        final S3Object s3Object = new S3Object();
-        s3Object.setObjectContent(inputStream);
-        return s3Object;
-    }
-
-    private S3Object createS3ObjectNullContent() {
+    private @Nullable String createS3ObjectNullContent() {
         return null;
     }
 
-    private S3ObjectSummary createS3ObjectSummary() {
-        final S3ObjectSummary s3ObjectSummary = new S3ObjectSummary();
-        s3ObjectSummary.setKey("ABCD12");
-        return s3ObjectSummary;
+    private @NotNull ListObjectsV2Response extendedObjectList() {
+        final ListObjectsV2Response listObjectsV2Response = mock(ListObjectsV2Response.class);
+        final S3Object s3Object = mock(S3Object.class);
+        when(s3Object.key()).thenReturn("ABCD12");
+        final List<S3Object> objects = new ArrayList<>();
+        objects.add(s3Object);
+        when(listObjectsV2Response.contents()).thenReturn(objects);
+        return listObjectsV2Response;
     }
 
-    private List<S3ObjectSummary> createObjectListing() {
-        final List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
-        s3ObjectSummaries.add(createS3ObjectSummary());
-        return s3ObjectSummaries;
+    private @NotNull ListObjectsV2Response extendedObjectNullList() {
+        final ListObjectsV2Response listObjectsV2Response = mock(ListObjectsV2Response.class);
+        final List<S3Object> objects = new ArrayList<>();
+        objects.add(null);
+        objects.add(null);
+        when(listObjectsV2Response.contents()).thenReturn(objects);
+        return listObjectsV2Response;
     }
 
-    class ObjectListingExtended extends ObjectListing {
-        @Override
-        public List<S3ObjectSummary> getObjectSummaries() {
-            return createObjectListing();
-        }
+    private @NotNull ListObjectsV2Response extendedObjectListTruncated() {
+        final ListObjectsV2Response listObjectsV2Response = mock(ListObjectsV2Response.class);
+        final S3Object s3Object = mock(S3Object.class);
+        when(s3Object.key()).thenReturn("ABCD12");
+        final List<S3Object> objects = new ArrayList<>();
+        objects.add(s3Object);
+        when(listObjectsV2Response.contents()).thenReturn(objects);
+        when(listObjectsV2Response.isTruncated()).thenReturn(true);
+        return listObjectsV2Response;
     }
 
-    class ObjectListingExtendedNullObjects extends ObjectListing {
-        @Override
-        public List<S3ObjectSummary> getObjectSummaries() {
-            final List<S3ObjectSummary> s3ObjectSummaries = new ArrayList<>();
-            s3ObjectSummaries.add(null);
-            s3ObjectSummaries.add(null);
-            return s3ObjectSummaries;
-        }
-    }
-
-    class ObjectListingTruncated extends ObjectListing {
-        @Override
-        public boolean isTruncated() {
-            return true;
-        }
-
-        @Override
-        public List<S3ObjectSummary> getObjectSummaries() {
-            return createObjectListing();
-        }
-    }
-
-    class ObjectListingNotTruncated extends ObjectListing {
-        @Override
-        public boolean isTruncated() {
-            return false;
-        }
+    private @NotNull ListObjectsV2Response extendedObjectListNotTruncated() {
+        final ListObjectsV2Response listObjectsV2Response = mock(ListObjectsV2Response.class);
+        final S3Object s3Object = mock(S3Object.class);
+        when(s3Object.key()).thenReturn("ABCD12");
+        final List<S3Object> objects = new ArrayList<>();
+        objects.add(s3Object);
+        when(listObjectsV2Response.contents()).thenReturn(objects);
+        when(listObjectsV2Response.isTruncated()).thenReturn(false);
+        return listObjectsV2Response;
     }
 }
