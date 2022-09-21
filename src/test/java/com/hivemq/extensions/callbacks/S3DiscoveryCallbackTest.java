@@ -97,8 +97,8 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_success() {
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
-        when(hiveMQS3Client.getObject(any())).thenReturn(createS3Object());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
+        when(hiveMQS3Client.getObject(any())).then(ignored -> createS3Object());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -120,7 +120,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_amazons3exception_getting_node_file() {
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
         doThrow(S3Exception.class).when(hiveMQS3Client).getObject(any());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -132,8 +132,8 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_exception_getting_node_file() {
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
-        doThrow(Exception.class).when(hiveMQS3Client).getObject(any());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
+        doThrow(S3Exception.class).when(hiveMQS3Client).getObject(any());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -144,7 +144,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_s3objectsummary_null() {
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectNullList());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectNullList());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -163,12 +163,15 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
-        when(hiveMQS3Client.getObject(any())).thenReturn(createS3Object());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
+        //Object needs to be created prior the sleep as it adds the current timestamp to the ClusterNodeFile.
+        //Therefore, then(...) cannot be used as it would create the object on execution.
+        final String object = createS3Object();
+        when(hiveMQS3Client.getObject(any())).thenReturn(object);
 
         // Wait for files to expire
         TimeUnit.SECONDS.sleep(2);
@@ -182,9 +185,9 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_truncated() {
-        when(hiveMQS3Client.getObject(any())).thenReturn(createS3Object());
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectListTruncated());
-        when(hiveMQS3Client.getNextBatchOfObjects(any())).thenReturn(extendedObjectListNotTruncated());
+        when(hiveMQS3Client.getObject(any())).then(ignored -> createS3Object());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectListTruncated());
+        when(hiveMQS3Client.getNextBatchOfObjects(any())).then(ignored -> extendedObjectListNotTruncated());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -195,7 +198,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_s3object_null() {
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
         when(hiveMQS3Client.getObject(any())).thenReturn(null);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -207,7 +210,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_s3object_content_blank() {
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
         when(hiveMQS3Client.getObject(any())).thenReturn(createS3ObjectBlankContent());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -219,7 +222,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_s3object_content_null() {
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
         when(hiveMQS3Client.getObject(any())).thenReturn(createS3ObjectNullContent());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -231,7 +234,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_parse_failed() {
-        when(hiveMQS3Client.getObjects()).thenReturn(extendedObjectList());
+        when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
         when(hiveMQS3Client.getObject(any())).thenReturn(createS3ObjectInvalid());
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -307,7 +310,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -353,7 +356,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -380,7 +383,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -428,7 +431,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -452,7 +455,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -487,7 +490,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        when(hiveMQS3Client.getObject(any())).thenReturn(createS3Object());
+        when(hiveMQS3Client.getObject(any())).then(ignored -> createS3Object());
 
         doThrow(S3Exception.class).when(hiveMQS3Client).deleteObject(any());
         s3DiscoveryCallback.destroy(clusterDiscoveryInput);
