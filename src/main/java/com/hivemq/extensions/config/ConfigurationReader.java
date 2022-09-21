@@ -39,7 +39,7 @@ import static com.hivemq.extensions.util.StringUtil.isNullOrBlank;
  */
 public class ConfigurationReader {
 
-    public static final @NotNull String S3_CONFIG_FILE = "src/hivemq-extension/s3discovery.properties";
+    public static final @NotNull String S3_CONFIG_FILE = "s3discovery.properties";
 
     private static final @NotNull Logger logger = LoggerFactory.getLogger(ConfigurationReader.class);
 
@@ -100,9 +100,7 @@ public class ConfigurationReader {
             return false;
         }
 
-        try {
-            Region.of(bucketRegionName);
-        } catch (final IllegalArgumentException ignored) {
+        if (!Region.regions().stream().anyMatch(region -> region.id().equals(bucketRegionName))) {
             logger.error("S3 Discovery Extension - Given bucket region is not a valid region!");
             return false;
         }
