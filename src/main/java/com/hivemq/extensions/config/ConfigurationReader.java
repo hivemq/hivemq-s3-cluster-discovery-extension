@@ -100,7 +100,7 @@ public class ConfigurationReader {
             return false;
         }
 
-        if (!Region.regions().stream().anyMatch(region -> region.id().equals(bucketRegionName))) {
+        if (Region.regions().stream().noneMatch(region -> region.id().equals(bucketRegionName))) {
             logger.error("S3 Discovery Extension - Given bucket region is not a valid region!");
             return false;
         }

@@ -186,7 +186,7 @@ credentials-session-token:<your-session_token>
 
 === First Steps
 
-* Create a S3 bucket with the configured name.
+* Create an S3 bucket with the configured name.
 * Verify that the given authentication can access the S3 bucket.
 * Start HiveMQ which will start discover other nodes via S3.
 

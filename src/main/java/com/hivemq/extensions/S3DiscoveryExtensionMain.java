@@ -26,6 +26,8 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extensions.callbacks.S3DiscoveryCallback;
 import com.hivemq.extensions.config.ConfigurationReader;
+import com.hivemq.extensions.logging.ExtensionLogging;
+import com.hivemq.extensions.metrics.ExtensionMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,17 +40,19 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
 
     private static final @NotNull Logger logger = LoggerFactory.getLogger(S3DiscoveryExtensionMain.class);
 
+    private final @NotNull ExtensionLogging extensionLogging = new ExtensionLogging();
+    private final @NotNull ExtensionMetrics extensionMetrics = new ExtensionMetrics(Services.metricRegistry());
     @Nullable S3DiscoveryCallback s3DiscoveryCallback;
 
     @Override
     public void extensionStart(
             final @NotNull ExtensionStartInput extensionStartInput,
             final @NotNull ExtensionStartOutput extensionStartOutput) {
-
         try {
+            extensionLogging.start();
             final ConfigurationReader configurationReader =
                     new ConfigurationReader(extensionStartInput.getExtensionInformation());
-            s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
+            s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader, extensionMetrics);
 
             Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
             logger.debug("Registered S3 discovery callback successfully.");
@@ -67,5 +71,7 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
         if (s3DiscoveryCallback != null) {
             Services.clusterService().removeDiscoveryCallback(s3DiscoveryCallback);
         }
+        extensionLogging.stop();
+        extensionMetrics.stop();
     }
 }
