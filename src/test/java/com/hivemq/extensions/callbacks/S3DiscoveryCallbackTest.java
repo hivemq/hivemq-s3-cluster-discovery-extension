@@ -87,12 +87,12 @@ class S3DiscoveryCallbackTest {
                 .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         configurationReader = new ConfigurationReader(extensionInformation);
-        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+        hiveMQS3Client = mock(HiveMQS3Client.class);
         hiveMQS3Client.setS3Client(mock(S3Client.class));
-        s3DiscoveryCallback = new S3DiscoveryCallback(hiveMQS3Client, extensionMetrics);
-
         final S3Config s3Config = configurationReader.readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
+
+        s3DiscoveryCallback = new S3DiscoveryCallback(hiveMQS3Client, extensionMetrics);
         when(hiveMQS3Client.existsBucket()).thenReturn(true);
     }
 
