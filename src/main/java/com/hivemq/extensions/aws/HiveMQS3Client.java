@@ -190,7 +190,7 @@ public class HiveMQS3Client {
         this.s3Client = s3Client;
     }
 
-    public @Nullable S3Client getS3Client() {
+    @Nullable S3Client getS3Client() {
         return s3Client;
     }
 
