@@ -64,7 +64,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class S3ClientTest {
+public class HiveMQS3ClientTest {
 
     private @NotNull ExtensionInformation extensionInformation;
     private @NotNull HiveMQS3Client hiveMQS3Client;
@@ -92,20 +92,21 @@ public class S3ClientTest {
     public void test_create_successful() {
         hiveMQS3Client.createOrUpdate();
         assertNotNull(hiveMQS3Client.getS3Config());
-        assertNotNull(hiveMQS3Client.s3Client);
+        assertNotNull(hiveMQS3Client.getS3Client());
     }
 
     @Test
     public void test_bucket_exists() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         final HeadBucketResponse headBucketResponse = mock(HeadBucketResponse.class);
         final SdkHttpResponse sdkHttpResponse = mock(SdkHttpResponse.class);
         when(headBucketResponse.sdkHttpResponse()).thenReturn(sdkHttpResponse);
         when(sdkHttpResponse.isSuccessful()).thenReturn(true);
-        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenReturn(headBucketResponse);
+        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenReturn(
+                headBucketResponse);
         final boolean bucketExist = hiveMQS3Client.existsBucket();
 
         assertTrue(bucketExist);
@@ -115,7 +116,7 @@ public class S3ClientTest {
     public void test_bucket_not_exists() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenThrow(S3Exception.builder()
                 .message("Bucket not found!")
@@ -221,8 +222,7 @@ public class S3ClientTest {
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
-        assertThrows(IllegalStateException.class,
-                () -> hiveMQS3Client.createOrUpdate());
+        assertThrows(IllegalStateException.class, () -> hiveMQS3Client.createOrUpdate());
     }
 
     @Test
@@ -290,7 +290,7 @@ public class S3ClientTest {
     public void test_saveObject_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.putObject(ArgumentMatchers.<Consumer<PutObjectRequest.Builder>>any(),
                 any(RequestBody.class))).thenReturn(PutObjectResponse.builder().build());
@@ -317,7 +317,7 @@ public class S3ClientTest {
     public void test_getObject_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.getObjectAsBytes(ArgumentMatchers.<Consumer<GetObjectRequest.Builder>>any())).thenReturn(
                 ResponseBytes.fromByteArray(mock(GetObjectResponse.class), "Test".getBytes(StandardCharsets.UTF_8)));
@@ -329,7 +329,7 @@ public class S3ClientTest {
     public void test_getObject_objectkey_null() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.getObjectAsBytes(ArgumentMatchers.<Consumer<GetObjectRequest.Builder>>any())).thenThrow(
                 IllegalArgumentException.class);
@@ -340,7 +340,7 @@ public class S3ClientTest {
     public void test_deleteObject_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.deleteObject(ArgumentMatchers.<Consumer<DeleteObjectRequest.Builder>>any())).thenReturn(mock(
                 DeleteObjectResponse.class));
@@ -351,7 +351,7 @@ public class S3ClientTest {
     public void test_deleteObject_objectkey_null() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         doThrow(IllegalArgumentException.class).when(s3Client)
                 .deleteObject(ArgumentMatchers.<Consumer<DeleteObjectRequest.Builder>>any());
@@ -362,7 +362,7 @@ public class S3ClientTest {
     public void test_listObjects_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenReturn(mock(
                 ListObjectsV2Response.class));
@@ -374,7 +374,7 @@ public class S3ClientTest {
     public void test_listObjects_fileprefix_null() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenThrow(
                 IllegalArgumentException.class);
@@ -385,7 +385,7 @@ public class S3ClientTest {
     public void test_listNextBatchOfObjects_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenReturn(mock(
                 ListObjectsV2Response.class));
@@ -397,7 +397,7 @@ public class S3ClientTest {
     public void test_listNextBatchOfObjects_objectlisting_null() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
-        hiveMQS3Client.s3Client = s3Client;
+        hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenThrow(
                 IllegalArgumentException.class);

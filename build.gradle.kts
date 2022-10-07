@@ -1,3 +1,5 @@
+import java.net.URL
+
 plugins {
     id("com.hivemq.extension")
     id("com.github.hierynomus.license")
@@ -17,6 +19,7 @@ hivemqExtension {
 }
 
 dependencies {
+    hivemqProvided("ch.qos.logback:logback-classic:${property("logback.version")}")
     implementation("org.aeonbits.owner:owner:${property("owner.version")}")
     implementation(platform("software.amazon.awssdk:bom:${property("aws-bom.version")}"))
     implementation("software.amazon.awssdk:s3")
@@ -46,11 +49,46 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
     testImplementation("org.mockito:mockito-junit-jupiter:${property("mockito.version")}")
-    testRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
+    //testRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
 }
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+/* ******************** integration test ******************** */
+
+dependencies {
+    //necessary as the localstack s3 service would not start without the old sdk
+    integrationTestImplementation("com.amazonaws:aws-java-sdk-s3:${property("aws-legacy-sdk.version")}")
+    integrationTestImplementation("com.squareup.okhttp3:okhttp:${property("ok-http.version")}")
+    integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${property("testcontainers.version")}"))
+    integrationTestImplementation("org.testcontainers:testcontainers")
+    integrationTestImplementation("org.testcontainers:junit-jupiter")
+    integrationTestImplementation("org.testcontainers:localstack")
+    integrationTestImplementation("org.testcontainers:hivemq")
+}
+
+tasks.integrationTest {
+    dependsOn(unzipPrometheusExtension)
+    classpath += project.objects.fileCollection().from(unzipPrometheusExtension.get().outputs.files.singleFile)
+}
+
+val downloadPrometheusExtension by tasks.registering {
+    val prometheusExtension =
+        "https://github.com/hivemq/hivemq-prometheus-extension/releases/download/4.0.6/hivemq-prometheus-extension-4.0.6.zip"
+    val zipFile = File(temporaryDir, "hivemq-prometheus-extension.zip")
+    doLast {
+        URL(prometheusExtension).openStream().use { input ->
+            zipFile.outputStream().use { output -> input.copyTo(output) }
+        }
+    }
+    outputs.file(zipFile)
+}
+
+val unzipPrometheusExtension by tasks.registering(Sync::class) {
+    from(downloadPrometheusExtension.map { zipTree(it.outputs.files.singleFile) })
+    into({ temporaryDir })
 }
 
 /* ******************** checks ******************** */

@@ -16,6 +16,7 @@
 
 package com.hivemq.extensions.callbacks;
 
+import com.codahale.metrics.Counter;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
@@ -26,6 +27,7 @@ import com.hivemq.extensions.aws.HiveMQS3Client;
 import com.hivemq.extensions.config.ClusterNodeFile;
 import com.hivemq.extensions.config.ConfigurationReader;
 import com.hivemq.extensions.config.S3Config;
+import com.hivemq.extensions.metrics.ExtensionMetrics;
 import com.hivemq.extensions.util.ClusterNodeFileUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +42,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -61,16 +62,19 @@ class S3DiscoveryCallbackTest {
     private @NotNull HiveMQS3Client hiveMQS3Client;
     private @NotNull S3DiscoveryCallback s3DiscoveryCallback;
     private @NotNull ConfigurationReader configurationReader;
+    private @NotNull ExtensionMetrics extensionMetrics;
 
     @BeforeEach
     void setUp(@TempDir final @NotNull File tempDir) throws Exception {
         extensionInformation = mock(ExtensionInformation.class);
         clusterDiscoveryInput = mock(ClusterDiscoveryInput.class);
         clusterDiscoveryOutput = mock(ClusterDiscoveryOutput.class);
-        hiveMQS3Client = mock(HiveMQS3Client.class);
+        extensionMetrics = mock(ExtensionMetrics.class);
         when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
         when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
+        when(extensionMetrics.getResolutionRequestCounter()).thenReturn(mock(Counter.class));
+        when(extensionMetrics.getResolutionRequestFailedCounter()).thenReturn(mock(Counter.class));
 
         final String configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
@@ -83,14 +87,11 @@ class S3DiscoveryCallbackTest {
                 .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
 
         configurationReader = new ConfigurationReader(extensionInformation);
-        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
-        hiveMQS3Client.configurationReader = configurationReader;
-        s3DiscoveryCallback.hiveMQS3Client = hiveMQS3Client;
+        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+        hiveMQS3Client.setS3Client(mock(S3Client.class));
+        s3DiscoveryCallback = new S3DiscoveryCallback(hiveMQS3Client, extensionMetrics);
 
-        hiveMQS3Client.configurationReader.readConfiguration();
-        hiveMQS3Client.s3Client = mock(S3Client.class);
-
-        final S3Config s3Config = Objects.requireNonNull(configurationReader.readConfiguration());
+        final S3Config s3Config = configurationReader.readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
         when(hiveMQS3Client.existsBucket()).thenReturn(true);
     }
@@ -330,7 +331,7 @@ class S3DiscoveryCallbackTest {
                 .toFile()
                 .delete());
 
-        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader);
+        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader, extensionMetrics);
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());

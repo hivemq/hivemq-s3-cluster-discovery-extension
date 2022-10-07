@@ -49,14 +49,12 @@ import java.util.Objects;
 public class HiveMQS3Client {
 
     private static final @NotNull Logger logger = LoggerFactory.getLogger(HiveMQS3Client.class);
-
     private static final @NotNull String S3_HOSTNAME = "s3.amazonaws.com";
 
-    public @NotNull ConfigurationReader configurationReader;
+    private final @NotNull ConfigurationReader configurationReader;
 
     private @Nullable S3Config s3Config;
-
-    public @Nullable S3Client s3Client;
+    private @Nullable S3Client s3Client;
 
     public HiveMQS3Client(final @NotNull ConfigurationReader configurationReader) {
         this.configurationReader = configurationReader;
@@ -69,36 +67,30 @@ public class HiveMQS3Client {
         }
         s3Config = newS3Config;
         logger.trace("Loaded configuration successfully.");
-
         final AuthenticationType authenticationType = AuthenticationType.fromName(s3Config.getAuthenticationTypeName());
         final AwsCredentialsProvider credentialsProvider = getAwsCredentials(authenticationType);
 
         final S3ClientBuilder s3ClientBuilder = S3Client.builder();
-        if (s3Config.getEndpoint().contentEquals(S3_HOSTNAME)) {
+        if (s3Config.getEndpoint().equals(S3_HOSTNAME)) {
             final Region region = Region.of(s3Config.getBucketRegionName());
             s3ClientBuilder.region(region);
         } else {
+            s3ClientBuilder.endpointOverride(URI.create(s3Config.getEndpoint()));
             if (s3Config.getEndpointRegionName() != null) {
                 final Region region = Region.of(s3Config.getEndpointRegionName());
                 s3ClientBuilder.region(region);
             }
-            s3ClientBuilder.endpointOverride(URI.create(s3Config.getEndpoint()));
         }
 
         final S3Configuration.Builder s3ConfigurationBuilder = S3Configuration.builder();
         if (s3Config.getPathStyleAccess() != null) {
             s3ConfigurationBuilder.pathStyleAccessEnabled(s3Config.getPathStyleAccess());
         }
-
         s3Client = s3ClientBuilder.credentialsProvider(credentialsProvider)
                 .serviceConfiguration(s3ConfigurationBuilder.build())
                 .build();
-
-        logger.trace("Created AmazonS3 Client successfully.");
-    }
-
-    public @Nullable S3Config getS3Config() {
-        return s3Config;
+        System.out.println(credentialsProvider.resolveCredentials());
+        logger.trace("Created AmazonS3 client successfully.");
     }
 
     @NotNull AwsCredentialsProvider getAwsCredentials(final @NotNull AuthenticationType authenticationType) {
@@ -192,5 +184,17 @@ public class HiveMQS3Client {
                         .prefix(s3Config.getFilePrefix())
                         .continuationToken(continuationToken)
                         .build());
+    }
+
+    public void setS3Client(final @NotNull S3Client s3Client) {
+        this.s3Client = s3Client;
+    }
+
+    public @Nullable S3Client getS3Client() {
+        return s3Client;
+    }
+
+    public @Nullable S3Config getS3Config() {
+        return s3Config;
     }
 }
