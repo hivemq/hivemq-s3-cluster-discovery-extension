@@ -5,30 +5,29 @@
 :hivemq-cluster-discovery: https://www.hivemq.com/docs/latest/hivemq/cluster.html#discovery
 :hivemq-support: http://www.hivemq.com/support/
 
-== S3 Cluster Discovery Extension
+= S3 Cluster Discovery Extension
 
-*Extension Type*: Integration
+image:https://img.shields.io/badge/Extension_Type-Integration-orange?style=for-the-badge[Extension Type]
+image:https://img.shields.io/github/v/release/hivemq/hivemq-s3-cluster-discovery-extension?style=for-the-badge[GitHub release (latest by date),link=https://github.com/hivemq/hivemq-dns-cluster-discovery-extension/releases/latest]
+image:https://img.shields.io/github/license/hivemq/hivemq-s3-cluster-discovery-extension?style=for-the-badge&color=brightgreen[GitHub,link=LICENSE]
+image:https://img.shields.io/github/workflow/status/hivemq/hivemq-s3-cluster-discovery-extension/CI%20Check/master?style=for-the-badge[GitHub Workflow Status (branch),link=https://github.com/hivemq/hivemq-s3-cluster-discovery-extension/actions/workflows/check.yml?query=branch%3Amaster]
 
-*Version*: 4.0.2
-
-*License*: Apache License 2.0
-
-=== Purpose
+== Purpose
 
 This HiveMQ extension allows your HiveMQ cluster nodes to discover each other dynamically by regularly exchanging their information via S3 from Amazon Web Services (AWS).
 
 HiveMQ instances are added at runtime as soon as they become available by placing their information, on how to connect to them, to the configured bucket.
 The extension will regularly check the configured S3 bucket for files from other HiveMQ nodes.
-Additionally every broker updates its own file on a regular basis to prevent the file from expiring.
+Additionally, every broker updates its own file on a regular basis to prevent the file from expiring.
 
-=== Installation
+== Installation
 
 * Download the extension from the {hivemq-downloads}[HiveMQ website^].
 * Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
 * Modify the `s3discovery.properties` file for your needs.
 * Change the {hivemq-cluster-discovery}[discovery mechanism^] of HiveMQ to `extension`.
 
-=== Configuration
+== Configuration
 
 The information each node writes into the bucket consists of an ip-address and a port.
 The ip-address and port are taken from the `external-address` and `external-port` which is configured in the cluster `transport` (config.xml).
@@ -36,7 +35,7 @@ If they are not set, the `bind-address` and `bind-port` will be used.
 
 The `s3discovery.properties` can be reloaded during runtime.
 
-==== General Configuration
+=== General Configuration
 
 |===
 | Config name           | Required  | Description
@@ -61,12 +60,12 @@ update-interval:180
 credentials-type:default
 ----
 
-==== Authentication Configuration
+=== Authentication Configuration
 
 The extension uses AWS API operations for exchanging cluster information.
 These operations work with `Access Keys`, if you don't know what access keys are or how to generate them please look at the official {aws_credentials}[AWS documentation] about credentials.
 
-===== Default Authentication
+==== Default Authentication
 
 Default Authentication tries to access S3 via the default mechanisms in the following order:
 
@@ -81,7 +80,7 @@ Default Authentication tries to access S3 via the default mechanisms in the foll
 credentials-type:default
 ----
 
-===== Environment Variables Authentication
+==== Environment Variables Authentication
 
 Uses environment variables to specify your AWS credentials the following variables need to be set:
 
@@ -101,7 +100,7 @@ export AWS_SECRET_ACCESS_KEY=<your-secret-key>
 credentials-type:environment_variables
 ----
 
-===== Java System Property Authentication
+==== Java System Property Authentication
 
 Uses Java system properties to specify your AWS credentials the following Java system properties need to be set:
 
@@ -116,14 +115,14 @@ credentials-type:java_system_properties
 
 You can for example extend the `run.sh` or `run.bat` in order to start HiveMQ with the system properties:
 
-.Example for extendending `run.sh`
+.Example for extending `run.sh`
 [source]
 ----
 ############## VARIABLES
 JAVA_OPTS="$JAVA_OPTS -Daws.accessKeyId=<your-access-key> -Daws.secretKey=<your-secret-key>"
 ----
 
-===== User Credentials Authentication
+==== User Credentials Authentication
 
 Uses the credentials file which can be created by calling 'aws configure' (AWS CLI).
 This file is usually located at ~/.aws/credentials.
@@ -136,7 +135,7 @@ The location of the file can be configured by setting the environment variable `
 credentials-type:user_credentials_file
 ----
 
-===== Instance Profile Credentials Authentication
+==== Instance Profile Credentials Authentication
 
 Uses the IAM Roles assigned to the EC2 instance running HiveMQ to access S3.
 
@@ -148,7 +147,7 @@ WARNING: This only works if HiveMQ is running on an EC2 instance and your EC2 in
 credentials-type:instance_profile_credentials
 ----
 
-===== Access Key Authentication
+==== Access Key Authentication
 
 Uses the credentials specified in the `s3discovery.properties` file.
 
@@ -165,7 +164,7 @@ credentials-access-key-id:<your-access-key>
 credentials-secret-access-key:<your-secret_access_key>
 ----
 
-===== Secret Access Key Authentication
+==== Secret Access Key Authentication
 
 Uses the credentials specified in `s3discovery.properties` file to authenticate with a temporary session.
 
@@ -184,22 +183,41 @@ credentials-secret-access-key:<your-secret_access_key>
 credentials-session-token:<your-session_token>
 ----
 
-=== First Steps
+== Metrics
+
+The S3 cluster discovery extension delivers a set of metrics that can be used to monitor the behavior in a dashboard.
+
+The following metrics are available:
+
+These two counter metrics indicate a successful or failed S3 query attempt in order to receive the IP addresses of cluster members:
+
+----
+com.hivemq.dns-cluster-discovery-extension.query.success.count
+com.hivemq.dns-cluster-discovery-extension.query.failed.count
+----
+
+This gauge shows the number of currently found cluster member IP addresses that were received during the last S3 query:
+
+----
+com.hivemq.dns-cluster-discovery-extension.resolved-addresses
+----
+
+== First Steps
 
 * Create an S3 bucket with the configured name.
 * Verify that the given authentication can access the S3 bucket.
 * Start HiveMQ which will start discover other nodes via S3.
 
-==== Need help?
+== Need help?
 
 If you encounter any problems, we are happy to help.
 The best place to get in contact is our {hivemq-support}[support^].
 
-= Contributing
+== Contributing
 
 If you want to contribute to HiveMQ S3 Cluster Discovery Extension, see the link:CONTRIBUTING.md[contribution guidelines].
 
-= License
+== License
 
 HiveMQ S3 Cluster Discovery Extension is licensed under the `APACHE LICENSE, VERSION 2.0`.
-A copy of the license can be found link:LICENSE.txt[here].
+A copy of the license can be found link:LICENSE[here].
