@@ -22,6 +22,8 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
+import com.hivemq.extensions.logging.ExtensionLogging;
+import com.hivemq.extensions.metrics.ExtensionMetrics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -52,7 +54,7 @@ class S3DiscoveryExtensionMainTest {
         extensionInformation = mock(ExtensionInformation.class);
         when(extensionStartInput.getExtensionInformation()).thenReturn(extensionInformation);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
-        s3DiscoveryExtensionMain = new S3DiscoveryExtensionMain();
+        s3DiscoveryExtensionMain = new S3DiscoveryExtensionMain(mock(ExtensionLogging.class), mock(ExtensionMetrics.class));
     }
 
     @Test

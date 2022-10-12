@@ -40,9 +40,21 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
 
     private static final @NotNull Logger logger = LoggerFactory.getLogger(S3DiscoveryExtensionMain.class);
 
-    private final @NotNull ExtensionLogging extensionLogging = new ExtensionLogging();
-    private final @NotNull ExtensionMetrics extensionMetrics = new ExtensionMetrics(Services.metricRegistry());
+    private final @NotNull ExtensionLogging extensionLogging;
+    private final @NotNull ExtensionMetrics extensionMetrics;
     @Nullable S3DiscoveryCallback s3DiscoveryCallback;
+
+    @SuppressWarnings("unused")
+    public S3DiscoveryExtensionMain() {
+        this.extensionLogging = new ExtensionLogging();
+        this.extensionMetrics = new ExtensionMetrics(Services.metricRegistry());
+    }
+
+    S3DiscoveryExtensionMain(
+            final @NotNull ExtensionLogging extensionLogging, final @NotNull ExtensionMetrics extensionMetrics) {
+        this.extensionLogging = extensionLogging;
+        this.extensionMetrics = extensionMetrics;
+    }
 
     @Override
     public void extensionStart(
