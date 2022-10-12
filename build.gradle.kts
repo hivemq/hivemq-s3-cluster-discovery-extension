@@ -49,7 +49,6 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
     testImplementation("org.mockito:mockito-junit-jupiter:${property("mockito.version")}")
-    //testRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
 }
 
 tasks.withType<Test>().configureEach {
