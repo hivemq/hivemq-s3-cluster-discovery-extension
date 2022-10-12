@@ -94,4 +94,6 @@ val unzipPrometheusExtension by tasks.registering(Sync::class) {
 license {
     header = rootDir.resolve("HEADER")
     mapping("java", "SLASHSTAR_STYLE")
+    exclude("**/template-s3discovery.properties")
+    exclude("**/logback-test.xml")
 }
