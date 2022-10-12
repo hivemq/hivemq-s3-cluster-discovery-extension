@@ -43,12 +43,14 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import java.net.URI;
 import java.util.Objects;
 
+import static com.hivemq.extensions.ExtensionConstants.EXTENSION_NAME;
+
 /**
  * @since 4.0.0
  */
 public class HiveMQS3Client {
 
-    private static final @NotNull Logger logger = LoggerFactory.getLogger(HiveMQS3Client.class);
+    private static final @NotNull Logger LOG = LoggerFactory.getLogger(HiveMQS3Client.class);
     private static final @NotNull String S3_HOSTNAME = "s3.amazonaws.com";
 
     private final @NotNull ConfigurationReader configurationReader;
@@ -66,7 +68,7 @@ public class HiveMQS3Client {
             throw new IllegalStateException("Configuration of the S3 discovery extension couldn't be loaded.");
         }
         s3Config = newS3Config;
-        logger.trace("Loaded configuration successfully.");
+        LOG.trace("{}: Loaded configuration successfully.", EXTENSION_NAME);
         final AuthenticationType authenticationType = AuthenticationType.fromName(s3Config.getAuthenticationTypeName());
         final AwsCredentialsProvider credentialsProvider = getAwsCredentials(authenticationType);
 
@@ -90,7 +92,7 @@ public class HiveMQS3Client {
                 .serviceConfiguration(s3ConfigurationBuilder.build())
                 .build();
         System.out.println(credentialsProvider.resolveCredentials());
-        logger.trace("Created AmazonS3 client successfully.");
+        LOG.trace("{}: Created AmazonS3 client successfully.", EXTENSION_NAME);
     }
 
     @NotNull AwsCredentialsProvider getAwsCredentials(final @NotNull AuthenticationType authenticationType) {
@@ -142,8 +144,9 @@ public class HiveMQS3Client {
                     .sdkHttpResponse()
                     .isSuccessful();
         } catch (final S3Exception ignored) {
-            logger.trace(
-                    "Caught an exception from S3 Discovery extension while checking if bucket '{}' exists. Returning false.",
+            LOG.trace(
+                    "{}: Caught an exception from S3 Discovery extension while checking if bucket '{}' exists. Returning false.",
+                    EXTENSION_NAME,
                     bucketName);
             return false;
         }

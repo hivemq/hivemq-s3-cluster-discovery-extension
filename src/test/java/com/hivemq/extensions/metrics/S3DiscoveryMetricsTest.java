@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.hivemq.extensions.metrics;
 
 import com.codahale.metrics.Counter;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.hivemq.extensions.ExtensionConstants.EXTENSION_METRIC_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class S3DiscoveryMetricsTest {
@@ -43,7 +45,7 @@ class S3DiscoveryMetricsTest {
     void test_resolutionRequestCounter() {
         final Counter counter = metrics.getResolutionRequestCounter();
         counter.inc();
-        final String name = ExtensionMetrics.EXTENSION_METRIC_PREFIX + "." + "query.success.count";
+        final String name = EXTENSION_METRIC_PREFIX + "." + "query.success.count";
         final Counter counterFromRegistry = metricRegistry.counter(name);
         assertEquals(counter.getCount(), counterFromRegistry.getCount());
     }
@@ -52,7 +54,7 @@ class S3DiscoveryMetricsTest {
     void test_resolutionRequestCounterFailed() {
         final Counter counter = metrics.getResolutionRequestFailedCounter();
         counter.inc();
-        final String name = ExtensionMetrics.EXTENSION_METRIC_PREFIX + "." + "query.failed.count";
+        final String name = EXTENSION_METRIC_PREFIX + "." + "query.failed.count";
         final Counter counterFromRegistry = metricRegistry.counter(name);
         assertEquals(counter.getCount(), counterFromRegistry.getCount());
     }
@@ -66,7 +68,7 @@ class S3DiscoveryMetricsTest {
 
         metrics.registerAddressCountGauge(addressesCount::get);
 
-        final String name = ExtensionMetrics.EXTENSION_METRIC_PREFIX + "." + "resolved-addresses";
+        final String name = EXTENSION_METRIC_PREFIX + "." + "resolved-addresses";
         final Gauge<?> gauge = metricRegistry.getGauges().get(name);
 
         assertEquals(addresses.size(), gauge.getValue());

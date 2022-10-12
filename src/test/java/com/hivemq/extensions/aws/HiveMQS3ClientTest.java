@@ -55,6 +55,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.function.Consumer;
 
+import static com.hivemq.extensions.ExtensionConstants.EXTENSION_CONFIGURATION;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -82,7 +83,7 @@ public class HiveMQS3ClientTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+                .resolve(EXTENSION_CONFIGURATION), configuration, StandardOpenOption.CREATE_NEW);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -130,7 +131,7 @@ public class HiveMQS3ClientTest {
     public void test_create_no_config_file() {
         assertTrue(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE)
+                .resolve(EXTENSION_CONFIGURATION)
                 .toFile()
                 .delete());
 
@@ -144,7 +145,7 @@ public class HiveMQS3ClientTest {
         final String configuration = "s3-bucket-region:us-east-12345\n";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -197,7 +198,7 @@ public class HiveMQS3ClientTest {
                 "credentials-secret-access-key:secret-access-key";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -218,7 +219,7 @@ public class HiveMQS3ClientTest {
                 "credentials-access-key-id:access-key-id";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -236,7 +237,7 @@ public class HiveMQS3ClientTest {
                 "credentials-secret-access-key:secret-access-key";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -256,7 +257,7 @@ public class HiveMQS3ClientTest {
                 "credentials-session-token:session-token";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -279,7 +280,7 @@ public class HiveMQS3ClientTest {
                 "credentials-secret-access-key:secret-access-key";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);

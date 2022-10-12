@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 @Testcontainers
-public class S3DiscoveryIT {
+class S3DiscoveryIT {
 
     private static final @NotNull String BUCKET_NAME = "hivemq";
 
@@ -131,5 +131,4 @@ public class S3DiscoveryIT {
             s3.createBucket(builder -> builder.bucket(BUCKET_NAME).build());
         }
     }
-
 }

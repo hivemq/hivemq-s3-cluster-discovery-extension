@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.hivemq.extensions.metrics;
 
 import com.codahale.metrics.Counter;
@@ -20,14 +21,13 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 
+import static com.hivemq.extensions.ExtensionConstants.EXTENSION_METRIC_PREFIX;
+
 
 /**
  * @author Lukas Brand
  */
 public class ExtensionMetrics {
-
-    public final static @NotNull String EXTENSION_METRIC_PREFIX =
-            MetricRegistry.name("com", "hivemq", "extensions", "s3-cluster-discovery");
 
     private final @NotNull MetricRegistry metricRegistry;
     private final @NotNull Counter connectCounter;

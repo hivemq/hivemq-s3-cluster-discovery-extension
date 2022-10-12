@@ -31,6 +31,8 @@ import com.hivemq.extensions.metrics.ExtensionMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.hivemq.extensions.ExtensionConstants.EXTENSION_NAME;
+
 /**
  * @author Florian Limpöck
  * @author Abdullah Imal
@@ -38,7 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 public class S3DiscoveryExtensionMain implements ExtensionMain {
 
-    private static final @NotNull Logger logger = LoggerFactory.getLogger(S3DiscoveryExtensionMain.class);
+    private static final @NotNull Logger LOG = LoggerFactory.getLogger(S3DiscoveryExtensionMain.class);
 
     private final @NotNull ExtensionLogging extensionLogging;
     private final @NotNull ExtensionMetrics extensionMetrics;
@@ -46,8 +48,7 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
 
     @SuppressWarnings("unused")
     public S3DiscoveryExtensionMain() {
-        this.extensionLogging = new ExtensionLogging();
-        this.extensionMetrics = new ExtensionMetrics(Services.metricRegistry());
+        this(new ExtensionLogging(), new ExtensionMetrics(Services.metricRegistry()));
     }
 
     S3DiscoveryExtensionMain(
@@ -67,12 +68,12 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
             s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader, extensionMetrics);
 
             Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
-            logger.debug("Registered S3 discovery callback successfully.");
+            LOG.debug("{}: Registered S3 discovery callback successfully.", EXTENSION_NAME);
         } catch (final UnsupportedOperationException e) {
             extensionStartOutput.preventExtensionStartup(e.getMessage());
         } catch (final Exception e) {
-            logger.error("Not able to start S3 Discovery Extension.", e);
-            extensionStartOutput.preventExtensionStartup("Exception caught at extension start.");
+            LOG.error("{}: Exception thrown at extension start: ", EXTENSION_NAME, e);
+            extensionStartOutput.preventExtensionStartup("Exception thrown");
         }
     }
 
