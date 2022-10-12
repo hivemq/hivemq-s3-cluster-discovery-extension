@@ -28,10 +28,6 @@ import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -97,29 +93,5 @@ public class S3DiscoveryFailIT {
         assertEquals(0, metrics.get(SUCCESS_METRIC));
         assertEquals(1, metrics.get(FAILURE_METRIC));
         assertEquals(0, metrics.get(IP_COUNT_METRIC));
-    }
-
-    @Test
-    void wrong_credentials() throws IOException {
-        localstack.start();
-        createS3Environment();
-        //firstNode =
-        //        firstNode.withEnv("AWS_ACCESS_KEY_ID", "wrongAccess").withEnv("AWS_SECRET_ACCESS_KEY", "wrongSecret");
-        firstNode.start();
-        final Map<String, Float> metrics = TestS3Metrics.getInstance().getMetrics(firstNode);
-        assertEquals(0, metrics.get(SUCCESS_METRIC));
-        assertEquals(1, metrics.get(FAILURE_METRIC));
-        assertEquals(0, metrics.get(IP_COUNT_METRIC));
-    }
-
-    private void createS3Environment() {
-        try (final S3Client s3 = S3Client.builder()
-                .endpointOverride(localstack.getEndpointOverride(S3))
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(localstack.getAccessKey(),
-                        localstack.getSecretKey())))
-                .region(Region.of(localstack.getRegion()))
-                .build()) {
-            s3.createBucket(builder -> builder.bucket(BUCKET_NAME).build());
-        }
     }
 }
