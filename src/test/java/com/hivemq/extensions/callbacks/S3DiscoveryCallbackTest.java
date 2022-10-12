@@ -439,7 +439,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         // Wait for file to expire
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.MILLISECONDS.sleep(1500);
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
         verify(hiveMQS3Client, times(2)).saveObject(any(), any());
