@@ -54,11 +54,9 @@ public class ClusterNodeFile {
             final @NotNull String clusterId,
             final @NotNull ClusterNodeAddress clusterNodeAddress,
             final long creationTimeInMillis) {
-
         checkNotNullOrBlank(clusterId, "clusterId");
         checkNotNull(clusterNodeAddress, "clusterNodeAddress");
         checkArgument(creationTimeInMillis > 0, "CreationTimeInMillis must not be zero or negative!");
-
         this.clusterId = clusterId;
         this.clusterNodeAddress = clusterNodeAddress;
         this.creationTimeInMillis = creationTimeInMillis;

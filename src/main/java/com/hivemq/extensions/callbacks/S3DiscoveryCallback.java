@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.hivemq.extensions.ExtensionConstants.EXTENSION_NAME;
 import static com.hivemq.extensions.util.StringUtil.isNullOrBlank;
 
 /**
@@ -47,7 +48,7 @@ import static com.hivemq.extensions.util.StringUtil.isNullOrBlank;
  */
 public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
-    private static final @NotNull Logger logger = LoggerFactory.getLogger(S3DiscoveryCallback.class);
+    private static final @NotNull Logger LOG = LoggerFactory.getLogger(S3DiscoveryCallback.class);
 
     private final @NotNull HiveMQS3Client hiveMQS3Client;
     private final @NotNull ExtensionMetrics extensionMetrics;
@@ -76,14 +77,16 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             hiveMQS3Client.createOrUpdate();
         } catch (final Exception ignored) {
-            logger.error("Configuration of the S3 discovery extension couldn't be loaded. Skipping initial discovery.");
+            LOG.error("{}: Configuration couldn't be loaded. Skipping initial discovery.",
+                    EXTENSION_NAME);
             extensionMetrics.getResolutionRequestFailedCounter().inc();
             addressesCount.set(0);
             return;
         }
         try {
             if (!hiveMQS3Client.existsBucket()) {
-                logger.error("Configured bucket '{}' doesn't exist. Skipping initial discovery.",
+                LOG.error("{}: Configured bucket '{}' doesn't exist. Skipping initial discovery.",
+                        EXTENSION_NAME,
                         Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName());
                 extensionMetrics.getResolutionRequestFailedCounter().inc();
                 addressesCount.set(0);
@@ -92,7 +95,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception e) {
-            logger.error("Initialization of the S3 discovery callback failed.", e);
+            LOG.error("{}: Initialization of the S3 discovery callback failed.", EXTENSION_NAME, e);
             extensionMetrics.getResolutionRequestFailedCounter().inc();
             addressesCount.set(0);
         }
@@ -105,14 +108,16 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             hiveMQS3Client.createOrUpdate();
         } catch (final Exception ignored) {
-            logger.error("Configuration of the S3 discovery extension couldn't be reloaded. Skipping reload callback.");
+            LOG.error("{}: Configuration couldn't be reloaded. Skipping reload callback.",
+                    EXTENSION_NAME);
             extensionMetrics.getResolutionRequestFailedCounter().inc();
             addressesCount.set(0);
             return;
         }
         try {
             if (!hiveMQS3Client.existsBucket()) {
-                logger.error("Configured bucket '{}' doesn't exist. Skipping reload callback.",
+                LOG.error("{}: Configured bucket '{}' doesn't exist. Skipping reload callback.",
+                        EXTENSION_NAME,
                         Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName());
                 extensionMetrics.getResolutionRequestFailedCounter().inc();
                 addressesCount.set(0);
@@ -126,7 +131,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             }
             clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception e) {
-            logger.error("Reload of the S3 discovery callback failed.", e);
+            LOG.error("{}: Reload of the S3 discovery callback failed.", EXTENSION_NAME, e);
             extensionMetrics.getResolutionRequestFailedCounter().inc();
             addressesCount.set(0);
         }
@@ -139,7 +144,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                 deleteOwnFile(clusterDiscoveryInput.getOwnClusterId());
             }
         } catch (final Exception e) {
-            logger.error("Destroy of the S3 discovery callback failed.", e);
+            LOG.error("{}: Destroy of the S3 discovery callback failed.", EXTENSION_NAME, e);
         }
     }
 
@@ -151,7 +156,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         hiveMQS3Client.saveObject(objectKey, newNodeFile.toString());
         ownNodeFile = newNodeFile;
 
-        logger.debug("Updated own S3 file '{}'.", objectKey);
+        LOG.debug("{}: Updated own S3 file '{}'.", EXTENSION_NAME, objectKey);
     }
 
     private void deleteOwnFile(final @NotNull String ownClusterId) {
@@ -160,7 +165,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         hiveMQS3Client.deleteObject(objectKey);
         ownNodeFile = null;
 
-        logger.debug("Removed own S3 file '{}'.", objectKey);
+        LOG.debug("{}: Removed own S3 file '{}'.", EXTENSION_NAME, objectKey);
     }
 
     private @NotNull List<ClusterNodeAddress> getNodeAddresses() {
@@ -170,7 +175,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             nodeFiles = getNodeFiles();
         } catch (final Exception e) {
-            logger.error("Unknown error while reading all node files.", e);
+            LOG.error("{}: Unknown error while reading all node files.", EXTENSION_NAME, e);
             extensionMetrics.getResolutionRequestFailedCounter().inc();
             addressesCount.set(0);
             return nodeAddresses;
@@ -178,7 +183,8 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
         for (final ClusterNodeFile nodeFile : nodeFiles) {
             if (nodeFile.isExpired(Objects.requireNonNull(hiveMQS3Client.getS3Config()).getFileExpirationInSeconds())) {
-                logger.debug("S3 file of node with clusterId {} is expired. File will be deleted.",
+                LOG.debug("{}: S3 file of node with clusterId {} is expired. File will be deleted.",
+                        EXTENSION_NAME,
                         nodeFile.getClusterId());
 
                 final String objectKey = hiveMQS3Client.getS3Config().getFilePrefix() + nodeFile.getClusterId();
@@ -187,7 +193,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                 nodeAddresses.add(nodeFile.getClusterNodeAddress());
             }
         }
-        logger.debug("Found following node addresses with the S3 extension: {}", nodeAddresses);
+        LOG.debug("{}: Found following node addresses: {}", EXTENSION_NAME, nodeAddresses);
         extensionMetrics.getResolutionRequestCounter().inc();
         addressesCount.set(nodeAddresses.size());
         return nodeAddresses;
@@ -209,12 +215,14 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                         clusterNodeFiles.add(nodeFile);
                     }
                 } catch (final S3Exception e) {
-                    logger.error("Not able to read file {} from bucket {}. Skipping file.",
+                    LOG.error("{}: Not able to read file {} from bucket {}. Skipping file.",
+                            EXTENSION_NAME,
                             s3Object.key(),
                             Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName(),
                             e);
                 } catch (final Exception e) {
-                    logger.error("Unknown error occurred while reading file {} from bucket {}. Skipping file.",
+                    LOG.error("{}: Unknown error occurred while reading file {} from bucket {}. Skipping file.",
+                            EXTENSION_NAME,
                             s3Object.key(),
                             Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName(),
                             e);
@@ -222,7 +230,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             }
 
             if (listObjectsV2Response.isTruncated()) {
-                logger.debug("ObjectListing is truncated. Next batch will be loaded.");
+                LOG.debug("{}: ObjectListing is truncated. Next batch will be loaded.", EXTENSION_NAME);
                 listObjectsV2Response =
                         hiveMQS3Client.getNextBatchOfObjects(listObjectsV2Response.nextContinuationToken());
             } else {
@@ -239,16 +247,16 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             fileContent = hiveMQS3Client.getObject(objectKey);
         } catch (final SdkClientException e) {
-            logger.error("An error occurred while reading the S3 object from an input stream.", e);
+            LOG.error("{}: An error occurred while reading the S3 object from an input stream.", EXTENSION_NAME, e);
             return null;
         }
         if (isNullOrBlank(fileContent)) {
-            logger.debug("S3 object '{}' has no content. Skipping file.", objectKey);
+            LOG.debug("{}: S3 object '{}' has no content. Skipping file.", EXTENSION_NAME, objectKey);
             return null;
         }
         final ClusterNodeFile nodeFile = ClusterNodeFile.parseClusterNodeFile(fileContent);
         if (nodeFile == null) {
-            logger.debug("Content of the S3 object '{}' could not parsed. Skipping file.", objectKey);
+            LOG.debug("{}: Content of the S3 object '{}' could not parsed. Skipping file.", EXTENSION_NAME, objectKey);
             return null;
         }
         return nodeFile;

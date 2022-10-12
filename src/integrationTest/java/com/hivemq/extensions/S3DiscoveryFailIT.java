@@ -39,7 +39,7 @@ import static com.hivemq.extensions.metrics.TestS3Metrics.SUCCESS_METRIC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
-public class S3DiscoveryFailIT {
+class S3DiscoveryFailIT {
 
     private static final @NotNull String BUCKET_NAME = "hivemq";
 

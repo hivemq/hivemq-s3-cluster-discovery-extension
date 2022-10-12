@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.hivemq.extensions.ExtensionConstants.EXTENSION_CONFIGURATION;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
@@ -84,7 +85,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration, StandardOpenOption.CREATE_NEW);
+                .resolve(EXTENSION_CONFIGURATION), configuration, StandardOpenOption.CREATE_NEW);
 
         configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = mock(HiveMQS3Client.class);
@@ -164,7 +165,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -311,7 +312,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -327,7 +328,7 @@ class S3DiscoveryCallbackTest {
     void test_init_no_config() {
         assertTrue(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE)
+                .resolve(EXTENSION_CONFIGURATION)
                 .toFile()
                 .delete());
 
@@ -357,7 +358,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -371,7 +372,7 @@ class S3DiscoveryCallbackTest {
     void test_reload_new_config_no_bucket_no_existing_client() throws Exception {
         assertTrue(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE)
+                .resolve(EXTENSION_CONFIGURATION)
                 .toFile()
                 .delete());
 
@@ -384,7 +385,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -400,7 +401,7 @@ class S3DiscoveryCallbackTest {
 
         assertTrue(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE)
+                .resolve(EXTENSION_CONFIGURATION)
                 .toFile()
                 .delete());
 
@@ -412,7 +413,7 @@ class S3DiscoveryCallbackTest {
     void test_reload_config_still_missing() {
         assertTrue(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE)
+                .resolve(EXTENSION_CONFIGURATION)
                 .toFile()
                 .delete());
         when(hiveMQS3Client.getS3Config()).thenReturn(null);
@@ -432,7 +433,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
@@ -456,7 +457,7 @@ class S3DiscoveryCallbackTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);

@@ -26,6 +26,7 @@ import org.mockito.Mockito;
 import java.io.File;
 import java.nio.file.Files;
 
+import static com.hivemq.extensions.ExtensionConstants.EXTENSION_CONFIGURATION;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
@@ -56,7 +57,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
@@ -72,7 +73,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -88,7 +89,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -104,7 +105,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -120,7 +121,7 @@ class ConfigurationReaderTest {
                 "credentials-type:";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -136,7 +137,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default1234";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -154,7 +155,7 @@ class ConfigurationReaderTest {
                 "credentials-secret-access-key:secret-access-key";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
@@ -172,7 +173,7 @@ class ConfigurationReaderTest {
                 "credentials-secret-access-key:secret-access-key";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -190,7 +191,7 @@ class ConfigurationReaderTest {
                 "credentials-secret-access-key:";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -209,7 +210,7 @@ class ConfigurationReaderTest {
                 "credentials-session-token:session-token";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
@@ -228,7 +229,7 @@ class ConfigurationReaderTest {
                 "credentials-session-token:";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -244,7 +245,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
@@ -260,7 +261,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -276,7 +277,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -292,7 +293,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -308,7 +309,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -324,7 +325,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -340,7 +341,7 @@ class ConfigurationReaderTest {
                 "credentials-type:default";
         Files.writeString(extensionInformation.getExtensionHomeFolder()
                 .toPath()
-                .resolve(ConfigurationReader.S3_CONFIG_FILE), configuration);
+                .resolve(EXTENSION_CONFIGURATION), configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());

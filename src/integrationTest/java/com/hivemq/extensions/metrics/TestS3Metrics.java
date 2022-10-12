@@ -17,7 +17,6 @@
 package com.hivemq.extensions.metrics;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extensions.S3DiscoveryIT;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -35,8 +34,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TestS3Metrics {
 
-    private static final @NotNull TestS3Metrics testS3Metrics = new TestS3Metrics();
-    private static final @NotNull Logger log = LoggerFactory.getLogger(S3DiscoveryIT.class);
+    private static final @NotNull TestS3Metrics TEST_S3_METRICS = new TestS3Metrics();
+    private static final @NotNull Logger LOG = LoggerFactory.getLogger(TestS3Metrics.class);
 
     public static final @NotNull String SUCCESS_METRIC =
             "com_hivemq_extensions_s3_cluster_discovery_query_success_count";
@@ -49,7 +48,7 @@ public class TestS3Metrics {
     }
 
     public static @NotNull TestS3Metrics getInstance() {
-        return testS3Metrics;
+        return TEST_S3_METRICS;
     }
 
     public @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws IOException {
@@ -71,7 +70,7 @@ public class TestS3Metrics {
                 .filter(s -> !s.startsWith("#"))
                 .map(s -> s.split(" "))
                 .filter(splits -> metrics.contains(splits[0]))
-                .peek(strings -> log.info(Arrays.toString(strings)))
+                .peek(strings -> LOG.info(Arrays.toString(strings)))
                 .map(splits -> Map.entry(splits[0], Float.parseFloat(splits[1])))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Float::max));
     }
