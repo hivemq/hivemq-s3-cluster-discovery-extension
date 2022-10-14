@@ -48,7 +48,7 @@ class S3DiscoveryFailIT {
     private final @NotNull LocalStackContainer localstack =
             new LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("latest")).withServices(S3)
                     .withNetwork(network)
-                    .withNetworkAliases("sthree");
+                    .withNetworkAliases("localstack");
 
     private @NotNull HiveMQContainer firstNode;
 
@@ -56,7 +56,7 @@ class S3DiscoveryFailIT {
     void setUp(@TempDir final @NotNull Path tempDir) throws IOException {
         final MountableFile configFile = TestS3Config.builder(tempDir)
                 .setS3BucketName(BUCKET_NAME)
-                .setS3Endpoint("http://sthree:" + 4566)
+                .setS3Endpoint("http://localstack:4566")
                 .setS3EndpointRegion(localstack.getRegion())
                 .build();
 

@@ -91,7 +91,6 @@ public class HiveMQS3Client {
         s3Client = s3ClientBuilder.credentialsProvider(credentialsProvider)
                 .serviceConfiguration(s3ConfigurationBuilder.build())
                 .build();
-        System.out.println(credentialsProvider.resolveCredentials());
         LOG.trace("{}: Created AmazonS3 client successfully.", EXTENSION_NAME);
     }
 
