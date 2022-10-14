@@ -53,13 +53,13 @@ public class TestS3Metrics {
 
     public @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws IOException {
         final OkHttpClient client = new OkHttpClient();
-        final Request request1 =
+        final Request request =
                 new Request.Builder().url("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics")
                         .build();
 
-        final Response response1 = client.newCall(request1).execute();
-        assertNotNull(response1.body());
-        final String string = response1.body().string();
+        final Response response = client.newCall(request).execute();
+        assertNotNull(response.body());
+        final String string = response.body().string();
 
         return parseMetrics(string, Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
     }

@@ -58,7 +58,7 @@ tasks.withType<Test>().configureEach {
 
 dependencies {
     //necessary as the localstack s3 service would not start without the old sdk
-    integrationTestImplementation("com.amazonaws:aws-java-sdk-s3:${property("aws-legacy-sdk.version")}")
+    integrationTestRuntimeOnly("com.amazonaws:aws-java-sdk-s3:${property("aws-legacy-sdk.version")}")
     integrationTestImplementation("com.squareup.okhttp3:okhttp:${property("ok-http.version")}")
     integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${property("testcontainers.version")}"))
     integrationTestImplementation("org.testcontainers:testcontainers")
