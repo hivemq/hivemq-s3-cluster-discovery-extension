@@ -1,7 +1,7 @@
 :aws_credentials: https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys
 :s3_regions: https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 :path-style-access: https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingBucket.html#access-bucket-intro
-:hivemq-downloads: https://www.hivemq.com/downloads
+:hivemq-extension-downloads: https://www.hivemq.com/extensions/
 :hivemq-cluster-discovery: https://www.hivemq.com/docs/latest/hivemq/cluster.html#discovery
 :hivemq-support: http://www.hivemq.com/support/
 
@@ -22,7 +22,7 @@ Additionally, every broker updates its own file on a regular basis to prevent th
 
 == Installation
 
-* Download the extension from the {hivemq-downloads}[HiveMQ website^].
+* Download the extension from the {hivemq-extension-downloads}[HiveMQ Marketplace^].
 * Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
 * Modify the `s3discovery.properties` file for your needs.
 * Change the {hivemq-cluster-discovery}[discovery mechanism^] of HiveMQ to `extension`.
@@ -208,7 +208,7 @@ com.hivemq.dns-cluster-discovery-extension.resolved-addresses
 * Verify that the given authentication can access the S3 bucket.
 * Start HiveMQ which will start discover other nodes via S3.
 
-== Need help?
+== Need Help?
 
 If you encounter any problems, we are happy to help.
 The best place to get in contact is our {hivemq-support}[support^].
