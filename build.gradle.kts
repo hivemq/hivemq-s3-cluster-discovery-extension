@@ -97,3 +97,9 @@ license {
     exclude("**/template-s3discovery.properties")
     exclude("**/logback-test.xml")
 }
+
+/* ******************** run ******************** */
+
+tasks.prepareHivemqHome {
+    hivemqHomeDirectory.set(file("/path/to/a/hivemq/folder"))
+}
