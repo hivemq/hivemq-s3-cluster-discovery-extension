@@ -47,7 +47,6 @@ hivemqExtension.resources {
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:${property("junit-jupiter.version")}")
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
-    testImplementation("org.mockito:mockito-junit-jupiter:${property("mockito.version")}")
 }
 
 tasks.withType<Test>().configureEach {
