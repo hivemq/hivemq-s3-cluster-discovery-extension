@@ -55,9 +55,8 @@ class ConfigurationReaderTest {
                 "file-expiration:360\n" +
                 "update-interval:180\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
@@ -71,9 +70,8 @@ class ConfigurationReaderTest {
                 "file-expiration:360\n" +
                 "update-interval:180\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -87,9 +85,8 @@ class ConfigurationReaderTest {
                 "file-expiration:360\n" +
                 "update-interval:180\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -103,9 +100,8 @@ class ConfigurationReaderTest {
                 "file-expiration:360\n" +
                 "update-interval:180\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -119,9 +115,8 @@ class ConfigurationReaderTest {
                 "file-expiration:360\n" +
                 "update-interval:180\n" +
                 "credentials-type:";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -135,9 +130,8 @@ class ConfigurationReaderTest {
                 "file-expiration:360\n" +
                 "update-interval:180\n" +
                 "credentials-type:default1234";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -153,9 +147,8 @@ class ConfigurationReaderTest {
                 "credentials-type:access_key\n" +
                 "credentials-access-key-id:access-key-id\n" +
                 "credentials-secret-access-key:secret-access-key";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
@@ -171,9 +164,8 @@ class ConfigurationReaderTest {
                 "credentials-type:access_key\n" +
                 "credentials-access-key-id:\n" +
                 "credentials-secret-access-key:secret-access-key";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -189,9 +181,8 @@ class ConfigurationReaderTest {
                 "credentials-type:access_key\n" +
                 "credentials-access-key-id:access-key-id\n" +
                 "credentials-secret-access-key:";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -208,9 +199,8 @@ class ConfigurationReaderTest {
                 "credentials-access-key-id:access-key-id\n" +
                 "credentials-secret-access-key:secret-access-key\n" +
                 "credentials-session-token:session-token";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
@@ -227,9 +217,8 @@ class ConfigurationReaderTest {
                 "credentials-access-key-id:access-key-id\n" +
                 "credentials-secret-access-key:secret-access-key\n" +
                 "credentials-session-token:";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -243,9 +232,8 @@ class ConfigurationReaderTest {
                 "file-expiration:0\n" +
                 "update-interval:0\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNotNull(configurationReader.readConfiguration());
@@ -259,9 +247,8 @@ class ConfigurationReaderTest {
                 "file-expiration:180\n" +
                 "update-interval:180\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -275,9 +262,8 @@ class ConfigurationReaderTest {
                 "file-expiration:150\n" +
                 "update-interval:300\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -291,9 +277,8 @@ class ConfigurationReaderTest {
                 "file-expiration:180\n" +
                 "update-interval:0\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -307,9 +292,8 @@ class ConfigurationReaderTest {
                 "file-expiration:0\n" +
                 "update-interval:180\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -323,9 +307,8 @@ class ConfigurationReaderTest {
                 "file-expiration:\n" +
                 "update-interval:180\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());
@@ -339,9 +322,8 @@ class ConfigurationReaderTest {
                 "file-expiration:360\n" +
                 "update-interval:\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         assertNull(configurationReader.readConfiguration());

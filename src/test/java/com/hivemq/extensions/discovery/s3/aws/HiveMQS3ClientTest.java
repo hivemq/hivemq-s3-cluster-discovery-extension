@@ -52,7 +52,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.function.Consumer;
 
 import static com.hivemq.extensions.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION;
@@ -65,7 +64,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class HiveMQS3ClientTest {
+class HiveMQS3ClientTest {
 
     private @NotNull ExtensionInformation extensionInformation;
     private @NotNull HiveMQS3Client hiveMQS3Client;
@@ -81,23 +80,22 @@ public class HiveMQS3ClientTest {
                 "file-expiration:360\n" +
                 "update-interval:180\n" +
                 "credentials-type:default";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration, StandardOpenOption.CREATE_NEW);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
     }
 
     @Test
-    public void test_create_successful() {
+    void test_create_successful() {
         hiveMQS3Client.createOrUpdate();
         assertNotNull(hiveMQS3Client.getS3Config());
         assertNotNull(hiveMQS3Client.getS3Client());
     }
 
     @Test
-    public void test_bucket_exists() {
+    void test_bucket_exists() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -114,7 +112,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_bucket_not_exists() {
+    void test_bucket_not_exists() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -128,12 +126,8 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_create_no_config_file() {
-        assertTrue(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION)
-                .toFile()
-                .delete());
+    void test_create_no_config_file() throws IOException {
+        Files.delete(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION));
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -141,11 +135,10 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_create_invalid_config() throws IOException {
+    void test_create_invalid_config() throws IOException {
         final String configuration = "s3-bucket-region:us-east-12345\n";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -153,41 +146,41 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_getAwsCredentials_default() {
+    void test_getAwsCredentials_default() {
         final AwsCredentialsProvider awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.DEFAULT);
         assertTrue(awsCredentials instanceof DefaultCredentialsProvider);
     }
 
     @Test
-    public void test_getAwsCredentials_environment() {
+    void test_getAwsCredentials_environment() {
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.ENVIRONMENT_VARIABLES);
         assertTrue(awsCredentials instanceof EnvironmentVariableCredentialsProvider);
     }
 
     @Test
-    public void test_getAwsCredentials_java_system() {
+    void test_getAwsCredentials_java_system() {
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.JAVA_SYSTEM_PROPERTIES);
         assertTrue(awsCredentials instanceof SystemPropertyCredentialsProvider);
     }
 
     @Test
-    public void test_getAwsCredentials_user_credentials() {
+    void test_getAwsCredentials_user_credentials() {
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.USER_CREDENTIALS_FILE);
         assertTrue(awsCredentials instanceof ProfileCredentialsProvider);
     }
 
     @Test
-    public void test_getAwsCredentials_instance_profile() {
+    void test_getAwsCredentials_instance_profile() {
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.INSTANCE_PROFILE_CREDENTIALS);
         assertTrue(awsCredentials instanceof InstanceProfileCredentialsProvider);
     }
 
     @Test
-    public void test_getAwsCredentials_access_key_success() throws IOException {
+    void test_getAwsCredentials_access_key_success() throws IOException {
         final String configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
@@ -196,9 +189,8 @@ public class HiveMQS3ClientTest {
                 "credentials-type:access_key\n" +
                 "credentials-access-key-id:access-key-id\n" +
                 "credentials-secret-access-key:secret-access-key";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -209,7 +201,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_getAwsCredentials_access_key_missing_secret() throws IOException {
+    void test_getAwsCredentials_access_key_missing_secret() throws IOException {
         final String configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
@@ -217,9 +209,8 @@ public class HiveMQS3ClientTest {
                 "update-interval:180\n" +
                 "credentials-type:access_key\n" +
                 "credentials-access-key-id:access-key-id";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -227,7 +218,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_getAwsCredentials_access_key_missing_id() throws IOException {
+    void test_getAwsCredentials_access_key_missing_id() throws IOException {
         final String configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
@@ -235,9 +226,8 @@ public class HiveMQS3ClientTest {
                 "update-interval:180\n" +
                 "credentials-type:access_key\n" +
                 "credentials-secret-access-key:secret-access-key";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -245,7 +235,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_getAwsCredentials_temporary_session_success() throws IOException {
+    void test_getAwsCredentials_temporary_session_success() throws IOException {
         final String configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
@@ -255,9 +245,8 @@ public class HiveMQS3ClientTest {
                 "credentials-access-key-id:access-key-id\n" +
                 "credentials-secret-access-key:secret-access-key\n" +
                 "credentials-session-token:session-token";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -269,7 +258,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_getAwsCredentials_temporary_session_missing_token() throws IOException {
+    void test_getAwsCredentials_temporary_session_missing_token() throws IOException {
         final String configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
@@ -278,9 +267,8 @@ public class HiveMQS3ClientTest {
                 "credentials-type:temporary_session\n" +
                 "credentials-access-key-id:access-key-id\n" +
                 "credentials-secret-access-key:secret-access-key";
-        Files.writeString(extensionInformation.getExtensionHomeFolder()
-                .toPath()
-                .resolve(EXTENSION_CONFIGURATION), configuration);
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
 
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -288,7 +276,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_saveObject_success() {
+    void test_saveObject_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -299,7 +287,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_saveObject_objectkey_null() {
+    void test_saveObject_objectkey_null() {
         System.setProperty("aws.accessKeyId", "asdf");
         System.setProperty("aws.secretAccessKey", "asdf");
         hiveMQS3Client.createOrUpdate();
@@ -307,7 +295,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_saveObject_content_null() {
+    void test_saveObject_content_null() {
         System.setProperty("aws.accessKeyId", "asdf");
         System.setProperty("aws.secretAccessKey", "asdf");
         hiveMQS3Client.createOrUpdate();
@@ -315,7 +303,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_getObject_success() {
+    void test_getObject_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -327,7 +315,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_getObject_objectkey_null() {
+    void test_getObject_objectkey_null() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -338,7 +326,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_deleteObject_success() {
+    void test_deleteObject_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -349,7 +337,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_deleteObject_objectkey_null() {
+    void test_deleteObject_objectkey_null() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -360,7 +348,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_listObjects_success() {
+    void test_listObjects_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -372,7 +360,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_listObjects_fileprefix_null() {
+    void test_listObjects_fileprefix_null() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -383,7 +371,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_listNextBatchOfObjects_success() {
+    void test_listNextBatchOfObjects_success() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
@@ -395,7 +383,7 @@ public class HiveMQS3ClientTest {
     }
 
     @Test
-    public void test_listNextBatchOfObjects_objectlisting_null() {
+    void test_listNextBatchOfObjects_objectlisting_null() {
         hiveMQS3Client.createOrUpdate();
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);

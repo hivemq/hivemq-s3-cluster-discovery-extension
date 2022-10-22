@@ -19,6 +19,7 @@ package com.hivemq.extensions.discovery.s3;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extensions.discovery.s3.config.TestS3Config;
 import com.hivemq.extensions.discovery.s3.metrics.TestS3Metrics;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -76,10 +77,15 @@ class S3DiscoveryFailIT {
                                 "s3discovery.properties");
     }
 
+    @AfterEach
+    void tearDown() {
+        network.close();
+    }
+
     @Test
     void endpoint_not_working() throws IOException {
         firstNode.start();
-        final Map<String, Float> metrics = TestS3Metrics.getInstance().getMetrics(firstNode);
+        final Map<String, Float> metrics = TestS3Metrics.getMetrics(firstNode);
         assertEquals(0, metrics.get(SUCCESS_METRIC));
         assertEquals(1, metrics.get(FAILURE_METRIC));
         assertEquals(0, metrics.get(IP_COUNT_METRIC));
@@ -89,7 +95,7 @@ class S3DiscoveryFailIT {
     void bucket_not_created() throws IOException {
         localstack.start();
         firstNode.start();
-        final Map<String, Float> metrics = TestS3Metrics.getInstance().getMetrics(firstNode);
+        final Map<String, Float> metrics = TestS3Metrics.getMetrics(firstNode);
         assertEquals(0, metrics.get(SUCCESS_METRIC));
         assertEquals(1, metrics.get(FAILURE_METRIC));
         assertEquals(0, metrics.get(IP_COUNT_METRIC));

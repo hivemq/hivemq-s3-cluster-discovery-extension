@@ -27,14 +27,12 @@ import org.testcontainers.hivemq.HiveMQContainer;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 public class TestS3Metrics {
 
-    private static final @NotNull TestS3Metrics TEST_S3_METRICS = new TestS3Metrics();
     private static final @NotNull Logger LOG = LoggerFactory.getLogger(TestS3Metrics.class);
 
     public static final @NotNull String SUCCESS_METRIC =
@@ -44,27 +42,21 @@ public class TestS3Metrics {
     public static final @NotNull String IP_COUNT_METRIC =
             "com_hivemq_extensions_s3_cluster_discovery_resolved_addresses";
 
-    private TestS3Metrics() {
-    }
-
-    public static @NotNull TestS3Metrics getInstance() {
-        return TEST_S3_METRICS;
-    }
-
-    public @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws IOException {
+    public static @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws IOException {
         final OkHttpClient client = new OkHttpClient();
-        final Request request =
-                new Request.Builder().url("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics")
-                        .build();
 
-        final Response response = client.newCall(request).execute();
-        assertNotNull(response.body());
-        final String string = response.body().string();
+        final int port = node.getMappedPort(9399);
+        final Request request = new Request.Builder().url("http://" + node.getHost() + ":" + port + "/metrics").build();
+
+        final String string;
+        try (final Response response = client.newCall(request).execute()) {
+            string = Objects.requireNonNull(response.body()).string();
+        }
 
         return parseMetrics(string, Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
     }
 
-    private @NotNull Map<String, Float> parseMetrics(
+    private static @NotNull Map<String, Float> parseMetrics(
             final @NotNull String metricsDump, final @NotNull Set<String> metrics) {
         return metricsDump.lines()
                 .filter(s -> !s.startsWith("#"))
