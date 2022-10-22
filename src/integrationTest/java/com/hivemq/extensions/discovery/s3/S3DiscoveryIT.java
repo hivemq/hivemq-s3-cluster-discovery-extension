@@ -19,6 +19,7 @@ package com.hivemq.extensions.discovery.s3;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extensions.discovery.s3.config.TestS3Config;
 import com.hivemq.extensions.discovery.s3.metrics.TestS3Metrics;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -98,10 +99,15 @@ class S3DiscoveryIT {
                                 "s3discovery.properties");
     }
 
+    @AfterEach
+    void tearDown() {
+        network.close();
+    }
+
     @Test
     void cluster_singleNode() throws IOException {
         firstNode.start();
-        final Map<String, Float> metrics = TestS3Metrics.getInstance().getMetrics(firstNode);
+        final Map<String, Float> metrics = TestS3Metrics.getMetrics(firstNode);
         assertEquals(1, metrics.get(TestS3Metrics.SUCCESS_METRIC));
         assertEquals(0, metrics.get(TestS3Metrics.FAILURE_METRIC));
         assertEquals(1, metrics.get(TestS3Metrics.IP_COUNT_METRIC));
@@ -111,7 +117,7 @@ class S3DiscoveryIT {
     void cluster_twoNode() throws IOException {
         firstNode.start();
         secondNode.start();
-        final Map<String, Float> secondNodeMetrics = TestS3Metrics.getInstance().getMetrics(secondNode);
+        final Map<String, Float> secondNodeMetrics = TestS3Metrics.getMetrics(secondNode);
         assertEquals(1, secondNodeMetrics.get(TestS3Metrics.SUCCESS_METRIC));
         assertEquals(0, secondNodeMetrics.get(TestS3Metrics.FAILURE_METRIC));
         assertEquals(2, secondNodeMetrics.get(TestS3Metrics.IP_COUNT_METRIC));

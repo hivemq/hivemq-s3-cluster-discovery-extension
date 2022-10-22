@@ -24,7 +24,9 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,14 +60,15 @@ class ClusterNodeFileTest {
         final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         final String clusterNodeFileString = clusterNodeFile.toString();
         final ClusterNodeFile newClusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertTrue(clusterNodeFile.toString().contentEquals(newClusterNodeFile.toString()));
+        assertNotNull(newClusterNodeFile);
+        assertEquals(clusterNodeFile.toString(), newClusterNodeFile.toString());
     }
 
     @Test
     void test_cluster_node_file_not_equal() {
         final ClusterNodeFile clusterNodeFile1 = new ClusterNodeFile(nodeId + 1, clusterNodeAddress);
         final ClusterNodeFile clusterNodeFile2 = new ClusterNodeFile(nodeId + 2, clusterNodeAddress);
-        assertFalse(clusterNodeFile1.toString().contentEquals(clusterNodeFile2.toString()));
+        assertNotEquals(clusterNodeFile1.toString(), clusterNodeFile2.toString());
     }
 
     @Test
@@ -115,7 +118,8 @@ class ClusterNodeFileTest {
         final ClusterNodeFile clusterNodeFile1 = new ClusterNodeFile(nodeId, clusterNodeAddress);
         final String clusterNodeFile1String = clusterNodeFile1.toString();
         final ClusterNodeFile clusterNodeFile2 = ClusterNodeFile.parseClusterNodeFile(clusterNodeFile1String);
-        assertTrue(clusterNodeFile1.toString().contentEquals(clusterNodeFile2.toString()));
+        assertNotNull(clusterNodeFile2);
+        assertEquals(clusterNodeFile1.toString(), clusterNodeFile2.toString());
     }
 
     @Test
@@ -151,11 +155,12 @@ class ClusterNodeFileTest {
 
     @Test
     void test_parseClusterNodeFile_node_id_empty() {
-        final String clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
-                Long.toString(System.currentTimeMillis()),
-                "",
-                clusterNodeAddress.getHost(),
-                Integer.toString(clusterNodeAddress.getPort()));
+        final String clusterNodeFileString =
+                ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
+                        Long.toString(System.currentTimeMillis()),
+                        "",
+                        clusterNodeAddress.getHost(),
+                        Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
         assertNull(clusterNodeFile);
@@ -163,11 +168,12 @@ class ClusterNodeFileTest {
 
     @Test
     void test_parseClusterNodeFile_host_empty() {
-        final String clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
-                Long.toString(System.currentTimeMillis()),
-                nodeId,
-                "",
-                Integer.toString(clusterNodeAddress.getPort()));
+        final String clusterNodeFileString =
+                ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
+                        Long.toString(System.currentTimeMillis()),
+                        nodeId,
+                        "",
+                        Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
         assertNull(clusterNodeFile);
@@ -175,11 +181,12 @@ class ClusterNodeFileTest {
 
     @Test
     void test_parseClusterNodeFile_port_not_number() {
-        final String clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
-                Long.toString(System.currentTimeMillis()),
-                nodeId,
-                clusterNodeAddress.getHost(),
-                "abcd");
+        final String clusterNodeFileString =
+                ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
+                        Long.toString(System.currentTimeMillis()),
+                        nodeId,
+                        clusterNodeAddress.getHost(),
+                        "abcd");
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
         assertNull(clusterNodeFile);
@@ -187,11 +194,12 @@ class ClusterNodeFileTest {
 
     @Test
     void test_parseClusterNodeFile_creation_time_not_number() {
-        final String clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
-                "abcd",
-                nodeId,
-                clusterNodeAddress.getHost(),
-                Integer.toString(clusterNodeAddress.getPort()));
+        final String clusterNodeFileString =
+                ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
+                        "abcd",
+                        nodeId,
+                        clusterNodeAddress.getHost(),
+                        Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
         assertNull(clusterNodeFile);
@@ -199,11 +207,9 @@ class ClusterNodeFileTest {
 
     @Test
     void test_parseClusterNodeFile_too_short() {
-        final String clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileStringTooShort(ClusterNodeFile.CONTENT_VERSION,
-                Long.toString(System.currentTimeMillis()),
-                nodeId,
-                clusterNodeAddress.getHost(),
-                Integer.toString(clusterNodeAddress.getPort()));
+        final String clusterNodeFileString =
+                ClusterNodeFileUtil.createClusterNodeFileStringTooShort(ClusterNodeFile.CONTENT_VERSION,
+                        Long.toString(System.currentTimeMillis()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
         assertNull(clusterNodeFile);
@@ -211,11 +217,12 @@ class ClusterNodeFileTest {
 
     @Test
     void test_parseClusterNodeFile_too_long() {
-        final String clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileStringTooLong(ClusterNodeFile.CONTENT_VERSION,
-                Long.toString(System.currentTimeMillis()),
-                nodeId,
-                clusterNodeAddress.getHost(),
-                Integer.toString(clusterNodeAddress.getPort()));
+        final String clusterNodeFileString =
+                ClusterNodeFileUtil.createClusterNodeFileStringTooLong(ClusterNodeFile.CONTENT_VERSION,
+                        Long.toString(System.currentTimeMillis()),
+                        nodeId,
+                        clusterNodeAddress.getHost(),
+                        Integer.toString(clusterNodeAddress.getPort()));
 
         final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
         assertNull(clusterNodeFile);
