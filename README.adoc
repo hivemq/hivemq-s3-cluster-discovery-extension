@@ -69,8 +69,8 @@ These operations work with `Access Keys`, if you don't know what access keys are
 
 Default Authentication tries to access S3 via the default mechanisms in the following order:
 
-1. Environment variables
-2. Java system properties
+1. Java system properties
+2. Environment variables
 3. User credentials file
 4. IAM profiles assigned to EC2 instance
 
@@ -80,9 +80,42 @@ Default Authentication tries to access S3 via the default mechanisms in the foll
 credentials-type:default
 ----
 
+==== Java System Property Authentication
+
+Use Java system properties to specify your AWS credentials the following Java system properties need to be set:
+
+* aws.accessKeyId
+* aws.secretAccessKey
+
+You can for example extend the `run.sh` or `run.bat` in order to start HiveMQ with the system properties:
+
+.Example for extending `run.sh`
+[source]
+----
+############## VARIABLES
+JAVA_OPTS="$JAVA_OPTS -Daws.accessKeyId=<your-access-key> -Daws.secretAccessKey=<your-secret-access-key>"
+----
+
+In case you want to use a temporary session you also need to include a session token:
+
+* aws.sessionToken
+
+.Example for extending `run.sh` for a temporary session
+[source]
+----
+############## VARIABLES
+JAVA_OPTS="$JAVA_OPTS -Daws.accessKeyId=<your-access-key> -Daws.secretAccessKey=<your-secret-access-key>" -Daws.sessionToken=<your-session-token>"
+----
+
+.Example Java System Properties Config
+[source]
+----
+credentials-type:java_system_properties
+----
+
 ==== Environment Variables Authentication
 
-Uses environment variables to specify your AWS credentials the following variables need to be set:
+Use environment variables to specify your AWS credentials the following variables need to be set:
 
 * AWS_ACCESS_KEY_ID
 * AWS_SECRET_ACCESS_KEY
@@ -94,39 +127,28 @@ export AWS_ACCESS_KEY_ID=<your-access-key>
 export AWS_SECRET_ACCESS_KEY=<your-secret-key>
 ----
 
+In case you want to use a temporary session you also need to include a session token:
+
+* AWS_SESSION_TOKEN
+
+.Linux example
+[source,bash]
+----
+export AWS_ACCESS_KEY_ID=<your-access-key>
+export AWS_SECRET_ACCESS_KEY=<your-secret-key>
+export AWS_SESSION_TOKEN=<your-session-token>
+----
+
 .Example Environment Variables Config
 [source]
 ----
 credentials-type:environment_variables
 ----
 
-==== Java System Property Authentication
-
-Uses Java system properties to specify your AWS credentials the following Java system properties need to be set:
-
-* aws.accessKeyId
-* aws.secretAccessKey
-
-.Example Java System Properties Config
-[source]
-----
-credentials-type:java_system_properties
-----
-
-You can for example extend the `run.sh` or `run.bat` in order to start HiveMQ with the system properties:
-
-.Example for extending `run.sh`
-[source]
-----
-############## VARIABLES
-JAVA_OPTS="$JAVA_OPTS -Daws.accessKeyId=<your-access-key> -Daws.secretAccessKey=<your-secret-access-key>"
-----
-
 ==== User Credentials Authentication
 
-Uses the credentials file which can be created by calling 'aws configure' (AWS CLI).
-This file is usually located at ~/.aws/credentials.
-The exact location can vary based on the platform.
+Use the default credentials file which can be created by calling 'aws configure' (AWS CLI).
+This file is usually located at `~/.aws/credentials` (platform dependent).
 The location of the file can be configured by setting the environment variable `AWS_CREDENTIAL_PROFILE_FILE` to the location of your file.
 
 .Example Java System Properties Config
@@ -137,7 +159,7 @@ credentials-type:user_credentials_file
 
 ==== Instance Profile Credentials Authentication
 
-Uses the IAM Roles assigned to the EC2 instance running HiveMQ to access S3.
+Use IAM Roles assigned to the EC2 instance running HiveMQ to access S3 in order to authenticate.
 
 WARNING: This only works if HiveMQ is running on an EC2 instance and your EC2 instance has configured the right IAM Role to access S3!
 
@@ -149,7 +171,7 @@ credentials-type:instance_profile_credentials
 
 ==== Access Key Authentication
 
-Uses the credentials specified in the `s3discovery.properties` file.
+Use the credentials specified in the `s3discovery.properties` file to authenticate.
 
 The variables you must provide are:
 
@@ -164,9 +186,9 @@ credentials-access-key-id:<your-access-key>
 credentials-secret-access-key:<your-secret_access_key>
 ----
 
-==== Secret Access Key Authentication
+==== Temporary Session Authentication
 
-Uses the credentials specified in `s3discovery.properties` file to authenticate with a temporary session.
+Use the credentials specified in `s3discovery.properties` file to authenticate with a temporary session.
 
 The variables you must provide are:
 
