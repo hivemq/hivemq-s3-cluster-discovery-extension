@@ -42,6 +42,9 @@ public class TestS3Metrics {
     public static final @NotNull String IP_COUNT_METRIC =
             "com_hivemq_extensions_s3_cluster_discovery_resolved_addresses";
 
+    private TestS3Metrics() {
+    }
+
     public static @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws IOException {
         final OkHttpClient client = new OkHttpClient();
 
