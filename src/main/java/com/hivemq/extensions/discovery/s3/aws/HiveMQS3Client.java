@@ -33,6 +33,7 @@ import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.SdkHttpResponse;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
@@ -135,19 +136,16 @@ public class HiveMQS3Client {
         return credentialsProvider;
     }
 
-    public boolean existsBucket() {
+    public @NotNull S3BucketResponse checkBucket() {
         final String bucketName = Objects.requireNonNull(s3Config).getBucketName();
         try {
-            return Objects.requireNonNull(s3Client)
+            final SdkHttpResponse sdkHttpResponse = Objects.requireNonNull(s3Client)
                     .headBucket(builder -> builder.bucket(bucketName).build())
-                    .sdkHttpResponse()
-                    .isSuccessful();
-        } catch (final S3Exception ignored) {
-            LOG.trace(
-                    "{}: Caught an exception from S3 Discovery extension while checking if bucket '{}' exists. Returning false.",
-                    EXTENSION_NAME,
-                    bucketName);
-            return false;
+                    .sdkHttpResponse();
+            return new S3BucketResponse(bucketName, sdkHttpResponse.statusCode(), null);
+        } catch (final S3Exception s3Exception) {
+            final int statusCode = s3Exception.awsErrorDetails().sdkHttpResponse().statusCode();
+            return new S3BucketResponse(bucketName, statusCode, s3Exception);
         }
     }
 
