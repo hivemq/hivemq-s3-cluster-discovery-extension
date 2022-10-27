@@ -104,7 +104,7 @@ In case you want to use a temporary session you also need to include a session t
 [source]
 ----
 ############## VARIABLES
-JAVA_OPTS="$JAVA_OPTS -Daws.accessKeyId=<your-access-key> -Daws.secretAccessKey=<your-secret-access-key>" -Daws.sessionToken=<your-session-token>"
+JAVA_OPTS="$JAVA_OPTS -Daws.accessKeyId=<your-access-key> -Daws.secretAccessKey=<your-secret-access-key> -Daws.sessionToken=<your-session-token>"
 ----
 
 .Example Java System Properties Config
