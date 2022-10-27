@@ -23,6 +23,7 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryI
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.discovery.s3.aws.HiveMQS3Client;
+import com.hivemq.extensions.discovery.s3.aws.S3BucketResponse;
 import com.hivemq.extensions.discovery.s3.config.ClusterNodeFile;
 import com.hivemq.extensions.discovery.s3.config.ConfigurationReader;
 import com.hivemq.extensions.discovery.s3.metrics.ExtensionMetrics;
@@ -77,23 +78,37 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             hiveMQS3Client.createOrUpdate();
         } catch (final Exception ignored) {
-            LOG.error("{}: Configuration couldn't be loaded. Skipping initial discovery.",
-                    EXTENSION_NAME);
+            LOG.error("{}: Configuration couldn't be loaded. Skipping initial discovery.", EXTENSION_NAME);
             extensionMetrics.getResolutionRequestFailedCounter().inc();
             addressesCount.set(0);
             return;
         }
         try {
-            if (!hiveMQS3Client.existsBucket()) {
-                LOG.error("{}: Configured bucket '{}' doesn't exist. Skipping initial discovery.",
-                        EXTENSION_NAME,
-                        Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName());
+            final S3BucketResponse s3Bucket = hiveMQS3Client.checkBucket();
+            if (s3Bucket.isSuccessful()) {
+                saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
+                clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
+            } else {
+                final S3BucketResponse.Status status = s3Bucket.getStatus();
+                if (status == S3BucketResponse.Status.NOT_EXISTING) {
+                    LOG.error("{}: Configured bucket '{}' doesn't exist. Skipping initial discovery.",
+                            EXTENSION_NAME,
+                            s3Bucket.getBucketName());
+                } else if (status == S3BucketResponse.Status.NO_PERMISSION) {
+                    LOG.error(
+                            "{}: No permission for configured bucket '{}'. Please check your credentials and AWS security settings. Skipping initial discovery.",
+                            EXTENSION_NAME,
+                            s3Bucket.getBucketName());
+                } else if (status == S3BucketResponse.Status.OTHER) {
+                    LOG.error(
+                            "{}: Unknown error occurred when checking configured bucket '{}'. Please check your s3-bucket-region setting. Skipping initial discovery.",
+                            EXTENSION_NAME,
+                            s3Bucket.getBucketName());
+                }
+                s3Bucket.getThrowable().ifPresent(throwable -> LOG.debug("{}: Original Exception: ", EXTENSION_NAME, throwable));
                 extensionMetrics.getResolutionRequestFailedCounter().inc();
                 addressesCount.set(0);
-                return;
             }
-            saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
-            clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception e) {
             LOG.error("{}: Initialization of the S3 discovery callback failed.", EXTENSION_NAME, e);
             extensionMetrics.getResolutionRequestFailedCounter().inc();
@@ -108,28 +123,41 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             hiveMQS3Client.createOrUpdate();
         } catch (final Exception ignored) {
-            LOG.error("{}: Configuration couldn't be reloaded. Skipping reload callback.",
-                    EXTENSION_NAME);
+            LOG.error("{}: Configuration couldn't be reloaded. Skipping reload callback.", EXTENSION_NAME);
             extensionMetrics.getResolutionRequestFailedCounter().inc();
             addressesCount.set(0);
             return;
         }
         try {
-            if (!hiveMQS3Client.existsBucket()) {
-                LOG.error("{}: Configured bucket '{}' doesn't exist. Skipping reload callback.",
-                        EXTENSION_NAME,
-                        Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName());
+            final S3BucketResponse s3Bucket = hiveMQS3Client.checkBucket();
+            if (s3Bucket.isSuccessful()) {
+                if (ownNodeFile == null ||
+                        ownNodeFile.isExpired(Objects.requireNonNull(hiveMQS3Client.getS3Config())
+                                .getFileUpdateIntervalInSeconds())) {
+                    saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
+                }
+                clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
+            } else {
+                final S3BucketResponse.Status status = s3Bucket.getStatus();
+                if (status == S3BucketResponse.Status.NOT_EXISTING) {
+                    LOG.error("{}: Configured bucket '{}' doesn't exist. Skipping discovery reload callback.",
+                            EXTENSION_NAME,
+                            Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName());
+                } else if (status == S3BucketResponse.Status.NO_PERMISSION) {
+                    LOG.error(
+                            "{}: No permission for configured bucket '{}'. Please check your credentials and AWS security settings. Skipping discovery reload callback.",
+                            EXTENSION_NAME,
+                            Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName());
+                } else if (status == S3BucketResponse.Status.OTHER) {
+                    LOG.error(
+                            "{}: Unknown error occurred when checking configured bucket '{}'. Please check your s3-bucket-region setting. Skipping discovery reload callback.",
+                            EXTENSION_NAME,
+                            Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName());
+                }
+                s3Bucket.getThrowable().ifPresent(throwable -> LOG.debug("{}: Original Exception: ", EXTENSION_NAME, throwable));
                 extensionMetrics.getResolutionRequestFailedCounter().inc();
                 addressesCount.set(0);
-                return;
             }
-
-            if (ownNodeFile == null ||
-                    ownNodeFile.isExpired(Objects.requireNonNull(hiveMQS3Client.getS3Config())
-                            .getFileUpdateIntervalInSeconds())) {
-                saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
-            }
-            clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
         } catch (final Exception e) {
             LOG.error("{}: Reload of the S3 discovery callback failed.", EXTENSION_NAME, e);
             extensionMetrics.getResolutionRequestFailedCounter().inc();

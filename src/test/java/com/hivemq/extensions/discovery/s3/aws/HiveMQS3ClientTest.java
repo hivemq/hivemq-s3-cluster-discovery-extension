@@ -31,6 +31,8 @@ import software.amazon.awssdk.auth.credentials.InstanceProfileCredentialsProvide
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
+import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
+import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -55,6 +57,7 @@ import java.nio.file.Files;
 import java.util.function.Consumer;
 
 import static com.hivemq.extensions.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -104,11 +107,15 @@ class HiveMQS3ClientTest {
         final SdkHttpResponse sdkHttpResponse = mock(SdkHttpResponse.class);
         when(headBucketResponse.sdkHttpResponse()).thenReturn(sdkHttpResponse);
         when(sdkHttpResponse.isSuccessful()).thenReturn(true);
+        when(sdkHttpResponse.statusCode()).thenReturn(200);
         when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenReturn(
                 headBucketResponse);
-        final boolean bucketExist = hiveMQS3Client.existsBucket();
+        final S3BucketResponse s3Bucket = hiveMQS3Client.checkBucket();
 
-        assertTrue(bucketExist);
+        assertTrue(s3Bucket.isSuccessful());
+        assertEquals(S3BucketResponse.Status.EXISTING, s3Bucket.getStatus());
+        assertEquals("hivemq123456", s3Bucket.getBucketName());
+        assertTrue(s3Bucket.getThrowable().isEmpty());
     }
 
     @Test
@@ -117,12 +124,20 @@ class HiveMQS3ClientTest {
         final S3Client s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenThrow(S3Exception.builder()
+        final AwsServiceException awsServiceException = S3Exception.builder()
                 .message("Bucket not found!")
-                .build());
-        final boolean bucketExist = hiveMQS3Client.existsBucket();
+                .awsErrorDetails(AwsErrorDetails.builder()
+                        .sdkHttpResponse(SdkHttpResponse.builder().statusCode(404).build())
+                        .build())
+                .build();
+        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenThrow(awsServiceException);
+        final S3BucketResponse s3Bucket = hiveMQS3Client.checkBucket();
 
-        assertFalse(bucketExist);
+        assertFalse(s3Bucket.isSuccessful());
+        assertEquals(S3BucketResponse.Status.NOT_EXISTING, s3Bucket.getStatus());
+        assertEquals("hivemq123456", s3Bucket.getBucketName());
+        assertTrue(s3Bucket.getThrowable().isPresent());
+        assertEquals(awsServiceException, s3Bucket.getThrowable().get());
     }
 
     @Test

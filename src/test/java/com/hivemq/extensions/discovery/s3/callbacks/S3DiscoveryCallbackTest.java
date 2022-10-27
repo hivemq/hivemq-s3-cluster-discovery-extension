@@ -24,6 +24,7 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryI
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.discovery.s3.aws.HiveMQS3Client;
+import com.hivemq.extensions.discovery.s3.aws.S3BucketResponse;
 import com.hivemq.extensions.discovery.s3.config.ClusterNodeFile;
 import com.hivemq.extensions.discovery.s3.config.ConfigurationReader;
 import com.hivemq.extensions.discovery.s3.config.S3Config;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
@@ -92,7 +94,7 @@ class S3DiscoveryCallbackTest {
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
 
         s3DiscoveryCallback = new S3DiscoveryCallback(hiveMQS3Client, extensionMetrics);
-        when(hiveMQS3Client.existsBucket()).thenReturn(true);
+        when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456", 200, null));
     }
 
     @Test
@@ -103,7 +105,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
     }
 
@@ -114,7 +116,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
@@ -126,7 +128,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
@@ -138,7 +140,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
@@ -149,7 +151,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
@@ -178,7 +180,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
@@ -191,7 +193,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(anyList());
     }
 
@@ -203,7 +205,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
@@ -215,7 +217,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
@@ -227,7 +229,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
@@ -239,7 +241,7 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput).provideCurrentNodes(new ArrayList<>());
     }
 
@@ -250,18 +252,20 @@ class S3DiscoveryCallbackTest {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
     @Test
     void test_init_bucket_does_not_exist() {
-        when(hiveMQS3Client.existsBucket()).thenReturn(false);
+        when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456",
+                404,
+                NoSuchBucketException.builder().build()));
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
@@ -271,7 +275,7 @@ class S3DiscoveryCallbackTest {
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(hiveMQS3Client, never()).existsBucket();
+        verify(hiveMQS3Client, never()).checkBucket();
         verify(hiveMQS3Client).createOrUpdate();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
@@ -283,19 +287,19 @@ class S3DiscoveryCallbackTest {
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(hiveMQS3Client, never()).existsBucket();
+        verify(hiveMQS3Client, never()).checkBucket();
         verify(hiveMQS3Client).createOrUpdate();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
     @Test
     void test_init_bucket_check_failed() {
-        when(hiveMQS3Client.existsBucket()).thenReturn(false);
+        when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456", 0, null));
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(hiveMQS3Client).createOrUpdate();
-        verify(hiveMQS3Client).existsBucket();
+        verify(hiveMQS3Client).checkBucket();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
@@ -316,7 +320,7 @@ class S3DiscoveryCallbackTest {
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        verify(hiveMQS3Client, never()).existsBucket();
+        verify(hiveMQS3Client, never()).checkBucket();
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());
     }
 
@@ -375,7 +379,9 @@ class S3DiscoveryCallbackTest {
 
         final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
-        when(hiveMQS3Client.existsBucket()).thenReturn(false);
+        when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456",
+                404,
+                NoSuchBucketException.builder().build()));
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
         verify(clusterDiscoveryOutput, times(1)).provideCurrentNodes(anyList());
