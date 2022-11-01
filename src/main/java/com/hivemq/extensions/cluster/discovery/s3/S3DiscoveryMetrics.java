@@ -23,30 +23,27 @@ import com.hivemq.extension.sdk.api.annotations.NotNull;
 
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_METRIC_PREFIX;
 
-
 /**
  * @author Lukas Brand
  */
 class S3DiscoveryMetrics {
 
     private final @NotNull MetricRegistry metricRegistry;
-    private final @NotNull Counter connectCounter;
-    private final @NotNull Counter failedConnectCounter;
+    private final @NotNull Counter querySuccessCount;
+    private final @NotNull Counter queryFailedCount;
 
     S3DiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
-        this.connectCounter =
-                metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.success.count"));
-        this.failedConnectCounter =
-                metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.failed.count"));
+        querySuccessCount = metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.success.count"));
+        queryFailedCount = metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.failed.count"));
     }
 
-    @NotNull Counter getResolutionRequestCounter() {
-        return connectCounter;
+    @NotNull Counter getQuerySuccessCount() {
+        return querySuccessCount;
     }
 
-    @NotNull Counter getResolutionRequestFailedCounter() {
-        return failedConnectCounter;
+    @NotNull Counter getQueryFailedCount() {
+        return queryFailedCount;
     }
 
     void registerAddressCountGauge(final @NotNull Gauge<Integer> supplier) {

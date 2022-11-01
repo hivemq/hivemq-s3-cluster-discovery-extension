@@ -23,11 +23,10 @@ public class ExtensionConstants {
 
     public static final @NotNull String EXTENSION_NAME = "HiveMQ S3 Cluster Discovery Extension";
 
-    public final static @NotNull String EXTENSION_METRIC_PREFIX =
+    public static final @NotNull String EXTENSION_METRIC_PREFIX =
             MetricRegistry.name("com", "hivemq", "extensions", "s3-cluster-discovery");
 
     public static final @NotNull String EXTENSION_CONFIGURATION = "s3discovery.properties";
-
 
     private ExtensionConstants() {
     }
