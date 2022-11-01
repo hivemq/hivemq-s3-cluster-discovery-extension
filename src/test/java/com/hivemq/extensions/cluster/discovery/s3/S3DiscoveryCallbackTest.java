@@ -28,7 +28,7 @@ import com.hivemq.extensions.cluster.discovery.s3.aws.S3BucketResponse;
 import com.hivemq.extensions.cluster.discovery.s3.config.ClusterNodeFile;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
 import com.hivemq.extensions.cluster.discovery.s3.config.S3Config;
-import com.hivemq.extensions.cluster.discovery.s3.metrics.ExtensionMetrics;
+import com.hivemq.extensions.cluster.discovery.s3.metrics.S3DiscoveryMetrics;
 import com.hivemq.extensions.cluster.discovery.s3.util.ClusterNodeFileUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,19 +64,19 @@ class S3DiscoveryCallbackTest {
     private @NotNull HiveMQS3Client hiveMQS3Client;
     private @NotNull S3DiscoveryCallback s3DiscoveryCallback;
     private @NotNull ConfigurationReader configurationReader;
-    private @NotNull ExtensionMetrics extensionMetrics;
+    private @NotNull S3DiscoveryMetrics s3DiscoveryMetrics;
 
     @BeforeEach
     void setUp(@TempDir final @NotNull File tempDir) throws Exception {
         extensionInformation = mock(ExtensionInformation.class);
         clusterDiscoveryInput = mock(ClusterDiscoveryInput.class);
         clusterDiscoveryOutput = mock(ClusterDiscoveryOutput.class);
-        extensionMetrics = mock(ExtensionMetrics.class);
+        s3DiscoveryMetrics = mock(S3DiscoveryMetrics.class);
         when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
         when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
-        when(extensionMetrics.getResolutionRequestCounter()).thenReturn(mock(Counter.class));
-        when(extensionMetrics.getResolutionRequestFailedCounter()).thenReturn(mock(Counter.class));
+        when(s3DiscoveryMetrics.getResolutionRequestCounter()).thenReturn(mock(Counter.class));
+        when(s3DiscoveryMetrics.getResolutionRequestFailedCounter()).thenReturn(mock(Counter.class));
 
         final String configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
@@ -93,7 +93,7 @@ class S3DiscoveryCallbackTest {
         final S3Config s3Config = configurationReader.readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
 
-        s3DiscoveryCallback = new S3DiscoveryCallback(hiveMQS3Client, extensionMetrics);
+        s3DiscoveryCallback = new S3DiscoveryCallback(hiveMQS3Client, s3DiscoveryMetrics);
         when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456", 200, null));
     }
 
@@ -328,7 +328,7 @@ class S3DiscoveryCallbackTest {
     void test_init_no_config() throws IOException {
         Files.delete(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION));
 
-        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader, extensionMetrics);
+        s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader, s3DiscoveryMetrics);
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
         verify(clusterDiscoveryOutput, never()).provideCurrentNodes(anyList());

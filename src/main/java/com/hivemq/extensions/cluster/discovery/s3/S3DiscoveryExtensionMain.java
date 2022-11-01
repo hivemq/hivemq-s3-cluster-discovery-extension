@@ -26,7 +26,7 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
 import com.hivemq.extensions.cluster.discovery.s3.logging.ExtensionLogging;
-import com.hivemq.extensions.cluster.discovery.s3.metrics.ExtensionMetrics;
+import com.hivemq.extensions.cluster.discovery.s3.metrics.S3DiscoveryMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,18 +40,18 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
     private static final @NotNull Logger LOG = LoggerFactory.getLogger(S3DiscoveryExtensionMain.class);
 
     private final @NotNull ExtensionLogging extensionLogging;
-    private final @NotNull ExtensionMetrics extensionMetrics;
+    private final @NotNull S3DiscoveryMetrics s3DiscoveryMetrics;
     @Nullable S3DiscoveryCallback s3DiscoveryCallback;
 
     @SuppressWarnings("unused")
     public S3DiscoveryExtensionMain() {
-        this(new ExtensionLogging(), new ExtensionMetrics(Services.metricRegistry()));
+        this(new ExtensionLogging(), new S3DiscoveryMetrics(Services.metricRegistry()));
     }
 
     S3DiscoveryExtensionMain(
-            final @NotNull ExtensionLogging extensionLogging, final @NotNull ExtensionMetrics extensionMetrics) {
+            final @NotNull ExtensionLogging extensionLogging, final @NotNull S3DiscoveryMetrics s3DiscoveryMetrics) {
         this.extensionLogging = extensionLogging;
-        this.extensionMetrics = extensionMetrics;
+        this.s3DiscoveryMetrics = s3DiscoveryMetrics;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
             extensionLogging.start();
             final ConfigurationReader configurationReader =
                     new ConfigurationReader(extensionStartInput.getExtensionInformation());
-            s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader, extensionMetrics);
+            s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader, s3DiscoveryMetrics);
 
             Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);
             LOG.debug("{}: Registered S3 discovery callback successfully.", ExtensionConstants.EXTENSION_NAME);
@@ -82,6 +82,6 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
             Services.clusterService().removeDiscoveryCallback(s3DiscoveryCallback);
         }
         extensionLogging.stop();
-        extensionMetrics.stop();
+        s3DiscoveryMetrics.stop();
     }
 }

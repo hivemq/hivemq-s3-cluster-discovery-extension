@@ -27,13 +27,13 @@ import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTE
 /**
  * @author Lukas Brand
  */
-public class ExtensionMetrics {
+public class S3DiscoveryMetrics {
 
     private final @NotNull MetricRegistry metricRegistry;
     private final @NotNull Counter connectCounter;
     private final @NotNull Counter failedConnectCounter;
 
-    public ExtensionMetrics(final @NotNull MetricRegistry metricRegistry) {
+    public S3DiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
         this.connectCounter =
                 metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.success.count"));
