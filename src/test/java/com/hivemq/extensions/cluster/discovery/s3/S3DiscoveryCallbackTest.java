@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.cluster.discovery.s3.callbacks;
+package com.hivemq.extensions.cluster.discovery.s3;
 
 import com.codahale.metrics.Counter;
 import com.hivemq.extension.sdk.api.annotations.NotNull;

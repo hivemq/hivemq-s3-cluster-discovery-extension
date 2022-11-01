@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.cluster.discovery.s3.callbacks;
+package com.hivemq.extensions.cluster.discovery.s3;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
@@ -22,8 +22,8 @@ import com.hivemq.extension.sdk.api.services.cluster.ClusterDiscoveryCallback;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.extensions.cluster.discovery.s3.aws.S3BucketResponse;
 import com.hivemq.extensions.cluster.discovery.s3.aws.HiveMQS3Client;
+import com.hivemq.extensions.cluster.discovery.s3.aws.S3BucketResponse;
 import com.hivemq.extensions.cluster.discovery.s3.config.ClusterNodeFile;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
 import com.hivemq.extensions.cluster.discovery.s3.metrics.ExtensionMetrics;
@@ -47,7 +47,7 @@ import static com.hivemq.extensions.cluster.discovery.s3.util.StringUtil.isNullO
  * @author Abdullah Imal
  * @since 4.0.0
  */
-public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
+class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     private static final @NotNull Logger LOG = LoggerFactory.getLogger(S3DiscoveryCallback.class);
 
@@ -57,7 +57,7 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
     private @Nullable ClusterNodeFile ownNodeFile;
 
-    public S3DiscoveryCallback(
+    S3DiscoveryCallback(
             final @NotNull ConfigurationReader configurationReader, final @NotNull ExtensionMetrics extensionMetrics) {
         this.hiveMQS3Client = new HiveMQS3Client(configurationReader);
         this.extensionMetrics = extensionMetrics;
@@ -105,7 +105,8 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                             EXTENSION_NAME,
                             s3Bucket.getBucketName());
                 }
-                s3Bucket.getThrowable().ifPresent(throwable -> LOG.debug("{}: Original Exception: ", EXTENSION_NAME, throwable));
+                s3Bucket.getThrowable()
+                        .ifPresent(throwable -> LOG.debug("{}: Original Exception: ", EXTENSION_NAME, throwable));
                 extensionMetrics.getResolutionRequestFailedCounter().inc();
                 addressesCount.set(0);
             }
@@ -154,7 +155,8 @@ public class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                             EXTENSION_NAME,
                             Objects.requireNonNull(hiveMQS3Client.getS3Config()).getBucketName());
                 }
-                s3Bucket.getThrowable().ifPresent(throwable -> LOG.debug("{}: Original Exception: ", EXTENSION_NAME, throwable));
+                s3Bucket.getThrowable()
+                        .ifPresent(throwable -> LOG.debug("{}: Original Exception: ", EXTENSION_NAME, throwable));
                 extensionMetrics.getResolutionRequestFailedCounter().inc();
                 addressesCount.set(0);
             }
