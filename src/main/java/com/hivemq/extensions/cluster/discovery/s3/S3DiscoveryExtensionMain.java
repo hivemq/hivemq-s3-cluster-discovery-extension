@@ -24,7 +24,6 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
-import com.hivemq.extensions.cluster.discovery.s3.callbacks.S3DiscoveryCallback;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
 import com.hivemq.extensions.cluster.discovery.s3.logging.ExtensionLogging;
 import com.hivemq.extensions.cluster.discovery.s3.metrics.ExtensionMetrics;
