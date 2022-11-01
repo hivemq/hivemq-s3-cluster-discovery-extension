@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.cluster.discovery.s3.metrics;
+package com.hivemq.extensions.cluster.discovery.s3;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -27,13 +27,13 @@ import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTE
 /**
  * @author Lukas Brand
  */
-public class S3DiscoveryMetrics {
+class S3DiscoveryMetrics {
 
     private final @NotNull MetricRegistry metricRegistry;
     private final @NotNull Counter connectCounter;
     private final @NotNull Counter failedConnectCounter;
 
-    public S3DiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
+    S3DiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
         this.connectCounter =
                 metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.success.count"));
@@ -41,19 +41,19 @@ public class S3DiscoveryMetrics {
                 metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.failed.count"));
     }
 
-    public @NotNull Counter getResolutionRequestCounter() {
+    @NotNull Counter getResolutionRequestCounter() {
         return connectCounter;
     }
 
-    public @NotNull Counter getResolutionRequestFailedCounter() {
+    @NotNull Counter getResolutionRequestFailedCounter() {
         return failedConnectCounter;
     }
 
-    public void registerAddressCountGauge(final @NotNull Gauge<Integer> supplier) {
+    void registerAddressCountGauge(final @NotNull Gauge<Integer> supplier) {
         metricRegistry.gauge(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "resolved-addresses"), () -> supplier);
     }
 
-    public void stop() {
+    void stop() {
         metricRegistry.removeMatching((name, metric) -> name.startsWith(EXTENSION_METRIC_PREFIX + ".") &&
                 metric instanceof Gauge);
     }

@@ -26,7 +26,6 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
 import com.hivemq.extensions.cluster.discovery.s3.logging.ExtensionLogging;
-import com.hivemq.extensions.cluster.discovery.s3.metrics.S3DiscoveryMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

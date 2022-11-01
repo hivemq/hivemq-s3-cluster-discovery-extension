@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.cluster.discovery.s3.metrics;
+package com.hivemq.extensions.cluster.discovery.s3;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
