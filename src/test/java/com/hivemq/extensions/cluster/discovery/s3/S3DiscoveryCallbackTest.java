@@ -28,7 +28,6 @@ import com.hivemq.extensions.cluster.discovery.s3.aws.S3BucketResponse;
 import com.hivemq.extensions.cluster.discovery.s3.config.ClusterNodeFile;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
 import com.hivemq.extensions.cluster.discovery.s3.config.S3Config;
-import com.hivemq.extensions.cluster.discovery.s3.metrics.S3DiscoveryMetrics;
 import com.hivemq.extensions.cluster.discovery.s3.util.ClusterNodeFileUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
