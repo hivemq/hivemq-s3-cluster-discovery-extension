@@ -79,7 +79,7 @@ class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             hiveMQS3Client.createOrUpdate();
         } catch (final Exception ignored) {
             LOG.error("{}: Configuration couldn't be loaded. Skipping initial discovery.", EXTENSION_NAME);
-            s3DiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            s3DiscoveryMetrics.getQueryFailedCount().inc();
             addressesCount.set(0);
             return;
         }
@@ -107,12 +107,12 @@ class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                 }
                 s3Bucket.getThrowable()
                         .ifPresent(throwable -> LOG.debug("{}: Original Exception: ", EXTENSION_NAME, throwable));
-                s3DiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+                s3DiscoveryMetrics.getQueryFailedCount().inc();
                 addressesCount.set(0);
             }
         } catch (final Exception e) {
             LOG.error("{}: Initialization of the S3 discovery callback failed.", EXTENSION_NAME, e);
-            s3DiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            s3DiscoveryMetrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }
     }
@@ -125,7 +125,7 @@ class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             hiveMQS3Client.createOrUpdate();
         } catch (final Exception ignored) {
             LOG.error("{}: Configuration couldn't be reloaded. Skipping reload callback.", EXTENSION_NAME);
-            s3DiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            s3DiscoveryMetrics.getQueryFailedCount().inc();
             addressesCount.set(0);
             return;
         }
@@ -157,12 +157,12 @@ class S3DiscoveryCallback implements ClusterDiscoveryCallback {
                 }
                 s3Bucket.getThrowable()
                         .ifPresent(throwable -> LOG.debug("{}: Original Exception: ", EXTENSION_NAME, throwable));
-                s3DiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+                s3DiscoveryMetrics.getQueryFailedCount().inc();
                 addressesCount.set(0);
             }
         } catch (final Exception e) {
             LOG.error("{}: Reload of the S3 discovery callback failed.", EXTENSION_NAME, e);
-            s3DiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            s3DiscoveryMetrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }
     }
@@ -206,7 +206,7 @@ class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             nodeFiles = getNodeFiles();
         } catch (final Exception e) {
             LOG.error("{}: Unknown error while reading all node files.", EXTENSION_NAME, e);
-            s3DiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            s3DiscoveryMetrics.getQueryFailedCount().inc();
             addressesCount.set(0);
             return nodeAddresses;
         }
@@ -224,7 +224,7 @@ class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             }
         }
         LOG.debug("{}: Found following node addresses: {}", EXTENSION_NAME, nodeAddresses);
-        s3DiscoveryMetrics.getResolutionRequestCounter().inc();
+        s3DiscoveryMetrics.getQuerySuccessCount().inc();
         addressesCount.set(nodeAddresses.size());
         return nodeAddresses;
     }

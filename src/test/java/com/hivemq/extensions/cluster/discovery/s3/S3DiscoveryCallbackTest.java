@@ -74,8 +74,8 @@ class S3DiscoveryCallbackTest {
         when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
         when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
-        when(s3DiscoveryMetrics.getResolutionRequestCounter()).thenReturn(mock(Counter.class));
-        when(s3DiscoveryMetrics.getResolutionRequestFailedCounter()).thenReturn(mock(Counter.class));
+        when(s3DiscoveryMetrics.getQuerySuccessCount()).thenReturn(mock(Counter.class));
+        when(s3DiscoveryMetrics.getQueryFailedCount()).thenReturn(mock(Counter.class));
 
         final String configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
