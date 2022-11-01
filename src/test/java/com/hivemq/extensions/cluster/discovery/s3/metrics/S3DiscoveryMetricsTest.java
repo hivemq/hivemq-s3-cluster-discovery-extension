@@ -33,12 +33,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class S3DiscoveryMetricsTest {
 
     private @NotNull MetricRegistry metricRegistry;
-    private @NotNull ExtensionMetrics metrics;
+    private @NotNull S3DiscoveryMetrics metrics;
 
     @BeforeEach
     void setUp() {
         metricRegistry = new MetricRegistry();
-        metrics = new ExtensionMetrics(metricRegistry);
+        metrics = new S3DiscoveryMetrics(metricRegistry);
     }
 
     @Test
