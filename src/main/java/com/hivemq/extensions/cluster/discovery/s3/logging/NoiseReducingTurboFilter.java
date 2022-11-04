@@ -26,7 +26,8 @@ import org.slf4j.Marker;
 
 import java.util.Set;
 
-public class NoiseReducingTurboFilter extends TurboFilter {
+class NoiseReducingTurboFilter extends TurboFilter {
+
     private static final @NotNull Set<String> NOISY_LOGGER_NAMES = Set.of("software.amazon.awssdk.request",
             "software.amazon.awssdk.requestId",
             "software.amazon.awssdk.auth.signer.Aws4Signer",
