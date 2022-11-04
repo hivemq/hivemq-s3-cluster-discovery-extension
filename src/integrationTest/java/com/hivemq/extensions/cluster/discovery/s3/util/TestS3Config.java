@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.cluster.discovery.s3.config;
+package com.hivemq.extensions.cluster.discovery.s3.util;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import org.testcontainers.utility.MountableFile;
