@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.cluster.discovery.s3.metrics;
+package com.hivemq.extensions.cluster.discovery.s3.util;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import okhttp3.OkHttpClient;
