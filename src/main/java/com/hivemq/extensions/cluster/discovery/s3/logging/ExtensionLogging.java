@@ -20,7 +20,6 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.LoggerContextListener;
-import ch.qos.logback.classic.spi.TurboFilterList;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
@@ -28,25 +27,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ExtensionLogging {
 
-    private final @NotNull NoiseReducingTurboFilter noiseReducingTurboFilter;
-
-    public ExtensionLogging() {
-        noiseReducingTurboFilter = new NoiseReducingTurboFilter();
-    }
-
+    private final @NotNull NoiseReducingTurboFilter noiseReducingTurboFilter = new NoiseReducingTurboFilter();
+    private final @NotNull LogbackChangeListener logbackChangeListener = new LogbackChangeListener();
     private final @NotNull AtomicBoolean stopped = new AtomicBoolean(false);
 
     public void start() {
         final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        context.addListener(new LogbackChangeListener());
+        context.addListener(logbackChangeListener);
         context.addTurboFilter(noiseReducingTurboFilter);
     }
 
     public void stop() {
         stopped.set(true);
         final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        final TurboFilterList turboFilterList = context.getTurboFilterList();
-        turboFilterList.remove(noiseReducingTurboFilter);
+        context.removeListener(logbackChangeListener);
+        context.getTurboFilterList().remove(noiseReducingTurboFilter);
     }
 
     private class LogbackChangeListener implements LoggerContextListener {
