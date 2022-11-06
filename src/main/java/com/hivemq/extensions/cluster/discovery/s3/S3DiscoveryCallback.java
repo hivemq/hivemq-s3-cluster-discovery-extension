@@ -24,7 +24,6 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryO
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.cluster.discovery.s3.aws.HiveMQS3Client;
 import com.hivemq.extensions.cluster.discovery.s3.aws.S3BucketResponse;
-import com.hivemq.extensions.cluster.discovery.s3.config.ClusterNodeFile;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

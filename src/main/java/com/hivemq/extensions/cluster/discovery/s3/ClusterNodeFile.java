@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.cluster.discovery.s3.config;
+package com.hivemq.extensions.cluster.discovery.s3;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
@@ -40,7 +40,7 @@ public class ClusterNodeFile {
     private final @NotNull ClusterNodeAddress clusterNodeAddress;
     private final long creationTimeInMillis;
 
-    public ClusterNodeFile(final @NotNull String clusterId, final @NotNull ClusterNodeAddress clusterNodeAddress) {
+    ClusterNodeFile(final @NotNull String clusterId, final @NotNull ClusterNodeAddress clusterNodeAddress) {
         Preconditions.checkNotNullOrBlank(clusterId, "clusterId");
         Preconditions.checkNotNull(clusterNodeAddress, "clusterNodeAddress");
         this.clusterId = clusterId;
@@ -60,7 +60,7 @@ public class ClusterNodeFile {
         this.creationTimeInMillis = creationTimeInMillis;
     }
 
-    public static @Nullable ClusterNodeFile parseClusterNodeFile(final @NotNull String fileContent) {
+    static @Nullable ClusterNodeFile parseClusterNodeFile(final @NotNull String fileContent) {
         Preconditions.checkNotNullOrBlank(fileContent, "fileContent");
 
         final String content;
@@ -106,15 +106,15 @@ public class ClusterNodeFile {
         return new ClusterNodeFile(clusterId, new ClusterNodeAddress(host, port), creationTimeInMillis);
     }
 
-    public @NotNull String getClusterId() {
+    @NotNull String getClusterId() {
         return clusterId;
     }
 
-    public @NotNull ClusterNodeAddress getClusterNodeAddress() {
+    @NotNull ClusterNodeAddress getClusterNodeAddress() {
         return clusterNodeAddress;
     }
 
-    public boolean isExpired(final long expirationInSeconds) {
+    boolean isExpired(final long expirationInSeconds) {
         // 0 = deactivated
         if (expirationInSeconds == 0) {
             return false;

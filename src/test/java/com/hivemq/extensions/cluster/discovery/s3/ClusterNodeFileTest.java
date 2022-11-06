@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.cluster.discovery.s3.config;
+package com.hivemq.extensions.cluster.discovery.s3;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;

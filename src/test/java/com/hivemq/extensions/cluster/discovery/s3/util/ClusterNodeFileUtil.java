@@ -17,7 +17,7 @@
 package com.hivemq.extensions.cluster.discovery.s3.util;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extensions.cluster.discovery.s3.config.ClusterNodeFile;
+import com.hivemq.extensions.cluster.discovery.s3.ClusterNodeFile;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
