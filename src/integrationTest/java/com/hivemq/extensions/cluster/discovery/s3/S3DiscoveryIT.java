@@ -52,7 +52,7 @@ class S3DiscoveryIT {
 
     @Container
     private final @NotNull LocalStackContainer localstack =
-            new LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("latest")).withServices(S3)
+            new LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("1.2.0")).withServices(S3)
                     .withNetwork(network)
                     .withNetworkAliases("localstack");
 
@@ -69,7 +69,7 @@ class S3DiscoveryIT {
                 .build();
 
         firstNode =
-                new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("latest")).withLogLevel(Level.DEBUG)
+                new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.9.0")).withLogLevel(Level.DEBUG)
                         .withNetwork(network)
                         .withoutPrepackagedExtensions()
                         .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))
@@ -84,7 +84,7 @@ class S3DiscoveryIT {
                                 "s3discovery.properties");
 
         secondNode =
-                new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("latest")).withLogLevel(Level.DEBUG)
+                new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.9.0")).withLogLevel(Level.DEBUG)
                         .withNetwork(network)
                         .withoutPrepackagedExtensions()
                         .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))
