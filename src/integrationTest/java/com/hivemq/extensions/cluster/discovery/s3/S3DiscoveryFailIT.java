@@ -44,7 +44,7 @@ class S3DiscoveryFailIT {
     private final @NotNull Network network = Network.newNetwork();
 
     private final @NotNull LocalStackContainer localstack =
-            new LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("latest")).withServices(S3)
+            new LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("1.2.0")).withServices(S3)
                     .withNetwork(network)
                     .withNetworkAliases("localstack");
 
@@ -59,7 +59,7 @@ class S3DiscoveryFailIT {
                 .build();
 
         firstNode =
-                new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("latest")).withLogLevel(Level.DEBUG)
+                new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.9.0")).withLogLevel(Level.DEBUG)
                         .withNetwork(network)
                         .withoutPrepackagedExtensions()
                         .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))
