@@ -214,14 +214,14 @@ The following metrics are available:
 These two counter metrics indicate a successful or failed S3 query attempt in order to receive the IP addresses of cluster members:
 
 ----
-com.hivemq.extensions.s3-cluster-discovery.query.success.count
-com.hivemq.extensions.s3-cluster-discovery.query.failed.count
+com.hivemq.extensions.cluster.discovery.s3.query.success.count
+com.hivemq.extensions.cluster.discovery.s3.query.failed.count
 ----
 
 This gauge shows the number of currently found cluster member IP addresses that were received during the last S3 query:
 
 ----
-com.hivemq.extensions.s3-cluster-discovery.resolved-addresses
+com.hivemq.extensions.cluster.discovery.s3.resolved-addresses
 ----
 
 == First Steps
