@@ -36,11 +36,11 @@ public class TestS3Metrics {
     private static final @NotNull Logger LOG = LoggerFactory.getLogger(TestS3Metrics.class);
 
     public static final @NotNull String SUCCESS_METRIC =
-            "com_hivemq_extensions_s3_cluster_discovery_query_success_count";
+            "com_hivemq_extensions_cluster_discovery_s3_query_success_count";
     public static final @NotNull String FAILURE_METRIC =
-            "com_hivemq_extensions_s3_cluster_discovery_query_failed_count";
+            "com_hivemq_extensions_cluster_discovery_s3_query_failed_count";
     public static final @NotNull String IP_COUNT_METRIC =
-            "com_hivemq_extensions_s3_cluster_discovery_resolved_addresses";
+            "com_hivemq_extensions_cluster_discovery_s3_resolved_addresses";
 
     private TestS3Metrics() {
     }
