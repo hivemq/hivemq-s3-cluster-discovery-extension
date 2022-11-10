@@ -31,7 +31,6 @@ import com.hivemq.extensions.cluster.discovery.s3.util.ClusterNodeFileUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -87,7 +86,6 @@ class S3DiscoveryCallbackTest {
 
         configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = mock(HiveMQS3Client.class);
-        hiveMQS3Client.setS3Client(mock(S3Client.class));
         final S3Config s3Config = configurationReader.readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
 

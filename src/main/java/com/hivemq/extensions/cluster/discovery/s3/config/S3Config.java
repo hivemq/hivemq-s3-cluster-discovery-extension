@@ -33,9 +33,8 @@ public interface S3Config extends Config {
     @NotNull String getBucketRegionName();
 
     @Key("file-prefix")
-    @NotNull
     @DefaultValue("")
-    String getFilePrefix();
+    @NotNull String getFilePrefix();
 
     @Key("file-expiration")
     @NotNull Long getFileExpirationInSeconds();
@@ -44,9 +43,8 @@ public interface S3Config extends Config {
     @NotNull Long getFileUpdateIntervalInSeconds();
 
     @Key("s3-endpoint")
-    @NotNull
     @DefaultValue("s3.amazonaws.com")
-    String getEndpoint();
+    @NotNull String getEndpoint();
 
     @Key("s3-endpoint-region")
     @Nullable String getEndpointRegionName();
