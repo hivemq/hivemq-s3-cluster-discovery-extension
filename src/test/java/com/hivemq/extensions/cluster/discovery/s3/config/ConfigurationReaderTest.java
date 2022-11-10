@@ -21,7 +21,6 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -30,6 +29,7 @@ import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTE
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ConfigurationReaderTest {
 
@@ -38,7 +38,7 @@ class ConfigurationReaderTest {
     @BeforeEach
     void setUp(@TempDir final @NotNull File tempDir) {
         extensionInformation = mock(ExtensionInformation.class);
-        Mockito.when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
     }
 
     @Test

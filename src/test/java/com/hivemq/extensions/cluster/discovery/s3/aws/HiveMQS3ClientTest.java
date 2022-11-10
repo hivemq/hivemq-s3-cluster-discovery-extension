@@ -62,7 +62,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -73,7 +73,7 @@ class HiveMQS3ClientTest {
     private @NotNull HiveMQS3Client hiveMQS3Client;
 
     @BeforeEach
-    public void setUp(@TempDir final @NotNull File tempDir) throws IOException {
+    void setUp(@TempDir final @NotNull File tempDir) throws IOException {
         extensionInformation = mock(ExtensionInformation.class);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
 
@@ -130,7 +130,8 @@ class HiveMQS3ClientTest {
                         .sdkHttpResponse(SdkHttpResponse.builder().statusCode(404).build())
                         .build())
                 .build();
-        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenThrow(awsServiceException);
+        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenThrow(
+                awsServiceException);
         final S3BucketResponse s3Bucket = hiveMQS3Client.checkBucket();
 
         assertFalse(s3Bucket.isSuccessful());

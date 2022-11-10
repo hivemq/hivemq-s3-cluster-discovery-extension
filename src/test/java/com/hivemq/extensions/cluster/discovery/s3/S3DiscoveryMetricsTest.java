@@ -23,11 +23,10 @@ import com.hivemq.extension.sdk.api.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class S3DiscoveryMetricsTest {
 
@@ -41,7 +40,7 @@ class S3DiscoveryMetricsTest {
     }
 
     @Test
-    void test_resolutionRequestCounter() {
+    void test_getQuerySuccessCount() {
         final Counter counter = metrics.getQuerySuccessCount();
         counter.inc();
         final String name = ExtensionConstants.EXTENSION_METRIC_PREFIX + "." + "query.success.count";
@@ -50,7 +49,7 @@ class S3DiscoveryMetricsTest {
     }
 
     @Test
-    void test_resolutionRequestCounterFailed() {
+    void test_getQueryFailedCount() {
         final Counter counter = metrics.getQueryFailedCount();
         counter.inc();
         final String name = ExtensionConstants.EXTENSION_METRIC_PREFIX + "." + "query.failed.count";
@@ -60,22 +59,16 @@ class S3DiscoveryMetricsTest {
 
     @Test
     void test_registerAddressCountGauge() {
-        final List<Integer> addresses = new ArrayList<>(List.of(1));
-        final AtomicInteger addressesCount = new AtomicInteger(0);
-
-        addressesCount.set(addresses.size());
-
+        final AtomicInteger addressesCount = new AtomicInteger(1);
         metrics.registerAddressCountGauge(addressesCount::get);
 
-        final String name = ExtensionConstants.EXTENSION_METRIC_PREFIX + "." + "resolved-addresses";
+        final String name = ExtensionConstants.EXTENSION_METRIC_PREFIX + ".resolved-addresses";
         final Gauge<?> gauge = metricRegistry.getGauges().get(name);
 
-        assertEquals(addresses.size(), gauge.getValue());
+        assertNotNull(gauge);
+        assertEquals(1, gauge.getValue());
 
-        addresses.add(2);
-        addresses.add(3);
-        addressesCount.set(addresses.size());
-
-        assertEquals(addresses.size(), gauge.getValue());
+        addressesCount.set(3);
+        assertEquals(3, gauge.getValue());
     }
 }
