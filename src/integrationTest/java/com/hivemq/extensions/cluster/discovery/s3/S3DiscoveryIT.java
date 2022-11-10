@@ -17,8 +17,8 @@
 package com.hivemq.extensions.cluster.discovery.s3;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extensions.cluster.discovery.s3.util.TestS3Config;
-import com.hivemq.extensions.cluster.discovery.s3.util.TestS3Metrics;
+import com.hivemq.extensions.cluster.discovery.s3.util.TestConfigFile;
+import com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,7 +62,7 @@ class S3DiscoveryIT {
     @BeforeEach
     void setUp(@TempDir final @NotNull Path tempDir) throws IOException {
         createS3Environment();
-        final MountableFile configFile = TestS3Config.builder(tempDir)
+        final MountableFile configFile = TestConfigFile.builder(tempDir)
                 .setS3BucketName(BUCKET_NAME)
                 .setS3Endpoint("http://localstack:4566")
                 .setS3EndpointRegion(localstack.getRegion())
@@ -107,20 +107,20 @@ class S3DiscoveryIT {
     @Test
     void cluster_singleNode() throws IOException {
         firstNode.start();
-        final Map<String, Float> metrics = TestS3Metrics.getMetrics(firstNode);
-        assertEquals(1, metrics.get(TestS3Metrics.SUCCESS_METRIC));
-        assertEquals(0, metrics.get(TestS3Metrics.FAILURE_METRIC));
-        assertEquals(1, metrics.get(TestS3Metrics.IP_COUNT_METRIC));
+        final Map<String, Float> metrics = MetricsUtil.getMetrics(firstNode);
+        assertEquals(1, metrics.get(MetricsUtil.SUCCESS_METRIC));
+        assertEquals(0, metrics.get(MetricsUtil.FAILURE_METRIC));
+        assertEquals(1, metrics.get(MetricsUtil.IP_COUNT_METRIC));
     }
 
     @Test
     void cluster_twoNode() throws IOException {
         firstNode.start();
         secondNode.start();
-        final Map<String, Float> secondNodeMetrics = TestS3Metrics.getMetrics(secondNode);
-        assertEquals(1, secondNodeMetrics.get(TestS3Metrics.SUCCESS_METRIC));
-        assertEquals(0, secondNodeMetrics.get(TestS3Metrics.FAILURE_METRIC));
-        assertEquals(2, secondNodeMetrics.get(TestS3Metrics.IP_COUNT_METRIC));
+        final Map<String, Float> secondNodeMetrics = MetricsUtil.getMetrics(secondNode);
+        assertEquals(1, secondNodeMetrics.get(MetricsUtil.SUCCESS_METRIC));
+        assertEquals(0, secondNodeMetrics.get(MetricsUtil.FAILURE_METRIC));
+        assertEquals(2, secondNodeMetrics.get(MetricsUtil.IP_COUNT_METRIC));
     }
 
 

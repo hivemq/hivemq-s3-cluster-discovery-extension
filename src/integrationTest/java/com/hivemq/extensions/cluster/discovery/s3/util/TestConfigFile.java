@@ -26,7 +26,7 @@ import java.nio.file.Path;
 
 import static org.junit.Assert.assertNotNull;
 
-public class TestS3Config {
+public class TestConfigFile {
 
     private final @NotNull Path tempDir;
     private @NotNull String s3BucketRegion = "us-east-1";
@@ -38,46 +38,45 @@ public class TestS3Config {
     private boolean s3EndpointActive = false;
     private @NotNull String s3EndpointRegion = "";
 
-    public TestS3Config(final @NotNull Path tempDir) {
+    private TestConfigFile(final @NotNull Path tempDir) {
         this.tempDir = tempDir;
     }
 
-
-    public static @NotNull TestS3Config builder(final @NotNull Path tempDir) {
-        return new TestS3Config(tempDir);
+    public static @NotNull TestConfigFile builder(final @NotNull Path tempDir) {
+        return new TestConfigFile(tempDir);
     }
 
-    public @NotNull TestS3Config setS3BucketRegion(final @NotNull String s3BucketRegion) {
+    public @NotNull TestConfigFile setS3BucketRegion(final @NotNull String s3BucketRegion) {
         this.s3BucketRegion = s3BucketRegion;
         return this;
     }
 
-    public @NotNull TestS3Config setS3BucketName(final @NotNull String s3BucketName) {
+    public @NotNull TestConfigFile setS3BucketName(final @NotNull String s3BucketName) {
         this.s3BucketName = s3BucketName;
         return this;
     }
 
-    public @NotNull TestS3Config setFilePrefix(final @NotNull String filePrefix) {
+    public @NotNull TestConfigFile setFilePrefix(final @NotNull String filePrefix) {
         this.filePrefix = filePrefix;
         return this;
     }
 
-    public @NotNull TestS3Config setFileExpiration(final @NotNull String fileExpiration) {
+    public @NotNull TestConfigFile setFileExpiration(final @NotNull String fileExpiration) {
         this.fileExpiration = fileExpiration;
         return this;
     }
 
-    public @NotNull TestS3Config setUpdateInterval(final @NotNull String updateInterval) {
+    public @NotNull TestConfigFile setUpdateInterval(final @NotNull String updateInterval) {
         this.updateInterval = updateInterval;
         return this;
     }
 
-    public @NotNull TestS3Config setS3Endpoint(final @NotNull String s3Endpoint) {
+    public @NotNull TestConfigFile setS3Endpoint(final @NotNull String s3Endpoint) {
         this.s3Endpoint = s3Endpoint;
         return this;
     }
 
-    public @NotNull TestS3Config setS3EndpointRegion(final @NotNull String s3EndpointRegion) {
+    public @NotNull TestConfigFile setS3EndpointRegion(final @NotNull String s3EndpointRegion) {
         this.s3EndpointActive = true;
         this.s3EndpointRegion = s3EndpointRegion;
         return this;

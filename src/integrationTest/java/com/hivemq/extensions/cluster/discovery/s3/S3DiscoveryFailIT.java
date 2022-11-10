@@ -17,8 +17,8 @@
 package com.hivemq.extensions.cluster.discovery.s3;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extensions.cluster.discovery.s3.util.TestS3Config;
-import com.hivemq.extensions.cluster.discovery.s3.util.TestS3Metrics;
+import com.hivemq.extensions.cluster.discovery.s3.util.TestConfigFile;
+import com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class S3DiscoveryFailIT {
 
     @BeforeEach
     void setUp(@TempDir final @NotNull Path tempDir) throws IOException {
-        final MountableFile configFile = TestS3Config.builder(tempDir)
+        final MountableFile configFile = TestConfigFile.builder(tempDir)
                 .setS3BucketName(BUCKET_NAME)
                 .setS3Endpoint("http://localstack:4566")
                 .setS3EndpointRegion(localstack.getRegion())
@@ -67,7 +67,7 @@ class S3DiscoveryFailIT {
                         .withExposedPorts(9399)
                         .withExtension(MountableFile.forClasspathResource("hivemq-s3-cluster-discovery-extension"))
                         .withEnv("AWS_ACCESS_KEY_ID", localstack.getAccessKey())
-                        .withEnv("AWS_SECRET_ACCESS_KEY", localstack.getAccessKey())
+                        .withEnv("AWS_SECRET_ACCESS_KEY", localstack.getSecretKey())
                         .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
                         .withFileInExtensionHomeFolder(configFile,
                                 "hivemq-s3-cluster-discovery-extension",
@@ -82,19 +82,19 @@ class S3DiscoveryFailIT {
     @Test
     void endpoint_not_working() throws IOException {
         firstNode.start();
-        final Map<String, Float> metrics = TestS3Metrics.getMetrics(firstNode);
-        assertEquals(0, metrics.get(TestS3Metrics.SUCCESS_METRIC));
-        assertEquals(1, metrics.get(TestS3Metrics.FAILURE_METRIC));
-        assertEquals(0, metrics.get(TestS3Metrics.IP_COUNT_METRIC));
+        final Map<String, Float> metrics = MetricsUtil.getMetrics(firstNode);
+        assertEquals(0, metrics.get(MetricsUtil.SUCCESS_METRIC));
+        assertEquals(1, metrics.get(MetricsUtil.FAILURE_METRIC));
+        assertEquals(0, metrics.get(MetricsUtil.IP_COUNT_METRIC));
     }
 
     @Test
     void bucket_not_created() throws IOException {
         localstack.start();
         firstNode.start();
-        final Map<String, Float> metrics = TestS3Metrics.getMetrics(firstNode);
-        assertEquals(0, metrics.get(TestS3Metrics.SUCCESS_METRIC));
-        assertEquals(1, metrics.get(TestS3Metrics.FAILURE_METRIC));
-        assertEquals(0, metrics.get(TestS3Metrics.IP_COUNT_METRIC));
+        final Map<String, Float> metrics = MetricsUtil.getMetrics(firstNode);
+        assertEquals(0, metrics.get(MetricsUtil.SUCCESS_METRIC));
+        assertEquals(1, metrics.get(MetricsUtil.FAILURE_METRIC));
+        assertEquals(0, metrics.get(MetricsUtil.IP_COUNT_METRIC));
     }
 }

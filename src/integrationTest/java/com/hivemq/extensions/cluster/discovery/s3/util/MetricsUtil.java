@@ -31,9 +31,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class TestS3Metrics {
+public class MetricsUtil {
 
-    private static final @NotNull Logger LOG = LoggerFactory.getLogger(TestS3Metrics.class);
+    private static final @NotNull Logger LOG = LoggerFactory.getLogger(MetricsUtil.class);
 
     public static final @NotNull String SUCCESS_METRIC =
             "com_hivemq_extensions_cluster_discovery_s3_query_success_count";
@@ -42,7 +42,7 @@ public class TestS3Metrics {
     public static final @NotNull String IP_COUNT_METRIC =
             "com_hivemq_extensions_cluster_discovery_s3_resolved_addresses";
 
-    private TestS3Metrics() {
+    private MetricsUtil() {
     }
 
     public static @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws IOException {
