@@ -19,9 +19,9 @@ hivemqExtension {
 }
 
 dependencies {
-    hivemqProvided("ch.qos.logback:logback-classic:${property("logback.version")}")
-    implementation("org.aeonbits.owner:owner:${property("owner.version")}")
-    implementation(platform("software.amazon.awssdk:bom:${property("aws-bom.version")}"))
+    hivemqProvided("ch.qos.logback:logback-classic:1.4.1")
+    implementation("org.aeonbits.owner:owner:1.0.12")
+    implementation(platform("software.amazon.awssdk:bom:2.17.274"))
     implementation("software.amazon.awssdk:s3")
 }
 
@@ -45,8 +45,8 @@ hivemqExtension.resources {
 /* ******************** test ******************** */
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:${property("junit-jupiter.version")}")
-    testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
+    testImplementation("org.mockito:mockito-core:4.8.1")
 }
 
 tasks.withType<Test>().configureEach {
@@ -57,9 +57,9 @@ tasks.withType<Test>().configureEach {
 
 dependencies {
     //necessary as the localstack s3 service would not start without the old sdk
-    integrationTestRuntimeOnly("com.amazonaws:aws-java-sdk-s3:${property("aws-legacy-sdk.version")}")
-    integrationTestImplementation("com.squareup.okhttp3:okhttp:${property("ok-http.version")}")
-    integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${property("testcontainers.version")}"))
+    integrationTestRuntimeOnly("com.amazonaws:aws-java-sdk-s3:1.11.914")
+    integrationTestImplementation("com.squareup.okhttp3:okhttp:4.10.0")
+    integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:1.17.5"))
     integrationTestImplementation("org.testcontainers:testcontainers")
     integrationTestImplementation("org.testcontainers:junit-jupiter")
     integrationTestImplementation("org.testcontainers:localstack")
