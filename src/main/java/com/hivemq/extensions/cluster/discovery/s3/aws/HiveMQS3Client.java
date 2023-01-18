@@ -68,7 +68,7 @@ public class HiveMQS3Client {
         if (newS3Config == null) {
             throw new IllegalStateException("Configuration of the S3 discovery extension couldn't be loaded.");
         }
-        if (s3Config.equals(newS3Config)) {
+        if (s3Config != null && s3Config.equals(newS3Config)) {
             return;
         }
         s3Config = newS3Config;
@@ -92,7 +92,9 @@ public class HiveMQS3Client {
         if (s3Config.getPathStyleAccess() != null) {
             s3ConfigurationBuilder.pathStyleAccessEnabled(s3Config.getPathStyleAccess());
         }
-        s3Client.close();
+        if (s3Client != null) {
+            s3Client.close();
+        }
         s3Client = s3ClientBuilder.credentialsProvider(credentialsProvider)
                 .serviceConfiguration(s3ConfigurationBuilder.build())
                 .build();
