@@ -60,6 +60,8 @@ import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTE
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -159,6 +161,62 @@ class HiveMQS3ClientTest {
         final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
         assertThrows(IllegalStateException.class, () -> hiveMQS3Client.createOrUpdate());
+    }
+
+    @Test
+    void createOrUpdate_identicalConfig_sameClient() throws IOException {
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:access_key\n" +
+                "credentials-access-key-id:access-key-id\n" +
+                "credentials-secret-access-key:secret-access-key";
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
+        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+        hiveMQS3Client.createOrUpdate();
+        final S3Client firstClient = hiveMQS3Client.getS3Client();
+
+        hiveMQS3Client.createOrUpdate();
+        final S3Client secondClient = hiveMQS3Client.getS3Client();
+        assertSame(firstClient, secondClient);
+    }
+
+    @Test
+    void createOrUpdate_differentConfig_differentClient() throws IOException {
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+
+        final String configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:access_key\n" +
+                "credentials-access-key-id:access-key-id\n" +
+                "credentials-secret-access-key:secret-access-key";
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
+        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+        hiveMQS3Client.createOrUpdate();
+        final S3Client firstClient = hiveMQS3Client.getS3Client();
+
+        final String configuration2 = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq654321\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:access_key\n" +
+                "credentials-access-key-id:access-key-id\n" +
+                "credentials-secret-access-key:secret-access-key";
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration2);
+        hiveMQS3Client.createOrUpdate();
+        final S3Client secondClient = hiveMQS3Client.getS3Client();
+        assertNotSame(firstClient, secondClient);
     }
 
     @Test
