@@ -36,29 +36,31 @@ tasks.asciidoctor {
     secondarySources { exclude("**") }
 }
 
-/* ******************** test ******************** */
-
-dependencies {
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.mockito)
-}
-
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
-}
-
-/* ******************** integration test ******************** */
-
-dependencies {
-    integrationTestCompileOnly(libs.jetbrains.annotations)
-    //necessary as the localstack s3 service would not start without the old sdk
-    integrationTestRuntimeOnly(libs.aws.sdkv1.s3)
-    integrationTestImplementation(libs.okhttp)
-    integrationTestImplementation(libs.testcontainers)
-    integrationTestImplementation(libs.testcontainers.junitJupiter)
-    integrationTestImplementation(libs.testcontainers.localstack)
-    integrationTestImplementation(libs.testcontainers.hivemq)
-    integrationTestImplementation(libs.aws.sdkv2.s3)
+@Suppress("UnstableApiUsage")
+testing {
+    suites {
+        withType<JvmTestSuite> {
+            useJUnitJupiter(libs.versions.junit.jupiter)
+        }
+        "test"(JvmTestSuite::class) {
+            dependencies {
+                implementation(libs.mockito)
+            }
+        }
+        "integrationTest"(JvmTestSuite::class) {
+            dependencies {
+                compileOnly(libs.jetbrains.annotations)
+                implementation(libs.testcontainers)
+                implementation(libs.testcontainers.junitJupiter)
+                implementation(libs.testcontainers.hivemq)
+                implementation(libs.testcontainers.localstack)
+                //necessary as the localstack s3 service would not start without the old sdk
+                runtimeOnly(libs.aws.sdkv1.s3)
+                implementation(libs.aws.sdkv2.s3)
+                implementation(libs.okhttp)
+            }
+        }
+    }
 }
 
 tasks.integrationTest {
