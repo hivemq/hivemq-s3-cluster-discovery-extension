@@ -49,6 +49,7 @@ testing {
                 runtimeOnly(libs.aws.sdkv1.s3)
                 implementation(libs.aws.sdkv2.s3)
                 implementation(libs.okhttp)
+                runtimeOnly(libs.logback.classic)
             }
         }
     }
