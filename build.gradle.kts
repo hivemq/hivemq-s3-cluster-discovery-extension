@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.hivemq.extension)
     alias(libs.plugins.defaults)
     alias(libs.plugins.license)
-    alias(libs.plugins.asciidoctor)
 }
 
 group = "com.hivemq.extensions"
@@ -19,8 +18,6 @@ hivemqExtension {
 
     resources {
         from("LICENSE")
-        from("README.adoc") { rename { "README.txt" } }
-        from(tasks.asciidoctor)
     }
 }
 
@@ -28,12 +25,6 @@ dependencies {
     hivemqProvided(libs.logback.classic)
     implementation(libs.owner)
     implementation(libs.aws.sdkv2.s3)
-}
-
-tasks.asciidoctor {
-    sourceDirProperty.set(layout.projectDirectory)
-    sources("README.adoc")
-    secondarySources { exclude("**") }
 }
 
 @Suppress("UnstableApiUsage")
