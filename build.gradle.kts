@@ -63,11 +63,6 @@ testing {
     }
 }
 
-tasks.integrationTest {
-    dependsOn(unzipPrometheusExtension)
-    classpath += project.objects.fileCollection().from(unzipPrometheusExtension.get().outputs.files.singleFile)
-}
-
 val downloadPrometheusExtension by tasks.registering {
     val prometheusExtension =
         "https://github.com/hivemq/hivemq-prometheus-extension/releases/download/4.0.6/hivemq-prometheus-extension-4.0.6.zip"
@@ -85,17 +80,13 @@ val unzipPrometheusExtension by tasks.registering(Sync::class) {
     into({ temporaryDir })
 }
 
-/* ******************** checks ******************** */
+tasks.integrationTest {
+    classpath += unzipPrometheusExtension.get().outputs.files
+}
 
 license {
     header = rootDir.resolve("HEADER")
     mapping("java", "SLASHSTAR_STYLE")
     exclude("**/template-s3discovery.properties")
     exclude("**/logback-test.xml")
-}
-
-/* ******************** run ******************** */
-
-tasks.prepareHivemqHome {
-    hivemqHomeDirectory.set(file("/path/to/a/hivemq/folder"))
 }
