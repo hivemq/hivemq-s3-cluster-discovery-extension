@@ -5,7 +5,7 @@
 :hivemq-cluster-discovery: https://www.hivemq.com/docs/latest/hivemq/cluster.html#discovery
 :hivemq-support: http://www.hivemq.com/support/
 
-= S3 Cluster Discovery Extension
+= HiveMQ S3 Cluster Discovery Extension
 
 image:https://img.shields.io/badge/Extension_Type-Integration-orange?style=for-the-badge[Extension Type]
 image:https://img.shields.io/github/v/release/hivemq/hivemq-s3-cluster-discovery-extension?style=for-the-badge[GitHub release (latest by date),link=https://github.com/hivemq/hivemq-s3-cluster-discovery-extension/releases/latest]
