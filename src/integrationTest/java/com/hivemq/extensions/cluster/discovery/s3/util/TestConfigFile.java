@@ -16,7 +16,7 @@
 
 package com.hivemq.extensions.cluster.discovery.s3.util;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
