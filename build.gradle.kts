@@ -1,10 +1,10 @@
 import java.net.URL
 
 plugins {
-    id("com.hivemq.extension")
-    id("com.github.hierynomus.license")
-    id("io.github.sgtsilvio.gradle.defaults")
-    id("org.asciidoctor.jvm.convert")
+    alias(libs.plugins.hivemq.extension)
+    alias(libs.plugins.defaults)
+    alias(libs.plugins.license)
+    alias(libs.plugins.asciidoctor)
 }
 
 group = "com.hivemq.extensions"
@@ -15,7 +15,7 @@ hivemqExtension {
     author.set("HiveMQ")
     priority.set(1000)
     startPriority.set(10000)
-    sdkVersion.set("${property("hivemq-extension-sdk.version")}")
+    sdkVersion.set(libs.versions.hivemq.extensionSdk)
 
     resources {
         from("LICENSE")
@@ -25,10 +25,10 @@ hivemqExtension {
 }
 
 dependencies {
-    hivemqProvided("ch.qos.logback:logback-classic:${property("logback.version")}")
-    implementation("org.aeonbits.owner:owner:${property("owner.version")}")
-    implementation(platform("software.amazon.awssdk:bom:${property("aws-bom.version")}"))
-    implementation("software.amazon.awssdk:s3")
+    hivemqProvided(libs.logback.classic)
+    implementation(libs.owner)
+    implementation(platform(libs.aws.sdkv2.bom))
+    implementation(libs.aws.sdkv2.s3)
 }
 
 tasks.asciidoctor {
@@ -40,8 +40,8 @@ tasks.asciidoctor {
 /* ******************** test ******************** */
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:${property("junit-jupiter.version")}")
-    testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito)
 }
 
 tasks.withType<Test>().configureEach {
@@ -51,16 +51,16 @@ tasks.withType<Test>().configureEach {
 /* ******************** integration test ******************** */
 
 dependencies {
-    integrationTestCompileOnly("org.jetbrains:annotations:${property("jetbrains-annotations.version")}")
+    integrationTestCompileOnly(libs.jetbrains.annotations)
     //necessary as the localstack s3 service would not start without the old sdk
-    integrationTestRuntimeOnly("com.amazonaws:aws-java-sdk-s3:${property("aws-legacy-sdk.version")}")
-    integrationTestImplementation("com.squareup.okhttp3:okhttp:${property("ok-http.version")}")
-    integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${property("testcontainers.version")}"))
-    integrationTestImplementation("org.testcontainers:testcontainers")
-    integrationTestImplementation("org.testcontainers:junit-jupiter")
-    integrationTestImplementation("org.testcontainers:localstack")
-    integrationTestImplementation("org.testcontainers:hivemq")
-    integrationTestImplementation("software.amazon.awssdk:s3:${property("aws-bom.version")}")
+    integrationTestRuntimeOnly(libs.aws.sdkv1.s3)
+    integrationTestImplementation(libs.okhttp)
+    integrationTestImplementation(platform(libs.testcontainers.bom))
+    integrationTestImplementation(libs.testcontainers)
+    integrationTestImplementation(libs.testcontainers.junitJupiter)
+    integrationTestImplementation(libs.testcontainers.localstack)
+    integrationTestImplementation(libs.testcontainers.hivemq)
+    integrationTestImplementation(libs.aws.sdkv2.s3)
 }
 
 tasks.integrationTest {
