@@ -27,7 +27,6 @@ hivemqExtension {
 dependencies {
     hivemqProvided(libs.logback.classic)
     implementation(libs.owner)
-    implementation(platform(libs.aws.sdkv2.bom))
     implementation(libs.aws.sdkv2.s3)
 }
 
@@ -55,7 +54,6 @@ dependencies {
     //necessary as the localstack s3 service would not start without the old sdk
     integrationTestRuntimeOnly(libs.aws.sdkv1.s3)
     integrationTestImplementation(libs.okhttp)
-    integrationTestImplementation(platform(libs.testcontainers.bom))
     integrationTestImplementation(libs.testcontainers)
     integrationTestImplementation(libs.testcontainers.junitJupiter)
     integrationTestImplementation(libs.testcontainers.localstack)
