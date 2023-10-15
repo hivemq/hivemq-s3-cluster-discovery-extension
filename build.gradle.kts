@@ -51,6 +51,7 @@ tasks.withType<Test>().configureEach {
 /* ******************** integration test ******************** */
 
 dependencies {
+    integrationTestCompileOnly("org.jetbrains:annotations:${property("jetbrains-annotations.version")}")
     //necessary as the localstack s3 service would not start without the old sdk
     integrationTestRuntimeOnly("com.amazonaws:aws-java-sdk-s3:${property("aws-legacy-sdk.version")}")
     integrationTestImplementation("com.squareup.okhttp3:okhttp:${property("ok-http.version")}")
@@ -59,6 +60,7 @@ dependencies {
     integrationTestImplementation("org.testcontainers:junit-jupiter")
     integrationTestImplementation("org.testcontainers:localstack")
     integrationTestImplementation("org.testcontainers:hivemq")
+    integrationTestImplementation("software.amazon.awssdk:s3:${property("aws-bom.version")}")
 }
 
 tasks.integrationTest {

@@ -16,9 +16,9 @@
 
 package com.hivemq.extensions.cluster.discovery.s3;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extensions.cluster.discovery.s3.util.TestConfigFile;
 import com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

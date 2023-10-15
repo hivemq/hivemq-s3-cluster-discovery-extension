@@ -16,10 +16,10 @@
 
 package com.hivemq.extensions.cluster.discovery.s3.util;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.hivemq.HiveMQContainer;
