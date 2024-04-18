@@ -8,7 +8,7 @@ logback = "1.4.1"
 mockito = "5.6.0"
 okhttp = "4.11.0"
 owner = "1.0.12"
-testcontainers = "1.19.1"
+testcontainers = "1.19.7"
 
 [libraries]
 aws-sdkv1-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version.ref = "aws-sdkv1" }
