@@ -1,12 +1,12 @@
 [versions]
-aws-sdkv1 = "1.11.914"
-aws-sdkv2 = "2.17.274"
+aws-sdkv1 = "1.12.705"
+aws-sdkv2 = "2.25.35"
 hivemq-extensionSdk = "4.1.0"
-jetbrains-annotations = "24.0.1"
+jetbrains-annotations = "24.1.0"
 junit-jupiter = "5.10.0"
-logback = "1.4.1"
-mockito = "5.6.0"
-okhttp = "4.11.0"
+logback = "1.5.6"
+mockito = "5.11.0"
+okhttp = "4.12.0"
 owner = "1.0.12"
 testcontainers = "1.19.7"
 
