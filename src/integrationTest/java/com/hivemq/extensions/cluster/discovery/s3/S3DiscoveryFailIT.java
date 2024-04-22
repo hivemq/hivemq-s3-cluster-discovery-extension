@@ -44,7 +44,7 @@ class S3DiscoveryFailIT {
     private final @NotNull Network network = Network.newNetwork();
 
     private final @NotNull LocalStackContainer localstack =
-            new LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("1.2.0")).withServices(S3)
+            new LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("3.3.0")).withServices(S3)
                     .withNetwork(network)
                     .withNetworkAliases("localstack");
 
