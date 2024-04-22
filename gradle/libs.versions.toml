@@ -1,5 +1,4 @@
 [versions]
-aws-sdkv1 = "1.12.705"
 aws-sdkv2 = "2.25.35"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "24.1.0"
@@ -11,7 +10,6 @@ owner = "1.0.12"
 testcontainers = "1.19.7"
 
 [libraries]
-aws-sdkv1-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version.ref = "aws-sdkv1" }
 aws-sdkv2-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdkv2" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }

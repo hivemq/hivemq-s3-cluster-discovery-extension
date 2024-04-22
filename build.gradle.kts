@@ -45,8 +45,6 @@ testing {
                 implementation(libs.testcontainers.junitJupiter)
                 implementation(libs.testcontainers.hivemq)
                 implementation(libs.testcontainers.localstack)
-                //necessary as the localstack s3 service would not start without the old sdk
-                runtimeOnly(libs.aws.sdkv1.s3)
                 implementation(libs.aws.sdkv2.s3)
                 implementation(libs.okhttp)
                 runtimeOnly(libs.logback.classic)
