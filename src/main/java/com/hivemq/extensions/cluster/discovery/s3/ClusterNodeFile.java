@@ -88,11 +88,11 @@ public class ClusterNodeFile {
         }
 
         final String clusterId = splitContent[2];
-        if (clusterId.length() < 1) {
+        if (clusterId.isEmpty()) {
             return null;
         }
         final String host = splitContent[3];
-        if (host.length() < 1) {
+        if (host.isEmpty()) {
             return null;
         }
 
