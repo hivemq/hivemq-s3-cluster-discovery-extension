@@ -22,6 +22,8 @@ hivemqExtension {
 }
 
 dependencies {
+    compileOnly(libs.jetbrains.annotations)
+
     hivemqProvided(libs.logback.classic)
     implementation(libs.owner)
     implementation(libs.aws.sdkv2.s3)
@@ -35,6 +37,7 @@ testing {
         }
         "test"(JvmTestSuite::class) {
             dependencies {
+                compileOnly(libs.jetbrains.annotations)
                 implementation(libs.mockito)
             }
         }

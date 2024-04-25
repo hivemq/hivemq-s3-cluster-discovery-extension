@@ -16,7 +16,7 @@
 
 package com.hivemq.extensions.cluster.discovery.s3.config;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Florian Limpöck

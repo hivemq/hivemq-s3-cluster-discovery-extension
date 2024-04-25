@@ -16,8 +16,8 @@
 
 package com.hivemq.extensions.cluster.discovery.s3.util;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Abdullah Imal

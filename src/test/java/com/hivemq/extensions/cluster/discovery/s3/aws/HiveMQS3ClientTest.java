@@ -16,10 +16,10 @@
 
 package com.hivemq.extensions.cluster.discovery.s3.aws;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extensions.cluster.discovery.s3.config.AuthenticationType;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
