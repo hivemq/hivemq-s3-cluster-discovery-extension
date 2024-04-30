@@ -1,5 +1,5 @@
 [versions]
-aws-sdkv2 = "2.25.35"
+aws-sdkv2 = "2.25.40"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "24.1.0"
 junit-jupiter = "5.10.0"
