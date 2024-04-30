@@ -16,10 +16,10 @@
 
 package com.hivemq.extensions.cluster.discovery.s3;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.cluster.discovery.s3.util.Preconditions;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Base64;
 import java.util.regex.Pattern;
@@ -88,11 +88,11 @@ public class ClusterNodeFile {
         }
 
         final String clusterId = splitContent[2];
-        if (clusterId.length() < 1) {
+        if (clusterId.isEmpty()) {
             return null;
         }
         final String host = splitContent[3];
-        if (host.length() < 1) {
+        if (host.isEmpty()) {
             return null;
         }
 

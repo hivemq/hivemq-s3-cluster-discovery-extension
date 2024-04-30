@@ -16,10 +16,10 @@
 
 package com.hivemq.extensions.cluster.discovery.s3.aws;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extensions.cluster.discovery.s3.config.AuthenticationType;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -59,6 +59,7 @@ import java.util.function.Consumer;
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -222,35 +223,38 @@ class HiveMQS3ClientTest {
     @Test
     void test_getAwsCredentials_default() {
         final AwsCredentialsProvider awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.DEFAULT);
-        assertTrue(awsCredentials instanceof DefaultCredentialsProvider);
+        //noinspection resource
+        assertInstanceOf(DefaultCredentialsProvider.class, awsCredentials);
     }
 
     @Test
     void test_getAwsCredentials_environment() {
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.ENVIRONMENT_VARIABLES);
-        assertTrue(awsCredentials instanceof EnvironmentVariableCredentialsProvider);
+        assertInstanceOf(EnvironmentVariableCredentialsProvider.class, awsCredentials);
     }
 
     @Test
     void test_getAwsCredentials_java_system() {
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.JAVA_SYSTEM_PROPERTIES);
-        assertTrue(awsCredentials instanceof SystemPropertyCredentialsProvider);
+        assertInstanceOf(SystemPropertyCredentialsProvider.class, awsCredentials);
     }
 
     @Test
     void test_getAwsCredentials_user_credentials() {
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.USER_CREDENTIALS_FILE);
-        assertTrue(awsCredentials instanceof ProfileCredentialsProvider);
+        //noinspection resource
+        assertInstanceOf(ProfileCredentialsProvider.class, awsCredentials);
     }
 
     @Test
     void test_getAwsCredentials_instance_profile() {
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.INSTANCE_PROFILE_CREDENTIALS);
-        assertTrue(awsCredentials instanceof InstanceProfileCredentialsProvider);
+        //noinspection resource
+        assertInstanceOf(InstanceProfileCredentialsProvider.class, awsCredentials);
     }
 
     @Test
@@ -271,7 +275,7 @@ class HiveMQS3ClientTest {
         hiveMQS3Client.createOrUpdate();
 
         final AwsCredentialsProvider awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.ACCESS_KEY);
-        assertTrue(awsCredentials instanceof StaticCredentialsProvider);
+        assertInstanceOf(StaticCredentialsProvider.class, awsCredentials);
     }
 
     @Test
@@ -328,7 +332,7 @@ class HiveMQS3ClientTest {
 
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.TEMPORARY_SESSION);
-        assertTrue(awsCredentials instanceof StaticCredentialsProvider);
+        assertInstanceOf(StaticCredentialsProvider.class, awsCredentials);
     }
 
     @Test
@@ -365,6 +369,7 @@ class HiveMQS3ClientTest {
         System.setProperty("aws.accessKeyId", "asdf");
         System.setProperty("aws.secretAccessKey", "asdf");
         hiveMQS3Client.createOrUpdate();
+        //noinspection DataFlowIssue
         assertThrows(SdkClientException.class, () -> hiveMQS3Client.saveObject(null, "test"));
     }
 
@@ -373,6 +378,7 @@ class HiveMQS3ClientTest {
         System.setProperty("aws.accessKeyId", "asdf");
         System.setProperty("aws.secretAccessKey", "asdf");
         hiveMQS3Client.createOrUpdate();
+        //noinspection DataFlowIssue
         assertThrows(NullPointerException.class, () -> hiveMQS3Client.saveObject("abcd", null));
     }
 
@@ -396,6 +402,7 @@ class HiveMQS3ClientTest {
 
         when(s3Client.getObjectAsBytes(ArgumentMatchers.<Consumer<GetObjectRequest.Builder>>any())).thenThrow(
                 IllegalArgumentException.class);
+        //noinspection DataFlowIssue
         assertThrows(IllegalArgumentException.class, () -> hiveMQS3Client.getObject(null));
     }
 
@@ -418,6 +425,7 @@ class HiveMQS3ClientTest {
 
         doThrow(IllegalArgumentException.class).when(s3Client)
                 .deleteObject(ArgumentMatchers.<Consumer<DeleteObjectRequest.Builder>>any());
+        //noinspection DataFlowIssue
         assertThrows(IllegalArgumentException.class, () -> hiveMQS3Client.deleteObject(null));
     }
 
@@ -464,6 +472,7 @@ class HiveMQS3ClientTest {
 
         when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenThrow(
                 IllegalArgumentException.class);
+        //noinspection DataFlowIssue
         assertThrows(IllegalArgumentException.class, () -> hiveMQS3Client.getNextBatchOfObjects(null));
     }
 }

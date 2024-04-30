@@ -16,10 +16,10 @@
 
 package com.hivemq.extensions.cluster.discovery.s3.config;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.aeonbits.owner.ConfigFactory;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.regions.Region;
@@ -173,26 +173,22 @@ public class ConfigurationReader {
 
         if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
             if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
-                LOG.error("{}: File update interval is the same as the expiration interval!",
-                        EXTENSION_NAME);
+                LOG.error("{}: File update interval is the same as the expiration interval!", EXTENSION_NAME);
                 return false;
             }
 
             if (fileUpdateIntervalInSeconds == 0) {
-                LOG.error("{}: File update interval is deactivated but expiration is set!",
-                        EXTENSION_NAME);
+                LOG.error("{}: File update interval is deactivated but expiration is set!", EXTENSION_NAME);
                 return false;
             }
 
             if (fileExpirationInSeconds == 0) {
-                LOG.error("{}: File expiration is deactivated but update interval is set!",
-                        EXTENSION_NAME);
+                LOG.error("{}: File expiration is deactivated but update interval is set!", EXTENSION_NAME);
                 return false;
             }
 
             if (!(fileUpdateIntervalInSeconds < fileExpirationInSeconds)) {
-                LOG.error("{}: File update interval is larger than expiration interval!",
-                        EXTENSION_NAME);
+                LOG.error("{}: File update interval is larger than expiration interval!", EXTENSION_NAME);
                 return false;
             }
         }

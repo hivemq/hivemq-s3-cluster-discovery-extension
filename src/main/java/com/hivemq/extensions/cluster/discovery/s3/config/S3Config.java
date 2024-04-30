@@ -16,9 +16,9 @@
 
 package com.hivemq.extensions.cluster.discovery.s3.config;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import org.aeonbits.owner.Config;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Abdullah Imal
