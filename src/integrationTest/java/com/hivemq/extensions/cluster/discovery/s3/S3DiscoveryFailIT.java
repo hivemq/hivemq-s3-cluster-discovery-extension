@@ -76,6 +76,8 @@ class S3DiscoveryFailIT {
 
     @AfterEach
     void tearDown() {
+        localstack.stop();
+        firstNode.stop();
         network.close();
     }
 
