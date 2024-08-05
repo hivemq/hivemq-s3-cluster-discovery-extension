@@ -1,5 +1,6 @@
 [versions]
 aws-sdkv2 = "2.25.69"
+gradleOci-junitJupiter = "0.6.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "24.1.0"
 junit-jupiter = "5.10.0"
@@ -11,6 +12,7 @@ testcontainers = "1.19.8"
 
 [libraries]
 aws-sdkv2-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdkv2" }
+gradleOci-junitJupiter = { module = "io.github.sgtsilvio:gradle-oci-junit-jupiter", version.ref = "gradleOci-junitJupiter" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
@@ -24,4 +26,5 @@ testcontainers-localstack = { module = "org.testcontainers:localstack", version.
 [plugins]
 hivemq-extension = { id = "com.hivemq.extension", version = "3.1.0" }
 defaults = { id = "io.github.sgtsilvio.gradle.defaults", version = "0.2.0" }
+oci = { id = "io.github.sgtsilvio.gradle.oci", version = "0.15.1" }
 license = { id = "com.github.hierynomus.license", version = "0.16.1" }
