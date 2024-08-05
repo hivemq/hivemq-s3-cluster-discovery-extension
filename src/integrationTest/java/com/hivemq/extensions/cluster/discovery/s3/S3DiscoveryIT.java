@@ -101,6 +101,9 @@ class S3DiscoveryIT {
 
     @AfterEach
     void tearDown() {
+        localstack.stop();
+        firstNode.stop();
+        secondNode.stop();
         network.close();
     }
 
