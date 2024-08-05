@@ -16,8 +16,9 @@
 
 package com.hivemq.extensions.cluster.discovery.s3;
 
-import com.hivemq.extensions.cluster.discovery.s3.util.TestConfigFile;
 import com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil;
+import com.hivemq.extensions.cluster.discovery.s3.util.TestConfigFile;
+import io.github.sgtsilvio.gradle.oci.junit.jupiter.OciImages;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,6 @@ import org.slf4j.event.Level;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.hivemq.HiveMQContainer;
-import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ class S3DiscoveryFailIT {
     private final @NotNull Network network = Network.newNetwork();
 
     private final @NotNull LocalStackContainer localstack =
-            new LocalStackContainer(DockerImageName.parse("localstack/localstack").withTag("3.3.0")).withServices(S3)
+            new LocalStackContainer(OciImages.getImageName("localstack/localstack")).withServices(S3)
                     .withNetwork(network)
                     .withNetworkAliases("localstack");
 
@@ -59,7 +59,7 @@ class S3DiscoveryFailIT {
                 .build();
 
         firstNode =
-                new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("4.9.0")).withLogLevel(Level.DEBUG)
+                new HiveMQContainer(OciImages.getImageName("hivemq/hivemq4")).withLogLevel(Level.DEBUG)
                         .withNetwork(network)
                         .withoutPrepackagedExtensions()
                         .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))

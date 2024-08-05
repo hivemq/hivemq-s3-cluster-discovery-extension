@@ -3,6 +3,7 @@ import java.net.URL
 plugins {
     alias(libs.plugins.hivemq.extension)
     alias(libs.plugins.defaults)
+    alias(libs.plugins.oci)
     alias(libs.plugins.license)
 }
 
@@ -23,10 +24,17 @@ hivemqExtension {
 
 dependencies {
     compileOnly(libs.jetbrains.annotations)
-
     hivemqProvided(libs.logback.classic)
     implementation(libs.owner)
     implementation(libs.aws.sdkv2.s3)
+}
+
+oci {
+    registries {
+        dockerHub {
+            optionalCredentials()
+        }
+    }
 }
 
 @Suppress("UnstableApiUsage")
@@ -48,9 +56,14 @@ testing {
                 implementation(libs.testcontainers.junitJupiter)
                 implementation(libs.testcontainers.hivemq)
                 implementation(libs.testcontainers.localstack)
+                implementation(libs.gradleOci.junitJupiter)
                 implementation(libs.aws.sdkv2.s3)
                 implementation(libs.okhttp)
                 runtimeOnly(libs.logback.classic)
+            }
+            ociImageDependencies {
+                runtime("hivemq:hivemq4:4.9.0").tag("latest")
+                runtime("localstack:localstack:3.3.0").tag("latest")
             }
         }
     }
