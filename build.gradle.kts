@@ -1,4 +1,4 @@
-import java.net.URL
+import java.net.URI
 
 plugins {
     alias(libs.plugins.hivemq.extension)
@@ -76,7 +76,7 @@ val downloadPrometheusExtension by tasks.registering {
         "https://github.com/hivemq/hivemq-prometheus-extension/releases/download/4.0.6/hivemq-prometheus-extension-4.0.6.zip"
     val zipFile = File(temporaryDir, "hivemq-prometheus-extension.zip")
     doLast {
-        URL(prometheusExtension).openStream().use { input ->
+        URI(prometheusExtension).toURL().openStream().use { input ->
             zipFile.outputStream().use { output -> input.copyTo(output) }
         }
     }
@@ -84,7 +84,7 @@ val downloadPrometheusExtension by tasks.registering {
 }
 
 val unzipPrometheusExtension by tasks.registering(Sync::class) {
-    from(downloadPrometheusExtension.map { zipTree(it.outputs.files.singleFile) })
+    from(zipTree(downloadPrometheusExtension.map { it.outputs.files.singleFile }))
     into({ temporaryDir })
 }
 
