@@ -23,15 +23,14 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.event.Level;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.hivemq.HiveMQContainer;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,27 +50,25 @@ class S3DiscoveryFailIT {
     private @NotNull HiveMQContainer firstNode;
 
     @BeforeEach
-    void setUp(@TempDir final @NotNull Path tempDir) throws IOException {
-        final MountableFile configFile = TestConfigFile.builder(tempDir)
+    void setUp() throws IOException {
+        final String s3Config = TestConfigFile.builder()
                 .setS3BucketName(BUCKET_NAME)
                 .setS3Endpoint("http://localstack:4566")
                 .setS3EndpointRegion(localstack.getRegion())
                 .build();
 
         firstNode =
-                new HiveMQContainer(OciImages.getImageName("hivemq/hivemq4")).withLogLevel(Level.DEBUG)
+                new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-s3-cluster-discovery-extension")
+                        .asCompatibleSubstituteFor("hivemq/hivemq4")) //
+                        .withLogLevel(Level.DEBUG)
                         .withNetwork(network)
-                        .withoutPrepackagedExtensions()
                         .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))
-                        .withExtension(MountableFile.forClasspathResource("hivemq-prometheus-extension"))
                         .withExposedPorts(9399)
-                        .withExtension(MountableFile.forClasspathResource("hivemq-s3-cluster-discovery-extension"))
                         .withEnv("AWS_ACCESS_KEY_ID", localstack.getAccessKey())
                         .withEnv("AWS_SECRET_ACCESS_KEY", localstack.getSecretKey())
                         .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
-                        .withFileInExtensionHomeFolder(configFile,
-                                "hivemq-s3-cluster-discovery-extension",
-                                "s3discovery.properties");
+                        .withCopyToContainer(Transferable.of(s3Config),
+                                "/opt/hivemq/extensions/hivemq-s3-cluster-discovery-extension/s3discovery.properties");
     }
 
     @AfterEach

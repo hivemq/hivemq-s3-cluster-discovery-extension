@@ -1,5 +1,3 @@
-import java.net.URI
-
 plugins {
     alias(libs.plugins.hivemq.extension)
     alias(libs.plugins.defaults)
@@ -35,6 +33,39 @@ oci {
             optionalCredentials()
         }
     }
+    imageMapping {
+        mapModule("com.hivemq", "hivemq-enterprise") {
+            toImage("hivemq/hivemq4")
+        }
+    }
+    imageDefinitions {
+        register("main") {
+            allPlatforms {
+                dependencies {
+                    runtime("com.hivemq:hivemq-enterprise:latest") { isChanging = true }
+                }
+                layers {
+                    layer("hivemqExtension") {
+                        contents {
+                            permissions("opt/hivemq/", 0b111_111_000)
+                            permissions("opt/hivemq/extensions/", 0b111_111_000)
+                            into("opt/hivemq/extensions") {
+                                from(zipTree(tasks.hivemqExtensionZip.flatMap { it.archiveFile }))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        register("integrationTest") {
+            allPlatforms {
+                dependencies {
+                    runtime(project)
+                    runtime("com.hivemq.extensions:hivemq-prometheus-extension")
+                }
+            }
+        }
+    }
 }
 
 @Suppress("UnstableApiUsage")
@@ -63,33 +94,16 @@ testing {
             }
             oci.of(this) {
                 imageDependencies {
-                    runtime("hivemq:hivemq4:4.9.0").tag("latest")
+                    runtime(project) {
+                        capabilities {
+                            requireCapability("$group:$name-integration-test") // TODO requireFeature("integrationTest"), update gradle to 8.11
+                        }
+                    }.tag("latest")
                     runtime("localstack:localstack:3.3.0").tag("latest")
                 }
             }
         }
     }
-}
-
-val downloadPrometheusExtension by tasks.registering {
-    val prometheusExtension =
-        "https://github.com/hivemq/hivemq-prometheus-extension/releases/download/4.0.6/hivemq-prometheus-extension-4.0.6.zip"
-    val zipFile = File(temporaryDir, "hivemq-prometheus-extension.zip")
-    doLast {
-        URI(prometheusExtension).toURL().openStream().use { input ->
-            zipFile.outputStream().use { output -> input.copyTo(output) }
-        }
-    }
-    outputs.file(zipFile)
-}
-
-val unzipPrometheusExtension by tasks.registering(Sync::class) {
-    from(zipTree(downloadPrometheusExtension.map { it.outputs.files.singleFile }))
-    into({ temporaryDir })
-}
-
-tasks.integrationTest {
-    classpath += unzipPrometheusExtension.get().outputs.files
 }
 
 license {

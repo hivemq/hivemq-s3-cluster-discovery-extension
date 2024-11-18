@@ -17,7 +17,6 @@
 package com.hivemq.extensions.cluster.discovery.s3.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.net.URL;
@@ -28,7 +27,6 @@ import static org.junit.Assert.assertNotNull;
 
 public class TestConfigFile {
 
-    private final @NotNull Path tempDir;
     private @NotNull String s3BucketRegion = "us-east-1";
     private @NotNull String s3BucketName = "hivemq";
     private @NotNull String filePrefix = "hivemq/cluster/nodes/";
@@ -38,12 +36,11 @@ public class TestConfigFile {
     private boolean s3EndpointActive = false;
     private @NotNull String s3EndpointRegion = "";
 
-    private TestConfigFile(final @NotNull Path tempDir) {
-        this.tempDir = tempDir;
+    private TestConfigFile() {
     }
 
-    public static @NotNull TestConfigFile builder(final @NotNull Path tempDir) {
-        return new TestConfigFile(tempDir);
+    public static @NotNull TestConfigFile builder() {
+        return new TestConfigFile();
     }
 
     public @NotNull TestConfigFile setS3BucketRegion(final @NotNull String s3BucketRegion) {
@@ -82,7 +79,7 @@ public class TestConfigFile {
         return this;
     }
 
-    public @NotNull MountableFile build() throws IOException {
+    public @NotNull String build() throws IOException {
         final URL resource = getClass().getResource("/configurations/template-s3discovery.properties");
         assertNotNull(resource);
 
@@ -99,10 +96,6 @@ public class TestConfigFile {
         } else {
             configTemplate = configTemplate.replace("$TOGGLE_REGION_ENDPOINT", "# ");
         }
-
-        final Path tempConfig = tempDir.resolve("config-" + configTemplate.hashCode() + ".properties");
-        Files.writeString(tempConfig, configTemplate);
-
-        return MountableFile.forHostPath(tempConfig);
+        return configTemplate;
     }
 }
