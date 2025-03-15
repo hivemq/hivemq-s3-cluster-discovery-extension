@@ -1,11 +1,11 @@
 [versions]
-aws-sdkv2 = "2.30.36"
+aws-sdkv2 = "2.31.1"
 gradleOci-junitJupiter = "0.6.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "26.0.2"
 junit-jupiter = "5.10.0"
 logback = "1.5.17"
-mockito = "5.15.2"
+mockito = "5.16.1"
 okhttp = "4.12.0"
 owner = "1.0.12"
 testcontainers = "1.20.6"
