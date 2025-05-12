@@ -20,6 +20,12 @@ hivemqExtension {
     }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
+}
+
 dependencies {
     compileOnly(libs.jetbrains.annotations)
     hivemqProvided(libs.logback.classic)
