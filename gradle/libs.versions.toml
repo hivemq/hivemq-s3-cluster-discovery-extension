@@ -1,5 +1,5 @@
 [versions]
-aws-sdkv2 = "2.31.50"
+aws-sdkv2 = "2.31.53"
 gradleOci-junitJupiter = "0.7.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "26.0.2"
@@ -8,7 +8,7 @@ logback = "1.5.18"
 mockito = "5.18.0"
 okhttp = "4.12.0"
 owner = "1.0.12"
-testcontainers = "1.21.0"
+testcontainers = "1.21.1"
 
 [libraries]
 aws-sdkv2-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdkv2" }
