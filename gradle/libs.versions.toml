@@ -1,5 +1,5 @@
 [versions]
-aws-sdkv2 = "2.31.69"
+aws-sdkv2 = "2.31.70"
 gradleOci-junitJupiter = "0.7.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "26.0.2"
