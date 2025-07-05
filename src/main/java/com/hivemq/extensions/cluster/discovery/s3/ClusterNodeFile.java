@@ -34,6 +34,7 @@ public class ClusterNodeFile {
 
     public static final @NotNull String CONTENT_VERSION = "4";
     public static final @NotNull String CONTENT_SEPARATOR = "||||";
+
     private static final @NotNull Pattern CONTENT_SEPARATOR_PATTERN = Pattern.compile("\\|\\|\\|\\|");
 
     private final @NotNull String clusterId;
@@ -45,7 +46,7 @@ public class ClusterNodeFile {
         Preconditions.checkNotNull(clusterNodeAddress, "clusterNodeAddress");
         this.clusterId = clusterId;
         this.clusterNodeAddress = clusterNodeAddress;
-        creationTimeInMillis = System.currentTimeMillis();
+        this.creationTimeInMillis = System.currentTimeMillis();
     }
 
     private ClusterNodeFile(
@@ -62,47 +63,40 @@ public class ClusterNodeFile {
 
     static @Nullable ClusterNodeFile parseClusterNodeFile(final @NotNull String fileContent) {
         Preconditions.checkNotNullOrBlank(fileContent, "fileContent");
-
         final String content;
         try {
             content = new String(Base64.getDecoder().decode(fileContent), UTF_8);
         } catch (final IllegalArgumentException ignored) {
             return null;
         }
-
-        final String[] splitContent = CONTENT_SEPARATOR_PATTERN.split(content);
+        final var splitContent = CONTENT_SEPARATOR_PATTERN.split(content);
         if (splitContent.length != 5) {
             return null;
         }
-
-        final String version = splitContent[0];
+        final var version = splitContent[0];
         if (!version.contentEquals(CONTENT_VERSION)) {
             return null;
         }
-
         final long creationTimeInMillis;
         try {
             creationTimeInMillis = Long.parseLong(splitContent[1]);
         } catch (final NumberFormatException ignored) {
             return null;
         }
-
-        final String clusterId = splitContent[2];
+        final var clusterId = splitContent[2];
         if (clusterId.isEmpty()) {
             return null;
         }
-        final String host = splitContent[3];
+        final var host = splitContent[3];
         if (host.isEmpty()) {
             return null;
         }
-
         final int port;
         try {
             port = Integer.parseInt(splitContent[4]);
         } catch (final NumberFormatException ignored) {
             return null;
         }
-
         return new ClusterNodeFile(clusterId, new ClusterNodeAddress(host, port), creationTimeInMillis);
     }
 
@@ -119,13 +113,13 @@ public class ClusterNodeFile {
         if (expirationInSeconds == 0) {
             return false;
         }
-        final long creationPlusExpirationInMillis = creationTimeInMillis + (expirationInSeconds * 1_000);
+        final var creationPlusExpirationInMillis = creationTimeInMillis + (expirationInSeconds * 1_000);
         return creationPlusExpirationInMillis < System.currentTimeMillis();
     }
 
     @Override
     public @NotNull String toString() {
-        final String content = CONTENT_VERSION +
+        final var content = CONTENT_VERSION +
                 CONTENT_SEPARATOR +
                 creationTimeInMillis +
                 CONTENT_SEPARATOR +

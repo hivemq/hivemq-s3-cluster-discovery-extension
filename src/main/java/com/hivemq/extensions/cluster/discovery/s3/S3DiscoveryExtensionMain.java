@@ -48,7 +48,8 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
     }
 
     S3DiscoveryExtensionMain(
-            final @NotNull ExtensionLogging extensionLogging, final @NotNull S3DiscoveryMetrics s3DiscoveryMetrics) {
+            final @NotNull ExtensionLogging extensionLogging,
+            final @NotNull S3DiscoveryMetrics s3DiscoveryMetrics) {
         this.extensionLogging = extensionLogging;
         this.s3DiscoveryMetrics = s3DiscoveryMetrics;
     }
@@ -59,8 +60,7 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
             final @NotNull ExtensionStartOutput extensionStartOutput) {
         try {
             extensionLogging.start();
-            final ConfigurationReader configurationReader =
-                    new ConfigurationReader(extensionStartInput.getExtensionInformation());
+            final var configurationReader = new ConfigurationReader(extensionStartInput.getExtensionInformation());
             s3DiscoveryCallback = new S3DiscoveryCallback(configurationReader, s3DiscoveryMetrics);
 
             Services.clusterService().addDiscoveryCallback(s3DiscoveryCallback);

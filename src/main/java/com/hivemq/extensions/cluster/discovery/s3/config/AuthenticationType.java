@@ -40,7 +40,7 @@ public enum AuthenticationType {
     }
 
     public static @NotNull AuthenticationType fromName(final @NotNull String name) throws IllegalArgumentException {
-        for (final AuthenticationType type : values()) {
+        for (final var type : values()) {
             if (name.contentEquals(type.getName())) {
                 return type;
             }

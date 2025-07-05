@@ -16,7 +16,6 @@
 
 package com.hivemq.extensions.cluster.discovery.s3;
 
-import com.codahale.metrics.Counter;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
@@ -24,7 +23,6 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddres
 import com.hivemq.extensions.cluster.discovery.s3.aws.HiveMQS3Client;
 import com.hivemq.extensions.cluster.discovery.s3.aws.S3BucketResponse;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
-import com.hivemq.extensions.cluster.discovery.s3.config.S3Config;
 import com.hivemq.extensions.cluster.discovery.s3.util.ClusterNodeFileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +38,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION;
@@ -55,27 +52,24 @@ import static org.mockito.Mockito.when;
 
 class S3DiscoveryCallbackTest {
 
-    private @NotNull ExtensionInformation extensionInformation;
-    private @NotNull ClusterDiscoveryInput clusterDiscoveryInput;
-    private @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput;
-    private @NotNull HiveMQS3Client hiveMQS3Client;
-    private @NotNull S3DiscoveryCallback s3DiscoveryCallback;
+    private final @NotNull ExtensionInformation extensionInformation = mock();
+    private final @NotNull ClusterDiscoveryInput clusterDiscoveryInput = mock();
+    private final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput = mock();
+    private final @NotNull S3DiscoveryMetrics s3DiscoveryMetrics = mock();
+    private final @NotNull HiveMQS3Client hiveMQS3Client = mock();
+
     private @NotNull ConfigurationReader configurationReader;
-    private @NotNull S3DiscoveryMetrics s3DiscoveryMetrics;
+    private @NotNull S3DiscoveryCallback s3DiscoveryCallback;
 
     @BeforeEach
     void setUp(@TempDir final @NotNull File tempDir) throws Exception {
-        extensionInformation = mock(ExtensionInformation.class);
-        clusterDiscoveryInput = mock(ClusterDiscoveryInput.class);
-        clusterDiscoveryOutput = mock(ClusterDiscoveryOutput.class);
-        s3DiscoveryMetrics = mock(S3DiscoveryMetrics.class);
         when(clusterDiscoveryInput.getOwnClusterId()).thenReturn("ABCD12");
         when(clusterDiscoveryInput.getOwnAddress()).thenReturn(new ClusterNodeAddress("127.0.0.1", 7800));
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
-        when(s3DiscoveryMetrics.getQuerySuccessCount()).thenReturn(mock(Counter.class));
-        when(s3DiscoveryMetrics.getQueryFailedCount()).thenReturn(mock(Counter.class));
+        when(s3DiscoveryMetrics.getQuerySuccessCount()).thenReturn(mock());
+        when(s3DiscoveryMetrics.getQueryFailedCount()).thenReturn(mock());
 
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -85,12 +79,11 @@ class S3DiscoveryCallbackTest {
                 configuration);
 
         configurationReader = new ConfigurationReader(extensionInformation);
-        hiveMQS3Client = mock(HiveMQS3Client.class);
-        final S3Config s3Config = configurationReader.readConfiguration();
+        final var s3Config = configurationReader.readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
+        when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456", 200, null));
 
         s3DiscoveryCallback = new S3DiscoveryCallback(hiveMQS3Client, s3DiscoveryMetrics);
-        when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456", 200, null));
     }
 
     @Test
@@ -153,7 +146,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_expired_files() throws Exception {
-        final String configuration = "s3-bucket-region:us-east-2\n" +
+        final var configuration = "s3-bucket-region:us-east-2\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:2\n" +
@@ -162,15 +155,15 @@ class S3DiscoveryCallbackTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
+        final var s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
         when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
-        //Object needs to be created prior the sleep as it adds the current timestamp to the ClusterNodeFile.
-        //Therefore, then(...) cannot be used as it would create the object on execution.
-        final String object = createS3Object();
+        // Object needs to be created prior the sleep as it adds the current timestamp to the ClusterNodeFile
+        // (therefore, then(...) cannot be used as it would create the object on execution)
+        final var object = createS3Object();
         when(hiveMQS3Client.getObject(any())).thenReturn(object);
 
-        // Wait for files to expire
+        // wait for files to expire
         TimeUnit.SECONDS.sleep(2);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -301,7 +294,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_config_invalid() throws Exception {
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq1234\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -310,7 +303,7 @@ class S3DiscoveryCallbackTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
+        final var s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
         doThrow(IllegalStateException.class).when(hiveMQS3Client).createOrUpdate();
 
@@ -342,7 +335,7 @@ class S3DiscoveryCallbackTest {
     void test_reload_success_new_config() throws Exception {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        final String configuration = "s3-bucket-region:us-east-2\n" +
+        final var configuration = "s3-bucket-region:us-east-2\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:120\n" +
@@ -351,7 +344,7 @@ class S3DiscoveryCallbackTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
+        final var s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -364,7 +357,7 @@ class S3DiscoveryCallbackTest {
         Files.delete(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION));
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
-        final String configuration = "s3-bucket-region:us-east-2\n" +
+        final var configuration = "s3-bucket-region:us-east-2\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:120\n" +
@@ -373,7 +366,7 @@ class S3DiscoveryCallbackTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
+        final var s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
         when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456",
                 404,
@@ -405,7 +398,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_reload_file_expired() throws Exception {
-        final String configuration = "s3-bucket-region:us-east-2\n" +
+        final var configuration = "s3-bucket-region:us-east-2\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:5\n" +
@@ -414,11 +407,11 @@ class S3DiscoveryCallbackTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
+        final var s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        // Wait for file to expire
+        // wait for file to expire
         TimeUnit.MILLISECONDS.sleep(1500);
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
@@ -428,7 +421,7 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_reload_file_exception() throws Exception {
-        final String configuration = "s3-bucket-region:us-east-2\n" +
+        final var configuration = "s3-bucket-region:us-east-2\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:5\n" +
@@ -437,11 +430,11 @@ class S3DiscoveryCallbackTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final S3Config s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
+        final var s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        // Wait for file to expire
+        // wait for file to expire
         TimeUnit.SECONDS.sleep(1);
         doThrow(S3Exception.class).when(hiveMQS3Client).saveObject(any(), any());
 
@@ -479,8 +472,7 @@ class S3DiscoveryCallbackTest {
     }
 
     private @NotNull String createS3Object() {
-        final ClusterNodeFile clusterNodeFile =
-                new ClusterNodeFile("ABCD12", new ClusterNodeAddress("127.0.0.1", 1883));
+        final var clusterNodeFile = new ClusterNodeFile("ABCD12", new ClusterNodeAddress("127.0.0.1", 1883));
         return clusterNodeFile.toString();
     }
 
@@ -497,18 +489,18 @@ class S3DiscoveryCallbackTest {
     }
 
     private @NotNull ListObjectsV2Response extendedObjectList() {
-        final ListObjectsV2Response listObjectsV2Response = mock(ListObjectsV2Response.class);
-        final S3Object s3Object = mock(S3Object.class);
+        final var listObjectsV2Response = mock(ListObjectsV2Response.class);
+        final var s3Object = mock(S3Object.class);
         when(s3Object.key()).thenReturn("ABCD12");
-        final List<S3Object> objects = new ArrayList<>();
+        final var objects = new ArrayList<S3Object>();
         objects.add(s3Object);
         when(listObjectsV2Response.contents()).thenReturn(objects);
         return listObjectsV2Response;
     }
 
     private @NotNull ListObjectsV2Response extendedObjectNullList() {
-        final ListObjectsV2Response listObjectsV2Response = mock(ListObjectsV2Response.class);
-        final List<S3Object> objects = new ArrayList<>();
+        final var listObjectsV2Response = mock(ListObjectsV2Response.class);
+        final var objects = new ArrayList<S3Object>();
         objects.add(null);
         objects.add(null);
         when(listObjectsV2Response.contents()).thenReturn(objects);
@@ -516,10 +508,10 @@ class S3DiscoveryCallbackTest {
     }
 
     private @NotNull ListObjectsV2Response extendedObjectListTruncated() {
-        final ListObjectsV2Response listObjectsV2Response = mock(ListObjectsV2Response.class);
-        final S3Object s3Object = mock(S3Object.class);
+        final var listObjectsV2Response = mock(ListObjectsV2Response.class);
+        final var s3Object = mock(S3Object.class);
         when(s3Object.key()).thenReturn("ABCD12");
-        final List<S3Object> objects = new ArrayList<>();
+        final var objects = new ArrayList<S3Object>();
         objects.add(s3Object);
         when(listObjectsV2Response.contents()).thenReturn(objects);
         when(listObjectsV2Response.isTruncated()).thenReturn(true);
@@ -530,7 +522,7 @@ class S3DiscoveryCallbackTest {
         final ListObjectsV2Response listObjectsV2Response = mock(ListObjectsV2Response.class);
         final S3Object s3Object = mock(S3Object.class);
         when(s3Object.key()).thenReturn("ABCD12");
-        final List<S3Object> objects = new ArrayList<>();
+        final var objects = new ArrayList<S3Object>();
         objects.add(s3Object);
         when(listObjectsV2Response.contents()).thenReturn(objects);
         when(listObjectsV2Response.isTruncated()).thenReturn(false);

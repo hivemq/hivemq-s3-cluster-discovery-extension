@@ -37,9 +37,11 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
-import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil.FAILURE_METRIC;
+import static com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil.IP_COUNT_METRIC;
+import static com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil.SUCCESS_METRIC;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 @Testcontainers
@@ -61,7 +63,7 @@ class S3DiscoveryIT {
     @BeforeEach
     void setUp() throws IOException {
         createS3Environment();
-        final String s3Config = TestConfigFile.builder()
+        final var s3Config = TestConfigFile.builder()
                 .setS3BucketName(BUCKET_NAME)
                 .setS3Endpoint("http://localstack:4566")
                 .setS3EndpointRegion(localstack.getRegion())
@@ -103,27 +105,26 @@ class S3DiscoveryIT {
     }
 
     @Test
-    void cluster_singleNode() throws IOException {
+    void cluster_singleNode() throws Exception {
         firstNode.start();
-        final Map<String, Float> metrics = MetricsUtil.getMetrics(firstNode);
-        assertEquals(1, metrics.get(MetricsUtil.SUCCESS_METRIC));
-        assertEquals(0, metrics.get(MetricsUtil.FAILURE_METRIC));
-        assertEquals(1, metrics.get(MetricsUtil.IP_COUNT_METRIC));
+        final var metrics = MetricsUtil.getMetrics(firstNode);
+        assertThat(metrics.get(SUCCESS_METRIC)).isEqualTo(1);
+        assertThat(metrics.get(FAILURE_METRIC)).isEqualTo(0);
+        assertThat(metrics.get(IP_COUNT_METRIC)).isEqualTo(1);
     }
 
     @Test
-    void cluster_twoNode() throws IOException {
+    void cluster_twoNode() throws Exception {
         firstNode.start();
         secondNode.start();
-        final Map<String, Float> secondNodeMetrics = MetricsUtil.getMetrics(secondNode);
-        assertEquals(1, secondNodeMetrics.get(MetricsUtil.SUCCESS_METRIC));
-        assertEquals(0, secondNodeMetrics.get(MetricsUtil.FAILURE_METRIC));
-        assertEquals(2, secondNodeMetrics.get(MetricsUtil.IP_COUNT_METRIC));
+        final var secondNodeMetrics = MetricsUtil.getMetrics(secondNode);
+        assertThat(secondNodeMetrics.get(SUCCESS_METRIC)).isEqualTo(1);
+        assertThat(secondNodeMetrics.get(FAILURE_METRIC)).isEqualTo(0);
+        assertThat(secondNodeMetrics.get(IP_COUNT_METRIC)).isEqualTo(2);
     }
 
-
     private void createS3Environment() {
-        try (final S3Client s3 = S3Client.builder()
+        try (final var s3 = S3Client.builder()
                 .endpointOverride(localstack.getEndpointOverride(S3))
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(localstack.getAccessKey(),
                         localstack.getSecretKey())))

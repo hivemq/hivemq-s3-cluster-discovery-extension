@@ -19,11 +19,10 @@ package com.hivemq.extensions.cluster.discovery.s3.util;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestConfigFile {
 
@@ -80,10 +79,10 @@ public class TestConfigFile {
     }
 
     public @NotNull String build() throws IOException {
-        final URL resource = getClass().getResource("/configurations/template-s3discovery.properties");
-        assertNotNull(resource);
+        final var resource = getClass().getResource("/configurations/template-s3discovery.properties");
+        assertThat(resource).isNotNull();
 
-        String configTemplate = Files.readString(Path.of(resource.getPath()));
+        var configTemplate = Files.readString(Path.of(resource.getPath()));
         configTemplate = configTemplate.replace("$BUCKET_REGION", s3BucketRegion);
         configTemplate = configTemplate.replace("$BUCKET_NAME", s3BucketName);
         configTemplate = configTemplate.replace("$FILE_PREFIX", filePrefix);

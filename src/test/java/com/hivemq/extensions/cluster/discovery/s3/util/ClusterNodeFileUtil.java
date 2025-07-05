@@ -30,7 +30,7 @@ public class ClusterNodeFileUtil {
             final @NotNull String nodeId,
             final @NotNull String host,
             final @NotNull String port) {
-        final String content = version +
+        final var content = version +
                 ClusterNodeFile.CONTENT_SEPARATOR +
                 timeInMillis +
                 ClusterNodeFile.CONTENT_SEPARATOR +
@@ -49,7 +49,7 @@ public class ClusterNodeFileUtil {
             final @NotNull String nodeId,
             final @NotNull String host,
             final @NotNull String port) {
-        final String content = version +
+        final var content = version +
                 ClusterNodeFile.CONTENT_SEPARATOR +
                 timeInMillis +
                 ClusterNodeFile.CONTENT_SEPARATOR +
@@ -65,8 +65,9 @@ public class ClusterNodeFileUtil {
     }
 
     public static @NotNull String createClusterNodeFileStringTooShort(
-            final @NotNull String version, final @NotNull String timeInMillis) {
-        final String content =
+            final @NotNull String version,
+            final @NotNull String timeInMillis) {
+        final var content =
                 version + ClusterNodeFile.CONTENT_SEPARATOR + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR;
         return Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
     }

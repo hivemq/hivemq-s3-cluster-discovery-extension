@@ -28,7 +28,9 @@ public class S3BucketResponse {
     private final @Nullable Throwable throwable;
 
     public S3BucketResponse(
-            final @NotNull String bucketName, final int statusCode, final @Nullable Throwable throwable) {
+            final @NotNull String bucketName,
+            final int statusCode,
+            final @Nullable Throwable throwable) {
         this.bucketName = bucketName;
         switch (statusCode) {
             case 200:

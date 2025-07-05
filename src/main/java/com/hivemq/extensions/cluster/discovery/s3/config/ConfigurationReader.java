@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION;
@@ -50,8 +49,7 @@ public class ConfigurationReader {
     }
 
     public @Nullable S3Config readConfiguration() {
-        final File propertiesFile = new File(extensionHomeFolder, EXTENSION_CONFIGURATION);
-
+        final var propertiesFile = new File(extensionHomeFolder, EXTENSION_CONFIGURATION);
         if (!propertiesFile.exists()) {
             LOG.error("{}: Could not find '{}'. Please verify that the properties file is located under '{}'.",
                     EXTENSION_NAME,
@@ -59,7 +57,6 @@ public class ConfigurationReader {
                     extensionHomeFolder);
             return null;
         }
-
         if (!propertiesFile.canRead()) {
             LOG.error(
                     "{}: Could not read '{}'. Please verify that the user running HiveMQ has reading permissions for it.",
@@ -67,20 +64,17 @@ public class ConfigurationReader {
                     propertiesFile.getAbsolutePath());
             return null;
         }
-
-        try (final InputStream inputStream = new FileInputStream(propertiesFile)) {
+        try (final var inputStream = new FileInputStream(propertiesFile)) {
             LOG.debug("{}: Reading properties file '{}'.", EXTENSION_NAME, propertiesFile.getAbsolutePath());
-            final Properties properties = new Properties();
+            final var properties = new Properties();
             properties.load(inputStream);
-
-            final S3Config s3Config = ConfigFactory.create(S3Config.class, properties);
+            final var s3Config = ConfigFactory.create(S3Config.class, properties);
             if (!isValid(s3Config)) {
                 LOG.error("{}: Configuration is not valid!", EXTENSION_NAME);
                 return null;
             }
             LOG.trace("{}: Read properties file '{}' successfully.", EXTENSION_NAME, propertiesFile.getAbsolutePath());
             return s3Config;
-
         } catch (final FileNotFoundException e) {
             LOG.error("{}: Could not find the properties file '{}'", EXTENSION_NAME, propertiesFile.getAbsolutePath());
         } catch (final IOException e) {
@@ -93,29 +87,25 @@ public class ConfigurationReader {
     }
 
     private static boolean isValid(final @NotNull S3Config s3Config) {
-        final String bucketName = s3Config.getBucketName();
+        final var bucketName = s3Config.getBucketName();
         if (isNullOrBlank(bucketName)) {
             LOG.error("{}: Bucket name is empty!", EXTENSION_NAME);
             return false;
         }
-
-        final String bucketRegionName = s3Config.getBucketRegionName();
+        final var bucketRegionName = s3Config.getBucketRegionName();
         if (isNullOrBlank(bucketRegionName)) {
             LOG.error("{}: Bucket region is empty!", EXTENSION_NAME);
             return false;
         }
-
         if (Region.regions().stream().noneMatch(region -> region.id().equals(bucketRegionName))) {
             LOG.error("{}: Given bucket region is not a valid region!", EXTENSION_NAME);
             return false;
         }
-
-        final String authenticationTypeName = s3Config.getAuthenticationTypeName();
+        final var authenticationTypeName = s3Config.getAuthenticationTypeName();
         if (isNullOrBlank(authenticationTypeName)) {
             LOG.error("{}: Authentication type is empty!", EXTENSION_NAME);
             return false;
         }
-
         final AuthenticationType authenticationType;
         try {
             authenticationType = AuthenticationType.fromName(authenticationTypeName);
@@ -123,30 +113,26 @@ public class ConfigurationReader {
             LOG.error("{}: Given authentication type is not valid!", EXTENSION_NAME);
             return false;
         }
-
         if (authenticationType == AuthenticationType.ACCESS_KEY ||
                 authenticationType == AuthenticationType.TEMPORARY_SESSION) {
-            final String accessKeyId = s3Config.getAccessKeyId();
+            final var accessKeyId = s3Config.getAccessKeyId();
             if (isNullOrBlank(accessKeyId)) {
                 LOG.error("{}: Access key id is empty!", EXTENSION_NAME);
                 return false;
             }
-
-            final String accessKeySecret = s3Config.getAccessKeySecret();
+            final var accessKeySecret = s3Config.getAccessKeySecret();
             if (isNullOrBlank(accessKeySecret)) {
                 LOG.error("{}: Access key secret is empty!", EXTENSION_NAME);
                 return false;
             }
-
             if (authenticationType == AuthenticationType.TEMPORARY_SESSION) {
-                final String sessionToken = s3Config.getSessionToken();
+                final var sessionToken = s3Config.getSessionToken();
                 if (isNullOrBlank(sessionToken)) {
                     LOG.error("{}: Session token is empty!", EXTENSION_NAME);
                     return false;
                 }
             }
         }
-
         final long fileExpirationInSeconds;
         try {
             fileExpirationInSeconds = s3Config.getFileExpirationInSeconds();
@@ -158,7 +144,6 @@ public class ConfigurationReader {
             LOG.error("{}: File expiration interval is negative!", EXTENSION_NAME);
             return false;
         }
-
         final long fileUpdateIntervalInSeconds;
         try {
             fileUpdateIntervalInSeconds = s3Config.getFileUpdateIntervalInSeconds();
@@ -170,23 +155,19 @@ public class ConfigurationReader {
             LOG.error("{}: File update interval is negative!", EXTENSION_NAME);
             return false;
         }
-
         if (!(fileUpdateIntervalInSeconds == 0 && fileExpirationInSeconds == 0)) {
             if (fileUpdateIntervalInSeconds == fileExpirationInSeconds) {
                 LOG.error("{}: File update interval is the same as the expiration interval!", EXTENSION_NAME);
                 return false;
             }
-
             if (fileUpdateIntervalInSeconds == 0) {
                 LOG.error("{}: File update interval is deactivated but expiration is set!", EXTENSION_NAME);
                 return false;
             }
-
             if (fileExpirationInSeconds == 0) {
                 LOG.error("{}: File expiration is deactivated but update interval is set!", EXTENSION_NAME);
                 return false;
             }
-
             if (!(fileUpdateIntervalInSeconds < fileExpirationInSeconds)) {
                 LOG.error("{}: File update interval is larger than expiration interval!", EXTENSION_NAME);
                 return false;

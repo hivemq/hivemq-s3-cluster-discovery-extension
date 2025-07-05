@@ -30,10 +30,10 @@ import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.IOException;
-import java.util.Map;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil.FAILURE_METRIC;
+import static com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil.IP_COUNT_METRIC;
+import static com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil.SUCCESS_METRIC;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 class S3DiscoveryFailIT {
@@ -50,13 +50,12 @@ class S3DiscoveryFailIT {
     private @NotNull HiveMQContainer firstNode;
 
     @BeforeEach
-    void setUp() throws IOException {
-        final String s3Config = TestConfigFile.builder()
+    void setUp() throws Exception {
+        final var s3Config = TestConfigFile.builder()
                 .setS3BucketName(BUCKET_NAME)
                 .setS3Endpoint("http://localstack:4566")
                 .setS3EndpointRegion(localstack.getRegion())
                 .build();
-
         firstNode =
                 new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-s3-cluster-discovery-extension")
                         .asCompatibleSubstituteFor("hivemq/hivemq4")) //
@@ -79,21 +78,21 @@ class S3DiscoveryFailIT {
     }
 
     @Test
-    void endpoint_not_working() throws IOException {
+    void endpoint_not_working() throws Exception {
         firstNode.start();
-        final Map<String, Float> metrics = MetricsUtil.getMetrics(firstNode);
-        assertEquals(0, metrics.get(MetricsUtil.SUCCESS_METRIC));
-        assertEquals(1, metrics.get(MetricsUtil.FAILURE_METRIC));
-        assertEquals(0, metrics.get(MetricsUtil.IP_COUNT_METRIC));
+        final var metrics = MetricsUtil.getMetrics(firstNode);
+        assertThat(metrics.get(SUCCESS_METRIC)).isEqualTo(0);
+        assertThat(metrics.get(FAILURE_METRIC)).isEqualTo(1);
+        assertThat(metrics.get(IP_COUNT_METRIC)).isEqualTo(0);
     }
 
     @Test
-    void bucket_not_created() throws IOException {
+    void bucket_not_created() throws Exception {
         localstack.start();
         firstNode.start();
-        final Map<String, Float> metrics = MetricsUtil.getMetrics(firstNode);
-        assertEquals(0, metrics.get(MetricsUtil.SUCCESS_METRIC));
-        assertEquals(1, metrics.get(MetricsUtil.FAILURE_METRIC));
-        assertEquals(0, metrics.get(MetricsUtil.IP_COUNT_METRIC));
+        final var metrics = MetricsUtil.getMetrics(firstNode);
+        assertThat(metrics.get(SUCCESS_METRIC)).isEqualTo(0);
+        assertThat(metrics.get(FAILURE_METRIC)).isEqualTo(1);
+        assertThat(metrics.get(IP_COUNT_METRIC)).isEqualTo(0);
     }
 }

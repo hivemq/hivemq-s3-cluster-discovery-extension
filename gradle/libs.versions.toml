@@ -1,4 +1,5 @@
 [versions]
+assertj = "3.27.3"
 aws-sdkv2 = "2.31.77"
 gradleOci-junitJupiter = "0.7.0"
 hivemq-extensionSdk = "4.1.0"
@@ -6,17 +7,16 @@ jetbrains-annotations = "26.0.2"
 junit-jupiter = "5.10.0"
 logback = "1.5.18"
 mockito = "5.18.0"
-okhttp = "4.12.0"
 owner = "1.0.12"
 testcontainers = "1.21.3"
 
 [libraries]
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 aws-sdkv2-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdkv2" }
 gradleOci-junitJupiter = { module = "io.github.sgtsilvio:gradle-oci-junit-jupiter", version.ref = "gradleOci-junitJupiter" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 owner = { module = "org.aeonbits.owner:owner", version.ref = "owner" }
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainers-hivemq = { module = "org.testcontainers:hivemq", version.ref = "testcontainers" }

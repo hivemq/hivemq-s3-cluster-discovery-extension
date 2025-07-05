@@ -81,19 +81,20 @@ testing {
         "test"(JvmTestSuite::class) {
             dependencies {
                 compileOnly(libs.jetbrains.annotations)
+                implementation(libs.assertj)
                 implementation(libs.mockito)
             }
         }
         "integrationTest"(JvmTestSuite::class) {
             dependencies {
                 compileOnly(libs.jetbrains.annotations)
+                implementation(libs.assertj)
                 implementation(libs.testcontainers)
                 implementation(libs.testcontainers.junitJupiter)
                 implementation(libs.testcontainers.hivemq)
                 implementation(libs.testcontainers.localstack)
                 implementation(libs.gradleOci.junitJupiter)
                 implementation(libs.aws.sdkv2.s3)
-                implementation(libs.okhttp)
                 runtimeOnly(libs.logback.classic)
             }
             oci.of(this) {

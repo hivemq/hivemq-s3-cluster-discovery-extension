@@ -34,8 +34,10 @@ class S3DiscoveryMetrics {
 
     S3DiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
-        querySuccessCount = metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.success.count"));
-        queryFailedCount = metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.failed.count"));
+        this.querySuccessCount =
+                metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.success.count"));
+        this.queryFailedCount =
+                metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.failed.count"));
     }
 
     @NotNull Counter getQuerySuccessCount() {

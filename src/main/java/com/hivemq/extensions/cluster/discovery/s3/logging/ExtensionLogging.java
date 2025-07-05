@@ -32,14 +32,14 @@ public class ExtensionLogging {
     private final @NotNull AtomicBoolean stopped = new AtomicBoolean(false);
 
     public void start() {
-        final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final var context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.addListener(logbackChangeListener);
         context.addTurboFilter(noiseReducingTurboFilter);
     }
 
     public void stop() {
         stopped.set(true);
-        final LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final var context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.removeListener(logbackChangeListener);
         context.getTurboFilterList().remove(noiseReducingTurboFilter);
     }
@@ -53,7 +53,6 @@ public class ExtensionLogging {
 
         @Override
         public void onStart(final @NotNull LoggerContext context) {
-            // noop
         }
 
         @Override
@@ -65,12 +64,10 @@ public class ExtensionLogging {
 
         @Override
         public void onStop(final @NotNull LoggerContext context) {
-            // noop
         }
 
         @Override
         public void onLevelChange(final @NotNull Logger logger, final @NotNull Level level) {
-            // noop
         }
     }
 }

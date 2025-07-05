@@ -32,7 +32,6 @@ import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
 import software.amazon.awssdk.awscore.exception.AwsErrorDetails;
-import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -57,14 +56,8 @@ import java.nio.file.Files;
 import java.util.function.Consumer;
 
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -80,7 +73,7 @@ class HiveMQS3ClientTest {
         extensionInformation = mock(ExtensionInformation.class);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
 
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -89,45 +82,45 @@ class HiveMQS3ClientTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
     }
 
     @Test
     void test_create_successful() {
         hiveMQS3Client.createOrUpdate();
-        assertNotNull(hiveMQS3Client.getS3Config());
-        assertNotNull(hiveMQS3Client.getS3Client());
+        assertThat(hiveMQS3Client.getS3Config()).isNotNull();
+        assertThat(hiveMQS3Client.getS3Client()).isNotNull();
     }
 
     @Test
     void test_bucket_exists() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        final HeadBucketResponse headBucketResponse = mock(HeadBucketResponse.class);
-        final SdkHttpResponse sdkHttpResponse = mock(SdkHttpResponse.class);
+        final var headBucketResponse = mock(HeadBucketResponse.class);
+        final var sdkHttpResponse = mock(SdkHttpResponse.class);
         when(headBucketResponse.sdkHttpResponse()).thenReturn(sdkHttpResponse);
         when(sdkHttpResponse.isSuccessful()).thenReturn(true);
         when(sdkHttpResponse.statusCode()).thenReturn(200);
         when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenReturn(
                 headBucketResponse);
-        final S3BucketResponse s3Bucket = hiveMQS3Client.checkBucket();
+        final var s3Bucket = hiveMQS3Client.checkBucket();
 
-        assertTrue(s3Bucket.isSuccessful());
-        assertEquals(S3BucketResponse.Status.EXISTING, s3Bucket.getStatus());
-        assertEquals("hivemq123456", s3Bucket.getBucketName());
-        assertTrue(s3Bucket.getThrowable().isEmpty());
+        assertThat(s3Bucket.isSuccessful()).isTrue();
+        assertThat(s3Bucket.getStatus()).isEqualTo(S3BucketResponse.Status.EXISTING);
+        assertThat(s3Bucket.getBucketName()).contains("hivemq123456");
+        assertThat(s3Bucket.getThrowable()).isEmpty();
     }
 
     @Test
     void test_bucket_not_exists() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        final AwsServiceException awsServiceException = S3Exception.builder()
+        final var awsServiceException = S3Exception.builder()
                 .message("Bucket not found!")
                 .awsErrorDetails(AwsErrorDetails.builder()
                         .sdkHttpResponse(SdkHttpResponse.builder().statusCode(404).build())
@@ -135,40 +128,39 @@ class HiveMQS3ClientTest {
                 .build();
         when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenThrow(
                 awsServiceException);
-        final S3BucketResponse s3Bucket = hiveMQS3Client.checkBucket();
+        final var s3Bucket = hiveMQS3Client.checkBucket();
 
-        assertFalse(s3Bucket.isSuccessful());
-        assertEquals(S3BucketResponse.Status.NOT_EXISTING, s3Bucket.getStatus());
-        assertEquals("hivemq123456", s3Bucket.getBucketName());
-        assertTrue(s3Bucket.getThrowable().isPresent());
-        assertEquals(awsServiceException, s3Bucket.getThrowable().get());
+        assertThat(s3Bucket.isSuccessful()).isFalse();
+        assertThat(s3Bucket.getStatus()).isEqualTo(S3BucketResponse.Status.NOT_EXISTING);
+        assertThat(s3Bucket.getBucketName()).contains("hivemq123456");
+        assertThat(s3Bucket.getThrowable()).hasValue(awsServiceException);
     }
 
     @Test
     void test_create_no_config_file() throws IOException {
         Files.delete(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION));
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
-        assertThrows(IllegalStateException.class, () -> hiveMQS3Client.createOrUpdate());
+        assertThatThrownBy(() -> hiveMQS3Client.createOrUpdate()).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void test_create_invalid_config() throws IOException {
-        final String configuration = "s3-bucket-region:us-east-12345\n";
+        final var configuration = "s3-bucket-region:us-east-12345\n";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
-        assertThrows(IllegalStateException.class, () -> hiveMQS3Client.createOrUpdate());
+        assertThatThrownBy(() -> hiveMQS3Client.createOrUpdate()).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void createOrUpdate_identicalConfig_sameClient() throws IOException {
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
 
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -180,18 +172,18 @@ class HiveMQS3ClientTest {
                 configuration);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
         hiveMQS3Client.createOrUpdate();
-        final S3Client firstClient = hiveMQS3Client.getS3Client();
+        final var firstClient = hiveMQS3Client.getS3Client();
 
         hiveMQS3Client.createOrUpdate();
-        final S3Client secondClient = hiveMQS3Client.getS3Client();
-        assertSame(firstClient, secondClient);
+        final var secondClient = hiveMQS3Client.getS3Client();
+        assertThat(secondClient).isSameAs(firstClient);
     }
 
     @Test
     void createOrUpdate_differentConfig_differentClient() throws IOException {
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
 
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -203,9 +195,9 @@ class HiveMQS3ClientTest {
                 configuration);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
         hiveMQS3Client.createOrUpdate();
-        final S3Client firstClient = hiveMQS3Client.getS3Client();
+        final var firstClient = hiveMQS3Client.getS3Client();
 
-        final String configuration2 = "s3-bucket-region:us-east-1\n" +
+        final var configuration2 = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq654321\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -216,50 +208,44 @@ class HiveMQS3ClientTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration2);
         hiveMQS3Client.createOrUpdate();
-        final S3Client secondClient = hiveMQS3Client.getS3Client();
-        assertNotSame(firstClient, secondClient);
+        final var secondClient = hiveMQS3Client.getS3Client();
+        assertThat(firstClient).isNotSameAs(secondClient);
     }
 
     @Test
     void test_getAwsCredentials_default() {
-        final AwsCredentialsProvider awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.DEFAULT);
-        //noinspection resource
-        assertInstanceOf(DefaultCredentialsProvider.class, awsCredentials);
+        final var awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.DEFAULT);
+        assertThat(awsCredentials).isInstanceOf(DefaultCredentialsProvider.class);
     }
 
     @Test
     void test_getAwsCredentials_environment() {
-        final AwsCredentialsProvider awsCredentials =
-                hiveMQS3Client.getAwsCredentials(AuthenticationType.ENVIRONMENT_VARIABLES);
-        assertInstanceOf(EnvironmentVariableCredentialsProvider.class, awsCredentials);
+        final var awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.ENVIRONMENT_VARIABLES);
+        assertThat(awsCredentials).isInstanceOf(EnvironmentVariableCredentialsProvider.class);
     }
 
     @Test
     void test_getAwsCredentials_java_system() {
-        final AwsCredentialsProvider awsCredentials =
-                hiveMQS3Client.getAwsCredentials(AuthenticationType.JAVA_SYSTEM_PROPERTIES);
-        assertInstanceOf(SystemPropertyCredentialsProvider.class, awsCredentials);
+        final var awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.JAVA_SYSTEM_PROPERTIES);
+        assertThat(awsCredentials).isInstanceOf(SystemPropertyCredentialsProvider.class);
     }
 
     @Test
     void test_getAwsCredentials_user_credentials() {
-        final AwsCredentialsProvider awsCredentials =
-                hiveMQS3Client.getAwsCredentials(AuthenticationType.USER_CREDENTIALS_FILE);
-        //noinspection resource
-        assertInstanceOf(ProfileCredentialsProvider.class, awsCredentials);
+        final var awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.USER_CREDENTIALS_FILE);
+        assertThat(awsCredentials).isInstanceOf(ProfileCredentialsProvider.class);
     }
 
     @Test
     void test_getAwsCredentials_instance_profile() {
         final AwsCredentialsProvider awsCredentials =
                 hiveMQS3Client.getAwsCredentials(AuthenticationType.INSTANCE_PROFILE_CREDENTIALS);
-        //noinspection resource
-        assertInstanceOf(InstanceProfileCredentialsProvider.class, awsCredentials);
+        assertThat(awsCredentials).isInstanceOf(InstanceProfileCredentialsProvider.class);
     }
 
     @Test
     void test_getAwsCredentials_access_key_success() throws IOException {
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -270,17 +256,17 @@ class HiveMQS3ClientTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
         hiveMQS3Client.createOrUpdate();
 
-        final AwsCredentialsProvider awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.ACCESS_KEY);
-        assertInstanceOf(StaticCredentialsProvider.class, awsCredentials);
+        final var awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.ACCESS_KEY);
+        assertThat(awsCredentials).isInstanceOf(StaticCredentialsProvider.class);
     }
 
     @Test
     void test_getAwsCredentials_access_key_missing_secret() throws IOException {
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -290,14 +276,14 @@ class HiveMQS3ClientTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
-        assertThrows(IllegalStateException.class, () -> hiveMQS3Client.createOrUpdate());
+        assertThatThrownBy(() -> hiveMQS3Client.createOrUpdate()).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void test_getAwsCredentials_access_key_missing_id() throws IOException {
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -307,14 +293,14 @@ class HiveMQS3ClientTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
-        assertThrows(IllegalStateException.class, () -> hiveMQS3Client.createOrUpdate());
+        assertThatThrownBy(() -> hiveMQS3Client.createOrUpdate()).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void test_getAwsCredentials_temporary_session_success() throws IOException {
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -326,18 +312,17 @@ class HiveMQS3ClientTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
         hiveMQS3Client.createOrUpdate();
 
-        final AwsCredentialsProvider awsCredentials =
-                hiveMQS3Client.getAwsCredentials(AuthenticationType.TEMPORARY_SESSION);
-        assertInstanceOf(StaticCredentialsProvider.class, awsCredentials);
+        final var awsCredentials = hiveMQS3Client.getAwsCredentials(AuthenticationType.TEMPORARY_SESSION);
+        assertThat(awsCredentials).isInstanceOf(StaticCredentialsProvider.class);
     }
 
     @Test
     void test_getAwsCredentials_temporary_session_missing_token() throws IOException {
-        final String configuration = "s3-bucket-region:us-east-1\n" +
+        final var configuration = "s3-bucket-region:us-east-1\n" +
                 "s3-bucket-name:hivemq123456\n" +
                 "file-prefix:hivemq/cluster/nodes/\n" +
                 "file-expiration:360\n" +
@@ -348,15 +333,15 @@ class HiveMQS3ClientTest {
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final var configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
-        assertThrows(IllegalStateException.class, () -> hiveMQS3Client.createOrUpdate());
+        assertThatThrownBy(() -> hiveMQS3Client.createOrUpdate()).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void test_saveObject_success() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.putObject(ArgumentMatchers.<Consumer<PutObjectRequest.Builder>>any(),
@@ -370,7 +355,7 @@ class HiveMQS3ClientTest {
         System.setProperty("aws.secretAccessKey", "asdf");
         hiveMQS3Client.createOrUpdate();
         //noinspection DataFlowIssue
-        assertThrows(SdkClientException.class, () -> hiveMQS3Client.saveObject(null, "test"));
+        assertThatThrownBy(() -> hiveMQS3Client.saveObject(null, "test")).isInstanceOf(SdkClientException.class);
     }
 
     @Test
@@ -379,37 +364,36 @@ class HiveMQS3ClientTest {
         System.setProperty("aws.secretAccessKey", "asdf");
         hiveMQS3Client.createOrUpdate();
         //noinspection DataFlowIssue
-        assertThrows(NullPointerException.class, () -> hiveMQS3Client.saveObject("abcd", null));
+        assertThatThrownBy(() -> hiveMQS3Client.saveObject("abcd", null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void test_getObject_success() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.getObjectAsBytes(ArgumentMatchers.<Consumer<GetObjectRequest.Builder>>any())).thenReturn(
                 ResponseBytes.fromByteArray(mock(GetObjectResponse.class), "Test".getBytes(StandardCharsets.UTF_8)));
-        final String abcd = hiveMQS3Client.getObject("abcd");
-        assertNotNull(abcd);
+        assertThat(hiveMQS3Client.getObject("abcd")).isNotNull();
     }
 
     @Test
     void test_getObject_objectkey_null() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.getObjectAsBytes(ArgumentMatchers.<Consumer<GetObjectRequest.Builder>>any())).thenThrow(
                 IllegalArgumentException.class);
         //noinspection DataFlowIssue
-        assertThrows(IllegalArgumentException.class, () -> hiveMQS3Client.getObject(null));
+        assertThatThrownBy(() -> hiveMQS3Client.getObject(null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void test_deleteObject_success() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.deleteObject(ArgumentMatchers.<Consumer<DeleteObjectRequest.Builder>>any())).thenReturn(mock(
@@ -420,59 +404,57 @@ class HiveMQS3ClientTest {
     @Test
     void test_deleteObject_objectkey_null() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
         doThrow(IllegalArgumentException.class).when(s3Client)
                 .deleteObject(ArgumentMatchers.<Consumer<DeleteObjectRequest.Builder>>any());
         //noinspection DataFlowIssue
-        assertThrows(IllegalArgumentException.class, () -> hiveMQS3Client.deleteObject(null));
+        assertThatThrownBy(() -> hiveMQS3Client.deleteObject(null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void test_listObjects_success() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenReturn(mock(
                 ListObjectsV2Response.class));
-        final ListObjectsV2Response abcd = hiveMQS3Client.getObjects();
-        assertNotNull(abcd);
+        assertThat(hiveMQS3Client.getObjects()).isNotNull();
     }
 
     @Test
     void test_listObjects_fileprefix_null() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenThrow(
                 IllegalArgumentException.class);
-        assertThrows(IllegalArgumentException.class, () -> hiveMQS3Client.getObjects());
+        assertThatThrownBy(() -> hiveMQS3Client.getObjects()).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void test_listNextBatchOfObjects_success() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenReturn(mock(
                 ListObjectsV2Response.class));
-        final ListObjectsV2Response nextBatchOfObjects = hiveMQS3Client.getNextBatchOfObjects("continuationToken");
-        assertNotNull(nextBatchOfObjects);
+        assertThat(hiveMQS3Client.getNextBatchOfObjects("continuationToken")).isNotNull();
     }
 
     @Test
     void test_listNextBatchOfObjects_objectlisting_null() {
         hiveMQS3Client.createOrUpdate();
-        final S3Client s3Client = mock(S3Client.class);
+        final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
         when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenThrow(
                 IllegalArgumentException.class);
         //noinspection DataFlowIssue
-        assertThrows(IllegalArgumentException.class, () -> hiveMQS3Client.getNextBatchOfObjects(null));
+        assertThatThrownBy(() -> hiveMQS3Client.getNextBatchOfObjects(null)).isInstanceOf(IllegalArgumentException.class);
     }
 }

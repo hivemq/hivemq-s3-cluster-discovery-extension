@@ -24,13 +24,8 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ClusterNodeFileTest {
 
@@ -39,205 +34,206 @@ class ClusterNodeFileTest {
 
     @Test
     void test_cluster_node_file_successful_create() {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        assertNotNull(clusterNodeFile);
+        final var clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
+        assertThat(clusterNodeFile).isNotNull();
     }
 
     @Test
     void test_cluster_node_file_successful_get_node_address() {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        assertNotNull(clusterNodeFile.getClusterNodeAddress());
+        final var clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
+        assertThat(clusterNodeFile.getClusterNodeAddress()).isNotNull();
     }
 
     @Test
     void test_cluster_node_file_successful_get_cluster_id() {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        assertNotNull(clusterNodeFile.getClusterId());
+        final var clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
+        assertThat(clusterNodeFile.getClusterId()).isNotNull();
     }
 
     @Test
     void test_cluster_node_file_equals() {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        final String clusterNodeFileString = clusterNodeFile.toString();
-        final ClusterNodeFile newClusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNotNull(newClusterNodeFile);
-        assertEquals(clusterNodeFile.toString(), newClusterNodeFile.toString());
+        final var clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
+        final var clusterNodeFileString = clusterNodeFile.toString();
+        final var newClusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(newClusterNodeFile).isNotNull();
+        assertThat(newClusterNodeFile.toString()).isEqualTo(clusterNodeFile.toString());
     }
 
     @Test
     void test_cluster_node_file_not_equal() {
-        final ClusterNodeFile clusterNodeFile1 = new ClusterNodeFile(nodeId + 1, clusterNodeAddress);
-        final ClusterNodeFile clusterNodeFile2 = new ClusterNodeFile(nodeId + 2, clusterNodeAddress);
-        assertNotEquals(clusterNodeFile1.toString(), clusterNodeFile2.toString());
+        final var clusterNodeFile1 = new ClusterNodeFile(nodeId + 1, clusterNodeAddress);
+        final var clusterNodeFile2 = new ClusterNodeFile(nodeId + 2, clusterNodeAddress);
+        assertThat(clusterNodeFile2.toString()).isNotEqualTo(clusterNodeFile1.toString());
     }
 
     @Test
     void test_cluster_node_file_nodeId_null() {
         //noinspection DataFlowIssue
-        assertThrows(NullPointerException.class, () -> new ClusterNodeFile(null, clusterNodeAddress));
+        assertThatThrownBy(() -> new ClusterNodeFile(null,
+                clusterNodeAddress)).isInstanceOf(NullPointerException.class);
     }
-
 
     @Test
     void test_cluster_node_file_nodeId_blank() {
-        assertThrows(IllegalArgumentException.class, () -> new ClusterNodeFile(" ", clusterNodeAddress));
+        assertThatThrownBy(() -> new ClusterNodeFile(" ",
+                clusterNodeAddress)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void test_cluster_node_file_cluster_node_address_null() {
         //noinspection DataFlowIssue
-        assertThrows(NullPointerException.class, () -> new ClusterNodeFile(nodeId, null));
+        assertThatThrownBy(() -> new ClusterNodeFile(nodeId, null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void test_cluster_node_file_expiration_deactivated() {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        assertFalse(clusterNodeFile.isExpired(0));
+        final var clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
+        assertThat(clusterNodeFile.isExpired(0)).isFalse();
     }
 
     @Test
     void test_cluster_node_file_expired() throws Exception {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
+        final var clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         TimeUnit.SECONDS.sleep(2);
-        assertTrue(clusterNodeFile.isExpired(1));
+        assertThat(clusterNodeFile.isExpired(1)).isTrue();
     }
 
     @Test
     void test_cluster_node_file_not_expired() {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        assertFalse(clusterNodeFile.isExpired(1));
+        final var clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
+        assertThat(clusterNodeFile.isExpired(1)).isFalse();
     }
 
     @Test
     void test_cluster_node_file_not_expired_sleep() throws Exception {
-        final ClusterNodeFile clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
+        final var clusterNodeFile = new ClusterNodeFile(nodeId, clusterNodeAddress);
         TimeUnit.SECONDS.sleep(1);
-        assertFalse(clusterNodeFile.isExpired(2));
+        assertThat(clusterNodeFile.isExpired(2)).isFalse();
     }
 
     @Test
     void test_parseClusterNodeFile_success() {
-        final ClusterNodeFile clusterNodeFile1 = new ClusterNodeFile(nodeId, clusterNodeAddress);
-        final String clusterNodeFile1String = clusterNodeFile1.toString();
-        final ClusterNodeFile clusterNodeFile2 = ClusterNodeFile.parseClusterNodeFile(clusterNodeFile1String);
-        assertNotNull(clusterNodeFile2);
-        assertEquals(clusterNodeFile1.toString(), clusterNodeFile2.toString());
+        final var clusterNodeFile1 = new ClusterNodeFile(nodeId, clusterNodeAddress);
+        final var clusterNodeFile1String = clusterNodeFile1.toString();
+        final var clusterNodeFile2 = ClusterNodeFile.parseClusterNodeFile(clusterNodeFile1String);
+        assertThat(clusterNodeFile2).isNotNull();
+        assertThat(clusterNodeFile2.toString()).isEqualTo(clusterNodeFile1.toString());
     }
 
     @Test
     void test_parseClusterNodeFile_false_version() {
-        final String clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileString("3",
+        final var clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileString("3",
                 Long.toString(System.currentTimeMillis()),
                 nodeId,
                 clusterNodeAddress.getHost(),
                 Integer.toString(clusterNodeAddress.getPort()));
 
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
+        final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(clusterNodeFile).isNull();
     }
 
     @Test
     void test_parseClusterNodeFile_false_charset() {
-        final String clusterNodeFileString = new String("abcd".getBytes(), StandardCharsets.UTF_16);
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
+        final var clusterNodeFileString = new String("abcd".getBytes(), StandardCharsets.UTF_16);
+        final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(clusterNodeFile).isNull();
     }
 
     @Test
     void test_parseClusterNodeFile_version_empty() {
-        final String clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileString("",
+        final var clusterNodeFileString = ClusterNodeFileUtil.createClusterNodeFileString("",
                 Long.toString(System.currentTimeMillis()),
                 nodeId,
                 clusterNodeAddress.getHost(),
                 Integer.toString(clusterNodeAddress.getPort()));
 
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
+        final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(clusterNodeFile).isNull();
     }
 
     @Test
     void test_parseClusterNodeFile_node_id_empty() {
-        final String clusterNodeFileString =
+        final var clusterNodeFileString =
                 ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
                         Long.toString(System.currentTimeMillis()),
                         "",
                         clusterNodeAddress.getHost(),
                         Integer.toString(clusterNodeAddress.getPort()));
 
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
+        final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(clusterNodeFile).isNull();
     }
 
     @Test
     void test_parseClusterNodeFile_host_empty() {
-        final String clusterNodeFileString =
+        final var clusterNodeFileString =
                 ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
                         Long.toString(System.currentTimeMillis()),
                         nodeId,
                         "",
                         Integer.toString(clusterNodeAddress.getPort()));
 
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
+        final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(clusterNodeFile).isNull();
     }
 
     @Test
     void test_parseClusterNodeFile_port_not_number() {
-        final String clusterNodeFileString =
+        final var clusterNodeFileString =
                 ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
                         Long.toString(System.currentTimeMillis()),
                         nodeId,
                         clusterNodeAddress.getHost(),
                         "abcd");
 
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
+        final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(clusterNodeFile).isNull();
     }
 
     @Test
     void test_parseClusterNodeFile_creation_time_not_number() {
-        final String clusterNodeFileString =
+        final var clusterNodeFileString =
                 ClusterNodeFileUtil.createClusterNodeFileString(ClusterNodeFile.CONTENT_VERSION,
                         "abcd",
                         nodeId,
                         clusterNodeAddress.getHost(),
                         Integer.toString(clusterNodeAddress.getPort()));
 
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
+        final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(clusterNodeFile).isNull();
     }
 
     @Test
     void test_parseClusterNodeFile_too_short() {
-        final String clusterNodeFileString =
+        final var clusterNodeFileString =
                 ClusterNodeFileUtil.createClusterNodeFileStringTooShort(ClusterNodeFile.CONTENT_VERSION,
                         Long.toString(System.currentTimeMillis()));
 
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
+        final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(clusterNodeFile).isNull();
     }
 
     @Test
     void test_parseClusterNodeFile_too_long() {
-        final String clusterNodeFileString =
+        final var clusterNodeFileString =
                 ClusterNodeFileUtil.createClusterNodeFileStringTooLong(ClusterNodeFile.CONTENT_VERSION,
                         Long.toString(System.currentTimeMillis()),
                         nodeId,
                         clusterNodeAddress.getHost(),
                         Integer.toString(clusterNodeAddress.getPort()));
 
-        final ClusterNodeFile clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
-        assertNull(clusterNodeFile);
+        final var clusterNodeFile = ClusterNodeFile.parseClusterNodeFile(clusterNodeFileString);
+        assertThat(clusterNodeFile).isNull();
     }
 
     @Test
     void test_parseClusterNodeFile_null() {
         //noinspection DataFlowIssue
-        assertThrows(NullPointerException.class, () -> ClusterNodeFile.parseClusterNodeFile(null));
+        assertThatThrownBy(() -> ClusterNodeFile.parseClusterNodeFile(null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void test_parseClusterNodeFile_blank() {
-        assertThrows(IllegalArgumentException.class, () -> ClusterNodeFile.parseClusterNodeFile("  "));
+        assertThatThrownBy(() -> ClusterNodeFile.parseClusterNodeFile("  ")).isInstanceOf(IllegalArgumentException.class);
     }
 }

@@ -33,10 +33,8 @@ import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.SystemPropertyCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.http.SdkHttpResponse;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Exception;
@@ -64,7 +62,7 @@ public class HiveMQS3Client {
     }
 
     public void createOrUpdate() {
-        final S3Config newS3Config = configurationReader.readConfiguration();
+        final var newS3Config = configurationReader.readConfiguration();
         if (newS3Config == null) {
             throw new IllegalStateException("Configuration of the S3 discovery extension couldn't be loaded.");
         }
@@ -72,23 +70,21 @@ public class HiveMQS3Client {
             return;
         }
         s3Config = newS3Config;
-        LOG.trace("{}: Loaded configuration successfully.", EXTENSION_NAME);
-        final AuthenticationType authenticationType = AuthenticationType.fromName(s3Config.getAuthenticationTypeName());
-        final AwsCredentialsProvider credentialsProvider = getAwsCredentials(authenticationType);
-
-        final S3ClientBuilder s3ClientBuilder = S3Client.builder();
+        LOG.trace("{}: Configuration loaded successfully.", EXTENSION_NAME);
+        final var authenticationType = AuthenticationType.fromName(s3Config.getAuthenticationTypeName());
+        final var credentialsProvider = getAwsCredentials(authenticationType);
+        final var s3ClientBuilder = S3Client.builder();
         if (s3Config.getEndpoint().equals(S3_HOSTNAME)) {
-            final Region region = Region.of(s3Config.getBucketRegionName());
+            final var region = Region.of(s3Config.getBucketRegionName());
             s3ClientBuilder.region(region);
         } else {
             s3ClientBuilder.endpointOverride(URI.create(s3Config.getEndpoint()));
             if (s3Config.getEndpointRegionName() != null) {
-                final Region region = Region.of(s3Config.getEndpointRegionName());
+                final var region = Region.of(s3Config.getEndpointRegionName());
                 s3ClientBuilder.region(region);
             }
         }
-
-        final S3Configuration.Builder s3ConfigurationBuilder = S3Configuration.builder();
+        final var s3ConfigurationBuilder = S3Configuration.builder();
         if (s3Config.getPathStyleAccess() != null) {
             s3ConfigurationBuilder.pathStyleAccessEnabled(s3Config.getPathStyleAccess());
         }
@@ -102,50 +98,37 @@ public class HiveMQS3Client {
     }
 
     @NotNull AwsCredentialsProvider getAwsCredentials(final @NotNull AuthenticationType authenticationType) {
-        final AwsCredentialsProvider credentialsProvider;
         switch (authenticationType) {
             case DEFAULT:
-                credentialsProvider = DefaultCredentialsProvider.create();
-                break;
+                return DefaultCredentialsProvider.builder().build();
             case ENVIRONMENT_VARIABLES:
-                credentialsProvider = EnvironmentVariableCredentialsProvider.create();
-                break;
+                return EnvironmentVariableCredentialsProvider.create();
             case JAVA_SYSTEM_PROPERTIES:
-                credentialsProvider = SystemPropertyCredentialsProvider.create();
-                break;
+                return SystemPropertyCredentialsProvider.create();
             case USER_CREDENTIALS_FILE:
-                credentialsProvider = ProfileCredentialsProvider.create();
-                break;
+                return ProfileCredentialsProvider.create();
             case INSTANCE_PROFILE_CREDENTIALS:
-                credentialsProvider = InstanceProfileCredentialsProvider.create();
-                break;
+                return InstanceProfileCredentialsProvider.create();
             case ACCESS_KEY:
             case TEMPORARY_SESSION:
-                final String accessKey = Objects.requireNonNull(s3Config).getAccessKeyId();
-                final String secretAccessKey = s3Config.getAccessKeySecret();
-
+                final var accessKey = Objects.requireNonNull(s3Config).getAccessKeyId();
+                final var secretAccessKey = s3Config.getAccessKeySecret();
                 if (authenticationType == AuthenticationType.ACCESS_KEY) {
-                    credentialsProvider =
-                            StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretAccessKey));
+                    return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretAccessKey));
                 } else {
-                    final String sessionToken = s3Config.getSessionToken();
-                    credentialsProvider =
-                            StaticCredentialsProvider.create(AwsSessionCredentials.create(Objects.requireNonNull(
-                                            accessKey),
-                                    Objects.requireNonNull(secretAccessKey),
-                                    Objects.requireNonNull(sessionToken)));
+                    final var sessionToken = s3Config.getSessionToken();
+                    return StaticCredentialsProvider.create(AwsSessionCredentials.create(Objects.requireNonNull(
+                            accessKey), Objects.requireNonNull(secretAccessKey), Objects.requireNonNull(sessionToken)));
                 }
-                break;
             default:
                 throw new IllegalArgumentException("Unknown credentials type.");
         }
-        return credentialsProvider;
     }
 
     public @NotNull S3BucketResponse checkBucket() {
-        final String bucketName = Objects.requireNonNull(s3Config).getBucketName();
+        final var bucketName = Objects.requireNonNull(s3Config).getBucketName();
         try {
-            final SdkHttpResponse sdkHttpResponse = Objects.requireNonNull(s3Client)
+            final var sdkHttpResponse = Objects.requireNonNull(s3Client)
                     .headBucket(builder -> builder.bucket(bucketName).build())
                     .sdkHttpResponse();
             return new S3BucketResponse(bucketName, sdkHttpResponse.statusCode(), null);

@@ -21,7 +21,6 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
-import com.hivemq.extensions.cluster.discovery.s3.logging.ExtensionLogging;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,53 +28,47 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class S3DiscoveryExtensionMainTest {
 
-    private @NotNull ExtensionStartInput extensionStartInput;
-    private @NotNull ExtensionStartOutput extensionStartOutput;
-    private @NotNull ExtensionStopInput extensionStopInput;
-    private @NotNull ExtensionStopOutput extensionStopOutput;
-    private @NotNull ExtensionInformation extensionInformation;
-    private @NotNull S3DiscoveryExtensionMain s3DiscoveryExtensionMain;
+    private final @NotNull ExtensionStartInput extensionStartInput = mock();
+    private final @NotNull ExtensionStartOutput extensionStartOutput = mock();
+    private final @NotNull ExtensionStopInput extensionStopInput = mock();
+    private final @NotNull ExtensionStopOutput extensionStopOutput = mock();
+    private final @NotNull ExtensionInformation extensionInformation = mock();
+
+    private final @NotNull S3DiscoveryExtensionMain s3DiscoveryExtensionMain =
+            new S3DiscoveryExtensionMain(mock(), mock());
 
     @BeforeEach
     void setUp(@TempDir final @NotNull File tempDir) {
-        extensionStartInput = mock(ExtensionStartInput.class);
-        extensionStartOutput = mock(ExtensionStartOutput.class);
-        extensionStopInput = mock(ExtensionStopInput.class);
-        extensionStopOutput = mock(ExtensionStopOutput.class);
-        extensionInformation = mock(ExtensionInformation.class);
         when(extensionStartInput.getExtensionInformation()).thenReturn(extensionInformation);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
-        s3DiscoveryExtensionMain =
-                new S3DiscoveryExtensionMain(mock(ExtensionLogging.class), mock(S3DiscoveryMetrics.class));
     }
 
     @Test
     void test_start_success() {
         s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        assertNotNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
+        assertThat(s3DiscoveryExtensionMain.s3DiscoveryCallback).isNotNull();
     }
 
     @Test
     void test_start_failed() {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
         s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
-        assertNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
+        assertThat(s3DiscoveryExtensionMain.s3DiscoveryCallback).isNull();
     }
 
     @Test
     void test_stop_success() {
-        assertThrows(RuntimeException.class, () -> {
+        assertThatThrownBy(() -> {
             s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
             s3DiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
-        });
+        }).isInstanceOf(RuntimeException.class);
     }
 
     @Test
@@ -83,6 +76,6 @@ class S3DiscoveryExtensionMainTest {
         when(extensionInformation.getExtensionHomeFolder()).thenThrow(new NullPointerException());
         s3DiscoveryExtensionMain.extensionStart(extensionStartInput, extensionStartOutput);
         s3DiscoveryExtensionMain.extensionStop(extensionStopInput, extensionStopOutput);
-        assertNull(s3DiscoveryExtensionMain.s3DiscoveryCallback);
+        assertThat(s3DiscoveryExtensionMain.s3DiscoveryCallback).isNull();
     }
 }

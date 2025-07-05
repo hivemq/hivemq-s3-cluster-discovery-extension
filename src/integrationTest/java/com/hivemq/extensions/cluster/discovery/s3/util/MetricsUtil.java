@@ -16,18 +16,17 @@
 
 package com.hivemq.extensions.cluster.discovery.s3.util;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.hivemq.HiveMQContainer;
 
-import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,22 +44,19 @@ public class MetricsUtil {
     private MetricsUtil() {
     }
 
-    public static @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws IOException {
-        final OkHttpClient client = new OkHttpClient();
-
-        final int port = node.getMappedPort(9399);
-        final Request request = new Request.Builder().url("http://" + node.getHost() + ":" + port + "/metrics").build();
-
-        final String string;
-        try (final Response response = client.newCall(request).execute()) {
-            string = Objects.requireNonNull(response.body()).string();
-        }
-
-        return parseMetrics(string, Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
+    public static @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws Exception {
+        final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
+        //noinspection HttpUrlsUsage
+        final var request = HttpRequest.newBuilder()
+                .uri(URI.create("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics"))
+                .build();
+        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return parseMetrics(response.body(), Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
     }
 
     private static @NotNull Map<String, Float> parseMetrics(
-            final @NotNull String metricsDump, final @NotNull Set<String> metrics) {
+            final @NotNull String metricsDump,
+            final @NotNull Set<String> metrics) {
         return metricsDump.lines()
                 .filter(s -> !s.startsWith("#"))
                 .map(s -> s.split(" "))

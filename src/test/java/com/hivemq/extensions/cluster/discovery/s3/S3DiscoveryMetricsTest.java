@@ -16,8 +16,6 @@
 
 package com.hivemq.extensions.cluster.discovery.s3;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,8 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class S3DiscoveryMetricsTest {
 
@@ -41,34 +38,33 @@ class S3DiscoveryMetricsTest {
 
     @Test
     void test_getQuerySuccessCount() {
-        final Counter counter = metrics.getQuerySuccessCount();
+        final var counter = metrics.getQuerySuccessCount();
         counter.inc();
-        final String name = ExtensionConstants.EXTENSION_METRIC_PREFIX + "." + "query.success.count";
-        final Counter counterFromRegistry = metricRegistry.counter(name);
-        assertEquals(counter.getCount(), counterFromRegistry.getCount());
+        final var name = ExtensionConstants.EXTENSION_METRIC_PREFIX + "." + "query.success.count";
+        final var counterFromRegistry = metricRegistry.counter(name);
+        assertThat(counterFromRegistry.getCount()).isEqualTo(counter.getCount());
     }
 
     @Test
     void test_getQueryFailedCount() {
-        final Counter counter = metrics.getQueryFailedCount();
+        final var counter = metrics.getQueryFailedCount();
         counter.inc();
-        final String name = ExtensionConstants.EXTENSION_METRIC_PREFIX + "." + "query.failed.count";
-        final Counter counterFromRegistry = metricRegistry.counter(name);
-        assertEquals(counter.getCount(), counterFromRegistry.getCount());
+        final var name = ExtensionConstants.EXTENSION_METRIC_PREFIX + "." + "query.failed.count";
+        final var counterFromRegistry = metricRegistry.counter(name);
+        assertThat(counterFromRegistry.getCount()).isEqualTo(counter.getCount());
     }
 
     @Test
     void test_registerAddressCountGauge() {
-        final AtomicInteger addressesCount = new AtomicInteger(1);
+        final var addressesCount = new AtomicInteger(1);
         metrics.registerAddressCountGauge(addressesCount::get);
 
-        final String name = ExtensionConstants.EXTENSION_METRIC_PREFIX + ".resolved-addresses";
-        final Gauge<?> gauge = metricRegistry.getGauges().get(name);
-
-        assertNotNull(gauge);
-        assertEquals(1, gauge.getValue());
+        final var name = ExtensionConstants.EXTENSION_METRIC_PREFIX + ".resolved-addresses";
+        final var gauge = metricRegistry.getGauges().get(name);
+        assertThat(gauge).isNotNull();
+        assertThat(gauge.getValue()).isEqualTo(1);
 
         addressesCount.set(3);
-        assertEquals(3, gauge.getValue());
+        assertThat(gauge.getValue()).isEqualTo(3);
     }
 }
