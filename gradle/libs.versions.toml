@@ -1,5 +1,5 @@
 [versions]
-assertj = "3.27.4"
+assertj = "3.27.5"
 aws-sdkv2 = "2.33.9"
 gradleOci-junitJupiter = "0.7.0"
 hivemq-extensionSdk = "4.1.0"
