@@ -1,11 +1,11 @@
 [versions]
 assertj = "3.27.6"
-aws-sdkv2 = "2.34.5"
+aws-sdkv2 = "2.34.7"
 gradleOci-junitJupiter = "0.7.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "26.0.2-1"
 junit-jupiter = "5.10.0"
-logback = "1.5.18"
+logback = "1.5.19"
 mockito = "5.20.0"
 owner = "1.0.12"
 testcontainers = "1.21.3"
