@@ -1,6 +1,6 @@
 [versions]
 assertj = "3.27.6"
-aws-sdkv2 = "2.35.11"
+aws-sdkv2 = "2.36.2"
 gradleOci-junitJupiter = "0.7.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "26.0.2-1"
