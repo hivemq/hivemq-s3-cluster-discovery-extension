@@ -76,8 +76,8 @@ class S3DiscoveryCallback implements ClusterDiscoveryCallback {
             final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         try {
             hiveMQS3Client.createOrUpdate();
-        } catch (final Exception ignored) {
-            LOG.error("{}: Configuration couldn't be loaded. Skipping initial discovery.", EXTENSION_NAME);
+        } catch (final Exception e) {
+            LOG.error("{}: Configuration couldn't be loaded. Skipping initial discovery.", EXTENSION_NAME, e);
             s3DiscoveryMetrics.getQueryFailedCount().inc();
             addressesCount.set(0);
             return;
