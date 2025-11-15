@@ -1,6 +1,6 @@
 [versions]
 assertj = "3.27.6"
-aws-sdkv2 = "2.38.4"
+aws-sdkv2 = "2.38.7"
 gradleOci-junitJupiter = "0.8.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "26.0.2-1"
@@ -8,7 +8,7 @@ junit-jupiter = "5.10.0"
 logback = "1.5.21"
 mockito = "5.20.0"
 owner = "1.0.12"
-testcontainers = "2.0.1"
+testcontainers = "2.0.2"
 
 [libraries]
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
