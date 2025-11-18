@@ -457,4 +457,139 @@ class HiveMQS3ClientTest {
         //noinspection DataFlowIssue
         assertThatThrownBy(() -> hiveMQS3Client.getNextBatchOfObjects(null)).isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void test_createOrUpdate_defaultS3Endpoint() throws IOException {
+        final var configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default\n" +
+                "s3-endpoint:" +
+                HiveMQS3Client.S3_HOSTNAME;
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
+
+        final var configurationReader = new ConfigurationReader(extensionInformation);
+        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+        hiveMQS3Client.createOrUpdate();
+
+        assertThat(hiveMQS3Client.getS3Config()).isNotNull();
+        assertThat(hiveMQS3Client.getS3Config().getEndpoint()).isEqualTo(HiveMQS3Client.S3_HOSTNAME);
+        assertThat(hiveMQS3Client.getS3Client()).isNotNull();
+    }
+
+    @Test
+    void test_createOrUpdate_customEndpointWithoutProtocol() throws IOException {
+        final var configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default\n" +
+                "s3-endpoint:minio.example.com:9000\n" +
+                "s3-endpoint-region:us-east-1";
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
+
+        final var configurationReader = new ConfigurationReader(extensionInformation);
+        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+        hiveMQS3Client.createOrUpdate();
+
+        assertThat(hiveMQS3Client.getS3Config()).isNotNull();
+        assertThat(hiveMQS3Client.getS3Config().getEndpoint()).isEqualTo("minio.example.com:9000");
+        assertThat(hiveMQS3Client.getS3Config().getEndpointRegionName()).isEqualTo("us-east-1");
+        assertThat(hiveMQS3Client.getS3Client()).isNotNull();
+    }
+
+    @Test
+    void test_createOrUpdate_customEndpointWithHttps() throws IOException {
+        final var configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default\n" +
+                "s3-endpoint:https://minio.example.com:9000\n" +
+                "s3-endpoint-region:eu-west-1";
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
+
+        final var configurationReader = new ConfigurationReader(extensionInformation);
+        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+        hiveMQS3Client.createOrUpdate();
+
+        assertThat(hiveMQS3Client.getS3Config()).isNotNull();
+        assertThat(hiveMQS3Client.getS3Config().getEndpoint()).isEqualTo("https://minio.example.com:9000");
+        assertThat(hiveMQS3Client.getS3Config().getEndpointRegionName()).isEqualTo("eu-west-1");
+        assertThat(hiveMQS3Client.getS3Client()).isNotNull();
+    }
+
+    @Test
+    void test_createOrUpdate_customEndpointWithHttp() throws IOException {
+        final var configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default\n" +
+                "s3-endpoint:http://localhost:9000\n" +
+                "s3-endpoint-region:local";
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
+
+        final var configurationReader = new ConfigurationReader(extensionInformation);
+        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+        hiveMQS3Client.createOrUpdate();
+
+        assertThat(hiveMQS3Client.getS3Config()).isNotNull();
+        assertThat(hiveMQS3Client.getS3Config().getEndpoint()).isEqualTo("http://localhost:9000");
+        assertThat(hiveMQS3Client.getS3Config().getEndpointRegionName()).isEqualTo("local");
+        assertThat(hiveMQS3Client.getS3Client()).isNotNull();
+    }
+
+    @Test
+    void test_createOrUpdate_customEndpointWithoutRegion() throws IOException {
+        final var configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default\n" +
+                "s3-endpoint:custom.s3.example.com";
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
+
+        final var configurationReader = new ConfigurationReader(extensionInformation);
+        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+
+        // AWS SDK requires a region when using custom endpoint, so this should fail
+        assertThatThrownBy(() -> hiveMQS3Client.createOrUpdate()).isInstanceOf(SdkClientException.class);
+    }
+
+    @Test
+    void test_createOrUpdate_customEndpointWithPathStyleAccess() throws IOException {
+        final var configuration = "s3-bucket-region:us-east-1\n" +
+                "s3-bucket-name:hivemq123456\n" +
+                "file-prefix:hivemq/cluster/nodes/\n" +
+                "file-expiration:360\n" +
+                "update-interval:180\n" +
+                "credentials-type:default\n" +
+                "s3-endpoint:https://minio.example.com\n" +
+                "s3-endpoint-region:us-east-1\n" +
+                "s3-path-style-access:true";
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
+                configuration);
+
+        final var configurationReader = new ConfigurationReader(extensionInformation);
+        hiveMQS3Client = new HiveMQS3Client(configurationReader);
+        hiveMQS3Client.createOrUpdate();
+
+        assertThat(hiveMQS3Client.getS3Config()).isNotNull();
+        assertThat(hiveMQS3Client.getS3Config().getEndpoint()).isEqualTo("https://minio.example.com");
+        assertThat(hiveMQS3Client.getS3Config().getEndpointRegionName()).isEqualTo("us-east-1");
+        assertThat(hiveMQS3Client.getS3Config().getPathStyleAccess()).isTrue();
+        assertThat(hiveMQS3Client.getS3Client()).isNotNull();
+    }
 }

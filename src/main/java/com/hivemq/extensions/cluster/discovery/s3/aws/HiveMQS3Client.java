@@ -40,6 +40,7 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.net.URI;
+import java.util.Locale;
 import java.util.Objects;
 
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_NAME;
@@ -49,8 +50,10 @@ import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTE
  */
 public class HiveMQS3Client {
 
+    @SuppressWarnings("SpellCheckingInspection")
+    static final @NotNull String S3_HOSTNAME = "s3.amazonaws.com";
+
     private static final @NotNull Logger LOG = LoggerFactory.getLogger(HiveMQS3Client.class);
-    private static final @NotNull String S3_HOSTNAME = "s3.amazonaws.com";
 
     private final @NotNull ConfigurationReader configurationReader;
 
@@ -78,7 +81,12 @@ public class HiveMQS3Client {
             final var region = Region.of(s3Config.getBucketRegionName());
             s3ClientBuilder.region(region);
         } else {
-            s3ClientBuilder.endpointOverride(URI.create(s3Config.getEndpoint()));
+            final var lowerCaseEndpoint = s3Config.getEndpoint().toLowerCase(Locale.ROOT);
+            //noinspection HttpUrlsUsage
+            s3ClientBuilder.endpointOverride(URI.create(!lowerCaseEndpoint.startsWith("https://") &&
+                    !lowerCaseEndpoint.startsWith("http://") ?
+                    "https://" + s3Config.getEndpoint() :
+                    s3Config.getEndpoint()));
             if (s3Config.getEndpointRegionName() != null) {
                 final var region = Region.of(s3Config.getEndpointRegionName());
                 s3ClientBuilder.region(region);
