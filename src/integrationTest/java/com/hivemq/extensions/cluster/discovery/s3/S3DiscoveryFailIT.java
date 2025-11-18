@@ -25,16 +25,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.event.Level;
 import org.testcontainers.containers.Network;
-import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.localstack.LocalStackContainer;
 import org.testcontainers.utility.MountableFile;
 
 import static com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil.FAILURE_METRIC;
 import static com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil.IP_COUNT_METRIC;
 import static com.hivemq.extensions.cluster.discovery.s3.util.MetricsUtil.SUCCESS_METRIC;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.S3;
 
 class S3DiscoveryFailIT {
 
@@ -43,7 +42,7 @@ class S3DiscoveryFailIT {
     private final @NotNull Network network = Network.newNetwork();
 
     private final @NotNull LocalStackContainer localstack =
-            new LocalStackContainer(OciImages.getImageName("localstack/localstack")).withServices(S3)
+            new LocalStackContainer(OciImages.getImageName("localstack/localstack")).withServices("s3")
                     .withNetwork(network)
                     .withNetworkAliases("localstack");
 
@@ -56,6 +55,7 @@ class S3DiscoveryFailIT {
                 .setS3Endpoint("http://localstack:4566")
                 .setS3EndpointRegion(localstack.getRegion())
                 .build();
+
         firstNode =
                 new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-s3-cluster-discovery-extension")
                         .asCompatibleSubstituteFor("hivemq/hivemq4")) //
@@ -65,6 +65,7 @@ class S3DiscoveryFailIT {
                         .withExposedPorts(9399)
                         .withEnv("AWS_ACCESS_KEY_ID", localstack.getAccessKey())
                         .withEnv("AWS_SECRET_ACCESS_KEY", localstack.getSecretKey())
+                        .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
                         .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
                         .withCopyToContainer(Transferable.of(s3Config),
                                 "/opt/hivemq/extensions/hivemq-s3-cluster-discovery-extension/s3discovery.properties");
