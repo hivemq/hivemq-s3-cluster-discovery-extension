@@ -25,7 +25,6 @@ import com.hivemq.extensions.cluster.discovery.s3.aws.S3BucketResponse;
 import com.hivemq.extensions.cluster.discovery.s3.config.ConfigurationReader;
 import com.hivemq.extensions.cluster.discovery.s3.util.ClusterNodeFileUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -69,12 +68,13 @@ class S3DiscoveryCallbackTest {
         when(s3DiscoveryMetrics.getQuerySuccessCount()).thenReturn(mock());
         when(s3DiscoveryMetrics.getQueryFailedCount()).thenReturn(mock());
 
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:default";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -146,12 +146,13 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_provide_current_nodes_expired_files() throws Exception {
-        final var configuration = "s3-bucket-region:us-east-2\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:2\n" +
-                "update-interval:1\n" +
-                "credentials-type:default";
+        final var configuration = """
+                s3-bucket-region:us-east-2
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:2
+                update-interval:1
+                credentials-type:default""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -213,7 +214,7 @@ class S3DiscoveryCallbackTest {
     @Test
     void test_init_provide_current_nodes_s3object_content_null() {
         when(hiveMQS3Client.getObjects()).then(ignored -> extendedObjectList());
-        when(hiveMQS3Client.getObject(any())).thenReturn(createS3ObjectNullContent());
+        when(hiveMQS3Client.getObject(any())).thenReturn(null);
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -294,12 +295,13 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_config_invalid() throws Exception {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq1234\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:default";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq1234
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -335,12 +337,13 @@ class S3DiscoveryCallbackTest {
     void test_reload_success_new_config() throws Exception {
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
-        final var configuration = "s3-bucket-region:us-east-2\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:120\n" +
-                "update-interval:60\n" +
-                "credentials-type:default";
+        final var configuration = """
+                s3-bucket-region:us-east-2
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:120
+                update-interval:60
+                credentials-type:default""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -357,12 +360,13 @@ class S3DiscoveryCallbackTest {
         Files.delete(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION));
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
-        final var configuration = "s3-bucket-region:us-east-2\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:120\n" +
-                "update-interval:60\n" +
-                "credentials-type:default";
+        final var configuration = """
+                s3-bucket-region:us-east-2
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:120
+                update-interval:60
+                credentials-type:default""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -398,12 +402,13 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_reload_file_expired() throws Exception {
-        final var configuration = "s3-bucket-region:us-east-2\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:5\n" +
-                "update-interval:1\n" +
-                "credentials-type:default";
+        final var configuration = """
+                s3-bucket-region:us-east-2
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:5
+                update-interval:1
+                credentials-type:default""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -421,12 +426,13 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_reload_file_exception() throws Exception {
-        final var configuration = "s3-bucket-region:us-east-2\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:5\n" +
-                "update-interval:1\n" +
-                "credentials-type:default";
+        final var configuration = """
+                s3-bucket-region:us-east-2
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:5
+                update-interval:1
+                credentials-type:default""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -482,10 +488,6 @@ class S3DiscoveryCallbackTest {
 
     private @NotNull String createS3ObjectBlankContent() {
         return "  ";
-    }
-
-    private @Nullable String createS3ObjectNullContent() {
-        return null;
     }
 
     private @NotNull ListObjectsV2Response extendedObjectList() {

@@ -73,12 +73,13 @@ class HiveMQS3ClientTest {
         extensionInformation = mock(ExtensionInformation.class);
         when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
 
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:default";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -147,7 +148,9 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_create_invalid_config() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-12345\n";
+        final var configuration = """
+                s3-bucket-region:us-east-12345
+                """;
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -160,14 +163,15 @@ class HiveMQS3ClientTest {
     void createOrUpdate_identicalConfig_sameClient() throws IOException {
         final var configurationReader = new ConfigurationReader(extensionInformation);
 
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:access_key\n" +
-                "credentials-access-key-id:access-key-id\n" +
-                "credentials-secret-access-key:secret-access-key";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:access_key
+                credentials-access-key-id:access-key-id
+                credentials-secret-access-key:secret-access-key""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -183,28 +187,30 @@ class HiveMQS3ClientTest {
     void createOrUpdate_differentConfig_differentClient() throws IOException {
         final var configurationReader = new ConfigurationReader(extensionInformation);
 
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:access_key\n" +
-                "credentials-access-key-id:access-key-id\n" +
-                "credentials-secret-access-key:secret-access-key";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:access_key
+                credentials-access-key-id:access-key-id
+                credentials-secret-access-key:secret-access-key""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
         hiveMQS3Client.createOrUpdate();
         final var firstClient = hiveMQS3Client.getS3Client();
 
-        final var configuration2 = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq654321\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:access_key\n" +
-                "credentials-access-key-id:access-key-id\n" +
-                "credentials-secret-access-key:secret-access-key";
+        final var configuration2 = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq654321
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:access_key
+                credentials-access-key-id:access-key-id
+                credentials-secret-access-key:secret-access-key""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration2);
         hiveMQS3Client.createOrUpdate();
@@ -245,14 +251,15 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_getAwsCredentials_access_key_success() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:access_key\n" +
-                "credentials-access-key-id:access-key-id\n" +
-                "credentials-secret-access-key:secret-access-key";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:access_key
+                credentials-access-key-id:access-key-id
+                credentials-secret-access-key:secret-access-key""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -266,13 +273,14 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_getAwsCredentials_access_key_missing_secret() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:access_key\n" +
-                "credentials-access-key-id:access-key-id";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:access_key
+                credentials-access-key-id:access-key-id""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -283,13 +291,14 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_getAwsCredentials_access_key_missing_id() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:access_key\n" +
-                "credentials-secret-access-key:secret-access-key";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:access_key
+                credentials-secret-access-key:secret-access-key""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -300,15 +309,16 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_getAwsCredentials_temporary_session_success() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:temporary_session\n" +
-                "credentials-access-key-id:access-key-id\n" +
-                "credentials-secret-access-key:secret-access-key\n" +
-                "credentials-session-token:session-token";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:temporary_session
+                credentials-access-key-id:access-key-id
+                credentials-secret-access-key:secret-access-key
+                credentials-session-token:session-token""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -322,14 +332,15 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_getAwsCredentials_temporary_session_missing_token() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:temporary_session\n" +
-                "credentials-access-key-id:access-key-id\n" +
-                "credentials-secret-access-key:secret-access-key";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:temporary_session
+                credentials-access-key-id:access-key-id
+                credentials-secret-access-key:secret-access-key""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -460,13 +471,14 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_createOrUpdate_defaultS3Endpoint() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:default\n" +
-                "s3-endpoint:" +
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default
+                s3-endpoint:""" +
                 HiveMQS3Client.S3_HOSTNAME;
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
@@ -482,14 +494,15 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_createOrUpdate_customEndpointWithoutProtocol() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:default\n" +
-                "s3-endpoint:minio.example.com:9000\n" +
-                "s3-endpoint-region:us-east-1";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default
+                s3-endpoint:minio.example.com:9000
+                s3-endpoint-region:us-east-1""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -505,14 +518,15 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_createOrUpdate_customEndpointWithHttps() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:default\n" +
-                "s3-endpoint:https://minio.example.com:9000\n" +
-                "s3-endpoint-region:eu-west-1";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default
+                s3-endpoint:https://minio.example.com:9000
+                s3-endpoint-region:eu-west-1""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -528,14 +542,15 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_createOrUpdate_customEndpointWithHttp() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:default\n" +
-                "s3-endpoint:http://localhost:9000\n" +
-                "s3-endpoint-region:local";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default
+                s3-endpoint:http://localhost:9000
+                s3-endpoint-region:local""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -551,13 +566,14 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_createOrUpdate_customEndpointWithoutRegion() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:default\n" +
-                "s3-endpoint:custom.s3.example.com";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default
+                s3-endpoint:custom.s3.example.com""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
@@ -570,15 +586,16 @@ class HiveMQS3ClientTest {
 
     @Test
     void test_createOrUpdate_customEndpointWithPathStyleAccess() throws IOException {
-        final var configuration = "s3-bucket-region:us-east-1\n" +
-                "s3-bucket-name:hivemq123456\n" +
-                "file-prefix:hivemq/cluster/nodes/\n" +
-                "file-expiration:360\n" +
-                "update-interval:180\n" +
-                "credentials-type:default\n" +
-                "s3-endpoint:https://minio.example.com\n" +
-                "s3-endpoint-region:us-east-1\n" +
-                "s3-path-style-access:true";
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq123456
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default
+                s3-endpoint:https://minio.example.com
+                s3-endpoint-region:us-east-1
+                s3-path-style-access:true""";
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 

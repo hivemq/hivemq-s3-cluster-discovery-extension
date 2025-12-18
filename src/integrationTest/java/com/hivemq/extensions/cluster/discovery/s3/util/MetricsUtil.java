@@ -45,13 +45,14 @@ public class MetricsUtil {
     }
 
     public static @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws Exception {
-        final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
-        //noinspection HttpUrlsUsage
-        final var request = HttpRequest.newBuilder()
-                .uri(URI.create("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics"))
-                .build();
-        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return parseMetrics(response.body(), Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
+        try (final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()) {
+            //noinspection HttpUrlsUsage
+            final var request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics"))
+                    .build();
+            final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return parseMetrics(response.body(), Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
+        }
     }
 
     private static @NotNull Map<String, Float> parseMetrics(
@@ -60,7 +61,7 @@ public class MetricsUtil {
         return metricsDump.lines()
                 .filter(s -> !s.startsWith("#"))
                 .map(s -> s.split(" "))
-                .filter(splits -> metrics.contains(splits[0]))
+                .filter(splits -> splits.length >= 2 && metrics.contains(splits[0]))
                 .peek(strings -> LOG.info(Arrays.toString(strings)))
                 .map(splits -> Map.entry(splits[0], Float.parseFloat(splits[1])))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Float::max));
