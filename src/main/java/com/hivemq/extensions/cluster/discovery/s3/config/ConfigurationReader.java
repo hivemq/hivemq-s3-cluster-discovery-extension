@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION;
+import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION_LEGACY;
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_NAME;
 import static com.hivemq.extensions.cluster.discovery.s3.util.StringUtil.isNullOrBlank;
 
@@ -42,19 +43,22 @@ public class ConfigurationReader {
 
     private static final @NotNull Logger LOG = LoggerFactory.getLogger(ConfigurationReader.class);
 
-    private final @NotNull File extensionHomeFolder;
+    private final @NotNull ConfigResolver configResolver;
 
     public ConfigurationReader(final @NotNull ExtensionInformation extensionInformation) {
-        extensionHomeFolder = extensionInformation.getExtensionHomeFolder();
+        final var extensionHomeFolder = extensionInformation.getExtensionHomeFolder();
+        this.configResolver = new ConfigResolver(extensionHomeFolder.toPath(),
+                EXTENSION_NAME,
+                EXTENSION_CONFIGURATION,
+                EXTENSION_CONFIGURATION_LEGACY);
     }
 
     public @Nullable S3Config readConfiguration() {
-        final var propertiesFile = new File(extensionHomeFolder, EXTENSION_CONFIGURATION);
+        final var propertiesFile = configResolver.get().toFile();
         if (!propertiesFile.exists()) {
-            LOG.error("{}: Could not find '{}'. Please verify that the properties file is located under '{}'.",
+            LOG.error("{}: Could not find '{}'. Please verify that the properties file is located correctly.",
                     EXTENSION_NAME,
-                    EXTENSION_CONFIGURATION,
-                    extensionHomeFolder);
+                    propertiesFile.getAbsolutePath());
             return null;
         }
         if (!propertiesFile.canRead()) {

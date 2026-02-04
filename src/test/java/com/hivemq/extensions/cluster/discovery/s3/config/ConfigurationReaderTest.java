@@ -22,10 +22,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION;
+import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION_LEGACY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,10 +35,14 @@ class ConfigurationReaderTest {
 
     private @NotNull ExtensionInformation extensionInformation;
 
+    @TempDir
+    private @NotNull Path tempDir;
+
     @BeforeEach
-    void setUp(@TempDir final @NotNull File tempDir) {
+    void setUp() throws Exception {
         extensionInformation = mock(ExtensionInformation.class);
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toFile());
+        Files.createDirectories(tempDir.resolve("conf"));
     }
 
     @Test
@@ -344,5 +349,21 @@ class ConfigurationReaderTest {
 
         final var configurationReader = new ConfigurationReader(extensionInformation);
         assertThat(configurationReader.readConfiguration()).isNull();
+    }
+
+    @Test
+    void test_readConfiguration_legacy_location_successful() throws Exception {
+        final var configuration = """
+                s3-bucket-region:us-east-1
+                s3-bucket-name:hivemq
+                file-prefix:hivemq/cluster/nodes/
+                file-expiration:360
+                update-interval:180
+                credentials-type:default""";
+        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION_LEGACY),
+                configuration);
+
+        final var configurationReader = new ConfigurationReader(extensionInformation);
+        assertThat(configurationReader.readConfiguration()).isNotNull();
     }
 }

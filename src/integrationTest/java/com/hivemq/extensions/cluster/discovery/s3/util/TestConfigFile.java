@@ -79,7 +79,7 @@ public class TestConfigFile {
     }
 
     public @NotNull String build() throws IOException {
-        final var resource = getClass().getResource("/configurations/template-s3discovery.properties");
+        final var resource = getClass().getResource("/configurations/template-config.properties");
         assertThat(resource).isNotNull();
 
         var configTemplate = Files.readString(Path.of(resource.getPath()));

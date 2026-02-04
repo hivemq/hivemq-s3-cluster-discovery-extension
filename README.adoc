@@ -24,7 +24,7 @@ Additionally, every broker updates its own file on a regular basis to prevent th
 
 * Download the extension from the {hivemq-extension-downloads}[HiveMQ Marketplace^].
 * Copy the content of the zip file to the `extensions` folder of your HiveMQ nodes.
-* Modify the `s3discovery.properties` file for your needs.
+* Modify the `conf/config.properties` file for your needs.
 * Change the {hivemq-cluster-discovery}[discovery mechanism^] of HiveMQ to `extension`.
 
 == Configuration
@@ -33,7 +33,7 @@ The information each node writes into the bucket consists of an ip-address and a
 The ip-address and port are taken from the `external-address` and `external-port` which is configured in the cluster `transport` (config.xml).
 If they are not set, the `bind-address` and `bind-port` will be used.
 
-The `s3discovery.properties` can be reloaded during runtime.
+The `conf/config.properties` can be reloaded during runtime.
 
 === General Configuration
 
@@ -171,7 +171,7 @@ credentials-type:instance_profile_credentials
 
 ==== Access Key Authentication
 
-Use the credentials specified in the `s3discovery.properties` file to authenticate.
+Use the credentials specified in the `conf/config.properties` file to authenticate.
 
 The variables you must provide are:
 
@@ -188,7 +188,7 @@ credentials-secret-access-key:<your-secret_access_key>
 
 ==== Temporary Session Authentication
 
-Use the credentials specified in `s3discovery.properties` file to authenticate with a temporary session.
+Use the credentials specified in `conf/config.properties` file to authenticate with a temporary session.
 
 The variables you must provide are:
 

@@ -26,7 +26,8 @@ public class ExtensionConstants {
     public static final @NotNull String EXTENSION_METRIC_PREFIX =
             MetricRegistry.name("com", "hivemq", "extensions", "cluster", "discovery", "s3");
 
-    public static final @NotNull String EXTENSION_CONFIGURATION = "s3discovery.properties";
+    public static final @NotNull String EXTENSION_CONFIGURATION = "conf/config.properties";
+    public static final @NotNull String EXTENSION_CONFIGURATION_LEGACY = "s3discovery.properties";
 
     private ExtensionConstants() {
     }
