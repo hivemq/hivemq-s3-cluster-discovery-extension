@@ -68,6 +68,8 @@ class S3DiscoveryCallbackTest {
         when(s3DiscoveryMetrics.getQuerySuccessCount()).thenReturn(mock());
         when(s3DiscoveryMetrics.getQueryFailedCount()).thenReturn(mock());
 
+        final var configPath = extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION);
+        Files.createDirectories(configPath.getParent());
         final var configuration = """
                 s3-bucket-region:us-east-1
                 s3-bucket-name:hivemq123456
@@ -75,8 +77,7 @@ class S3DiscoveryCallbackTest {
                 file-expiration:360
                 update-interval:180
                 credentials-type:default""";
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
-                configuration);
+        Files.writeString(configPath, configuration);
 
         configurationReader = new ConfigurationReader(extensionInformation);
         final var s3Config = configurationReader.readConfiguration();

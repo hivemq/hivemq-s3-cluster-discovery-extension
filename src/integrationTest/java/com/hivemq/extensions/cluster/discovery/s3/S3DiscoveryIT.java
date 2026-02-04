@@ -80,7 +80,7 @@ class S3DiscoveryIT {
                         .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
                         .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
                         .withCopyToContainer(Transferable.of(s3Config),
-                                "/opt/hivemq/extensions/hivemq-s3-cluster-discovery-extension/s3discovery.properties");
+                                "/opt/hivemq/extensions/hivemq-s3-cluster-discovery-extension/conf/config.properties");
 
         secondNode =
                 new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-s3-cluster-discovery-extension")
@@ -94,7 +94,7 @@ class S3DiscoveryIT {
                         .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
                         .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
                         .withCopyToContainer(Transferable.of(s3Config),
-                                "/opt/hivemq/extensions/hivemq-s3-cluster-discovery-extension/s3discovery.properties");
+                                "/opt/hivemq/extensions/hivemq-s3-cluster-discovery-extension/conf/config.properties");
     }
 
     @AfterEach
@@ -122,6 +122,37 @@ class S3DiscoveryIT {
         assertThat(secondNodeMetrics.get(SUCCESS_METRIC)).isEqualTo(1);
         assertThat(secondNodeMetrics.get(FAILURE_METRIC)).isEqualTo(0);
         assertThat(secondNodeMetrics.get(IP_COUNT_METRIC)).isEqualTo(2);
+    }
+
+    @Test
+    void configAtLegacyLocation_singleNode() throws Exception {
+        final var s3Config = TestConfigFile.builder()
+                .setS3BucketName(BUCKET_NAME)
+                .setS3Endpoint("http://localstack:4566")
+                .setS3EndpointRegion(localstack.getRegion())
+                .build();
+
+        final var legacyNode =
+                new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-s3-cluster-discovery-extension")
+                        .asCompatibleSubstituteFor("hivemq/hivemq4")) //
+                        .withLogLevel(Level.DEBUG)
+                        .withNetwork(network)
+                        .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))
+                        .withExposedPorts(9399)
+                        .withEnv("AWS_ACCESS_KEY_ID", localstack.getAccessKey())
+                        .withEnv("AWS_SECRET_ACCESS_KEY", localstack.getSecretKey())
+                        .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
+                        .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
+                        .withCopyToContainer(Transferable.of(s3Config),
+                                "/opt/hivemq/extensions/hivemq-s3-cluster-discovery-extension/s3discovery.properties");
+
+        try (legacyNode) {
+            legacyNode.start();
+            final var metrics = MetricsUtil.getMetrics(legacyNode);
+            assertThat(metrics.get(SUCCESS_METRIC)).isEqualTo(1);
+            assertThat(metrics.get(FAILURE_METRIC)).isEqualTo(0);
+            assertThat(metrics.get(IP_COUNT_METRIC)).isEqualTo(1);
+        }
     }
 
     private void createS3Environment() {

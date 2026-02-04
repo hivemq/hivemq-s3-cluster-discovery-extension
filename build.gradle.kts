@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
     alias(libs.plugins.hivemq.extension)
     alias(libs.plugins.defaults)
@@ -61,6 +64,10 @@ oci {
                         permissions("opt/hivemq/", 0b111_111_101)
                         permissions("opt/hivemq/extensions/", 0b111_111_101)
                         into("opt/hivemq/extensions") {
+                            permissions("*/", 0b111_111_101)
+                            permissions("*/hivemq-extension.xml", 0b110_110_100)
+                            permissions("*/conf/", 0b111_111_101)
+                            permissions("*/conf/config.properties", 0b110_110_100)
                             from(zipTree(tasks.hivemqExtensionZip.flatMap { it.archiveFile }))
                         }
                     }
@@ -89,6 +96,25 @@ testing {
                 compileOnly(libs.jetbrains.annotations)
                 implementation(libs.assertj)
                 implementation(libs.mockito)
+                implementation(libs.logback.classic)
+            }
+            targets.configureEach {
+                testTask {
+                    testLogging {
+                        events = setOf(
+                            TestLogEvent.STARTED,
+                            TestLogEvent.PASSED,
+                            TestLogEvent.SKIPPED,
+                            TestLogEvent.FAILED,
+                            TestLogEvent.STANDARD_ERROR,
+                        )
+                        exceptionFormat = TestExceptionFormat.FULL
+                        showStandardStreams = true
+                    }
+                    reports {
+                        junitXml.isOutputPerTestCase = true
+                    }
+                }
             }
         }
         "integrationTest"(JvmTestSuite::class) {
@@ -118,7 +144,7 @@ testing {
 license {
     header = rootDir.resolve("HEADER")
     mapping("java", "SLASHSTAR_STYLE")
-    exclude("**/template-s3discovery.properties")
+    exclude("**/template-config.properties")
     exclude("**/logback-test.xml")
 }
 

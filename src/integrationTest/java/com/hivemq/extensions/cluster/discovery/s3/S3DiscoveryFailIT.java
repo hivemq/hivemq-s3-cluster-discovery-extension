@@ -68,7 +68,7 @@ class S3DiscoveryFailIT {
                         .withEnv("HIVEMQ_DISABLE_STATISTICS", "true")
                         .withLogConsumer(outputFrame -> System.out.print(outputFrame.getUtf8String()))
                         .withCopyToContainer(Transferable.of(s3Config),
-                                "/opt/hivemq/extensions/hivemq-s3-cluster-discovery-extension/s3discovery.properties");
+                                "/opt/hivemq/extensions/hivemq-s3-cluster-discovery-extension/conf/config.properties");
     }
 
     @AfterEach

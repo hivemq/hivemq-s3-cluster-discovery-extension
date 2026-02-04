@@ -49,10 +49,10 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTENSION_CONFIGURATION;
@@ -68,11 +68,16 @@ class HiveMQS3ClientTest {
     private @NotNull ExtensionInformation extensionInformation;
     private @NotNull HiveMQS3Client hiveMQS3Client;
 
-    @BeforeEach
-    void setUp(@TempDir final @NotNull File tempDir) throws IOException {
-        extensionInformation = mock(ExtensionInformation.class);
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir);
+    @TempDir
+    private @NotNull Path tempDir;
 
+    @BeforeEach
+    void setUp() throws IOException {
+        extensionInformation = mock(ExtensionInformation.class);
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toFile());
+
+        final var configPath = extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION);
+        Files.createDirectories(configPath.getParent());
         final var configuration = """
                 s3-bucket-region:us-east-1
                 s3-bucket-name:hivemq123456
@@ -80,8 +85,7 @@ class HiveMQS3ClientTest {
                 file-expiration:360
                 update-interval:180
                 credentials-type:default""";
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
-                configuration);
+        Files.writeString(configPath, configuration);
 
         final var configurationReader = new ConfigurationReader(extensionInformation);
         hiveMQS3Client = new HiveMQS3Client(configurationReader);
@@ -478,8 +482,7 @@ class HiveMQS3ClientTest {
                 file-expiration:360
                 update-interval:180
                 credentials-type:default
-                s3-endpoint:""" +
-                HiveMQS3Client.S3_HOSTNAME;
+                s3-endpoint:""" + HiveMQS3Client.S3_HOSTNAME;
         Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION),
                 configuration);
 
