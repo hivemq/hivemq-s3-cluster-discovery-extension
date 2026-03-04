@@ -30,16 +30,9 @@ public class ClusterNodeFileUtil {
             final @NotNull String nodeId,
             final @NotNull String host,
             final @NotNull String port) {
-        final var content = version +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                timeInMillis +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                nodeId +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                host +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                port +
-                ClusterNodeFile.CONTENT_SEPARATOR;
+        final var content = version + ClusterNodeFile.CONTENT_SEPARATOR + timeInMillis +
+                ClusterNodeFile.CONTENT_SEPARATOR + nodeId + ClusterNodeFile.CONTENT_SEPARATOR + host +
+                ClusterNodeFile.CONTENT_SEPARATOR + port + ClusterNodeFile.CONTENT_SEPARATOR;
         return Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -49,18 +42,10 @@ public class ClusterNodeFileUtil {
             final @NotNull String nodeId,
             final @NotNull String host,
             final @NotNull String port) {
-        final var content = version +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                timeInMillis +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                nodeId +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                host +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                port +
-                ClusterNodeFile.CONTENT_SEPARATOR +
-                port +
-                ClusterNodeFile.CONTENT_SEPARATOR;
+        final var content =
+                version + ClusterNodeFile.CONTENT_SEPARATOR + timeInMillis + ClusterNodeFile.CONTENT_SEPARATOR +
+                        nodeId + ClusterNodeFile.CONTENT_SEPARATOR + host + ClusterNodeFile.CONTENT_SEPARATOR + port +
+                        ClusterNodeFile.CONTENT_SEPARATOR + port + ClusterNodeFile.CONTENT_SEPARATOR;
         return Base64.getEncoder().encodeToString(content.getBytes(StandardCharsets.UTF_8));
     }
 

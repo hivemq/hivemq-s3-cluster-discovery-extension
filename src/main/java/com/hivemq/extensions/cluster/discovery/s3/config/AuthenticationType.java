@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author Florian Limpöck
  * @author Abdullah Imal
- * @since 4.0.0
+ * @since  4.0.0
  */
 public enum AuthenticationType {
 

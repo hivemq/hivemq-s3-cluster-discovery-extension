@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.regions.Region;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,7 +36,7 @@ import static com.hivemq.extensions.cluster.discovery.s3.util.StringUtil.isNullO
 
 /**
  * @author Abdullah Imal
- * @since 4.0.0
+ * @since  4.0.0
  */
 public class ConfigurationReader {
 

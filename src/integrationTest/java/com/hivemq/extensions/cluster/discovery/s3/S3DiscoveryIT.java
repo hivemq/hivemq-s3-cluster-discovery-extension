@@ -70,8 +70,7 @@ class S3DiscoveryIT {
 
         firstNode =
                 new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-s3-cluster-discovery-extension")
-                        .asCompatibleSubstituteFor("hivemq/hivemq4")) //
-                        .withLogLevel(Level.DEBUG)
+                        .asCompatibleSubstituteFor("hivemq/hivemq4")).withLogLevel(Level.DEBUG)
                         .withNetwork(network)
                         .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))
                         .withExposedPorts(9399)
@@ -84,8 +83,7 @@ class S3DiscoveryIT {
 
         secondNode =
                 new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-s3-cluster-discovery-extension")
-                        .asCompatibleSubstituteFor("hivemq/hivemq4")) //
-                        .withLogLevel(Level.DEBUG)
+                        .asCompatibleSubstituteFor("hivemq/hivemq4")).withLogLevel(Level.DEBUG)
                         .withNetwork(network)
                         .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))
                         .withExposedPorts(9399)
@@ -134,8 +132,7 @@ class S3DiscoveryIT {
 
         final var legacyNode =
                 new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-s3-cluster-discovery-extension")
-                        .asCompatibleSubstituteFor("hivemq/hivemq4")) //
-                        .withLogLevel(Level.DEBUG)
+                        .asCompatibleSubstituteFor("hivemq/hivemq4")).withLogLevel(Level.DEBUG)
                         .withNetwork(network)
                         .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))
                         .withExposedPorts(9399)
@@ -158,8 +155,8 @@ class S3DiscoveryIT {
     private void createS3Environment() {
         try (final var s3 = S3Client.builder()
                 .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(localstack.getAccessKey(),
-                        localstack.getSecretKey())))
+                .credentialsProvider(StaticCredentialsProvider
+                        .create(AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())))
                 .region(Region.of(localstack.getRegion()))
                 .build()) {
             s3.createBucket(builder -> builder.bucket(BUCKET_NAME).build());

@@ -360,7 +360,8 @@ class ConfigurationReaderTest {
                 file-expiration:360
                 update-interval:180
                 credentials-type:default""";
-        Files.writeString(extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION_LEGACY),
+        Files.writeString(
+                extensionInformation.getExtensionHomeFolder().toPath().resolve(EXTENSION_CONFIGURATION_LEGACY),
                 configuration);
 
         final var configurationReader = new ConfigurationReader(extensionInformation);
