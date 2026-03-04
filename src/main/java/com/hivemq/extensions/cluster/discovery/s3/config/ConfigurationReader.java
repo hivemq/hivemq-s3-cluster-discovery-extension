@@ -37,7 +37,7 @@ import static com.hivemq.extensions.cluster.discovery.s3.util.StringUtil.isNullO
 
 /**
  * @author Abdullah Imal
- * @since 4.0.0
+ * @since  4.0.0
  */
 public class ConfigurationReader {
 

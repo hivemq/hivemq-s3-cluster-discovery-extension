@@ -33,16 +33,16 @@ public class S3BucketResponse {
             final @Nullable Throwable throwable) {
         this.bucketName = bucketName;
         switch (statusCode) {
-            case 200:
+            case 200 :
                 this.status = Status.EXISTING;
                 break;
-            case 404:
+            case 404 :
                 this.status = Status.NOT_EXISTING;
                 break;
-            case 403:
+            case 403 :
                 this.status = Status.NO_PERMISSION;
                 break;
-            default:
+            default :
                 this.status = Status.OTHER;
                 break;
         }
@@ -66,6 +66,7 @@ public class S3BucketResponse {
     }
 
     public enum Status {
+
         EXISTING(true),
         NOT_EXISTING(false),
         NO_PERMISSION(false),
@@ -82,5 +83,3 @@ public class S3BucketResponse {
         }
     }
 }
-
-

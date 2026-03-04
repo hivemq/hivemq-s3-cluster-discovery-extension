@@ -46,7 +46,7 @@ public class MetricsUtil {
 
     public static @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer node) throws Exception {
         try (final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()) {
-            //noinspection HttpUrlsUsage
+            // noinspection HttpUrlsUsage
             final var request = HttpRequest.newBuilder()
                     .uri(URI.create("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics"))
                     .build();

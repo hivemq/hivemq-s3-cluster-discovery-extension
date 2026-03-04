@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Florian Limpöck
  * @author Abdullah Imal
- * @since 4.0.0
+ * @since  4.0.0
  */
 public class S3DiscoveryExtensionMain implements ExtensionMain {
 
@@ -40,7 +40,8 @@ public class S3DiscoveryExtensionMain implements ExtensionMain {
 
     private final @NotNull ExtensionLogging extensionLogging;
     private final @NotNull S3DiscoveryMetrics s3DiscoveryMetrics;
-    @Nullable S3DiscoveryCallback s3DiscoveryCallback;
+    @Nullable
+    S3DiscoveryCallback s3DiscoveryCallback;
 
     @SuppressWarnings("unused")
     public S3DiscoveryExtensionMain() {

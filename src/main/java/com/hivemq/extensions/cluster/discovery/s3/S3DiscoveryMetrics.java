@@ -40,11 +40,13 @@ class S3DiscoveryMetrics {
                 metricRegistry.counter(MetricRegistry.name(EXTENSION_METRIC_PREFIX, "query.failed.count"));
     }
 
-    @NotNull Counter getQuerySuccessCount() {
+    @NotNull
+    Counter getQuerySuccessCount() {
         return querySuccessCount;
     }
 
-    @NotNull Counter getQueryFailedCount() {
+    @NotNull
+    Counter getQueryFailedCount() {
         return queryFailedCount;
     }
 
@@ -53,7 +55,7 @@ class S3DiscoveryMetrics {
     }
 
     void stop() {
-        metricRegistry.removeMatching((name, metric) -> name.startsWith(EXTENSION_METRIC_PREFIX + ".") &&
-                metric instanceof Gauge);
+        metricRegistry.removeMatching(
+                (name, metric) -> name.startsWith(EXTENSION_METRIC_PREFIX + ".") && metric instanceof Gauge);
     }
 }

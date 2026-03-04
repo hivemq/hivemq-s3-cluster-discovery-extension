@@ -158,8 +158,8 @@ class S3DiscoveryIT {
     private void createS3Environment() {
         try (final var s3 = S3Client.builder()
                 .endpointOverride(localstack.getEndpoint())
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(localstack.getAccessKey(),
-                        localstack.getSecretKey())))
+                .credentialsProvider(StaticCredentialsProvider
+                        .create(AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())))
                 .region(Region.of(localstack.getRegion()))
                 .build()) {
             s3.createBucket(builder -> builder.bucket(BUCKET_NAME).build());
