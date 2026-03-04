@@ -82,11 +82,11 @@ public class HiveMQS3Client {
             s3ClientBuilder.region(region);
         } else {
             final var lowerCaseEndpoint = s3Config.getEndpoint().toLowerCase(Locale.ROOT);
-            //noinspection HttpUrlsUsage
-            s3ClientBuilder.endpointOverride(URI.create(!lowerCaseEndpoint.startsWith("https://") &&
-                    !lowerCaseEndpoint.startsWith("http://") ?
-                    "https://" + s3Config.getEndpoint() :
-                    s3Config.getEndpoint()));
+            // noinspection HttpUrlsUsage
+            s3ClientBuilder.endpointOverride(
+                    URI.create(!lowerCaseEndpoint.startsWith("https://") && !lowerCaseEndpoint.startsWith("http://") ?
+                            "https://" + s3Config.getEndpoint() :
+                            s3Config.getEndpoint()));
             if (s3Config.getEndpointRegionName() != null) {
                 final var region = Region.of(s3Config.getEndpointRegionName());
                 s3ClientBuilder.region(region);
@@ -107,28 +107,30 @@ public class HiveMQS3Client {
 
     @NotNull AwsCredentialsProvider getAwsCredentials(final @NotNull AuthenticationType authenticationType) {
         switch (authenticationType) {
-            case DEFAULT:
+            case DEFAULT :
                 return DefaultCredentialsProvider.builder().build();
-            case ENVIRONMENT_VARIABLES:
+            case ENVIRONMENT_VARIABLES :
                 return EnvironmentVariableCredentialsProvider.create();
-            case JAVA_SYSTEM_PROPERTIES:
+            case JAVA_SYSTEM_PROPERTIES :
                 return SystemPropertyCredentialsProvider.create();
-            case USER_CREDENTIALS_FILE:
+            case USER_CREDENTIALS_FILE :
                 return ProfileCredentialsProvider.create();
-            case INSTANCE_PROFILE_CREDENTIALS:
+            case INSTANCE_PROFILE_CREDENTIALS :
                 return InstanceProfileCredentialsProvider.create();
-            case ACCESS_KEY:
-            case TEMPORARY_SESSION:
+            case ACCESS_KEY :
+            case TEMPORARY_SESSION :
                 final var accessKey = Objects.requireNonNull(s3Config).getAccessKeyId();
                 final var secretAccessKey = s3Config.getAccessKeySecret();
                 if (authenticationType == AuthenticationType.ACCESS_KEY) {
                     return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretAccessKey));
                 } else {
                     final var sessionToken = s3Config.getSessionToken();
-                    return StaticCredentialsProvider.create(AwsSessionCredentials.create(Objects.requireNonNull(
-                            accessKey), Objects.requireNonNull(secretAccessKey), Objects.requireNonNull(sessionToken)));
+                    return StaticCredentialsProvider
+                            .create(AwsSessionCredentials.create(Objects.requireNonNull(accessKey),
+                                    Objects.requireNonNull(secretAccessKey),
+                                    Objects.requireNonNull(sessionToken)));
                 }
-            default:
+            default :
                 throw new IllegalArgumentException("Unknown credentials type.");
         }
     }
@@ -148,9 +150,11 @@ public class HiveMQS3Client {
 
     public void saveObject(final @NotNull String objectKey, final @NotNull String content) {
         Objects.requireNonNull(s3Client)
-                .putObject(builder -> builder.bucket(Objects.requireNonNull(s3Config).getBucketName())
-                        .key(objectKey)
-                        .build(), RequestBody.fromString(content));
+                .putObject(
+                        builder -> builder.bucket(Objects.requireNonNull(s3Config).getBucketName())
+                                .key(objectKey)
+                                .build(),
+                        RequestBody.fromString(content));
     }
 
     public void deleteObject(final @NotNull String objectKey) {

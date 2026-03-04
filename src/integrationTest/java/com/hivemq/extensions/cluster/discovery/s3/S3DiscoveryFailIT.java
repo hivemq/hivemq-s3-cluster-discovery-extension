@@ -58,8 +58,7 @@ class S3DiscoveryFailIT {
 
         firstNode =
                 new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-s3-cluster-discovery-extension")
-                        .asCompatibleSubstituteFor("hivemq/hivemq4")) //
-                        .withLogLevel(Level.DEBUG)
+                        .asCompatibleSubstituteFor("hivemq/hivemq4")).withLogLevel(Level.DEBUG)
                         .withNetwork(network)
                         .withHiveMQConfig(MountableFile.forClasspathResource("hivemq-config.xml"))
                         .withExposedPorts(9399)

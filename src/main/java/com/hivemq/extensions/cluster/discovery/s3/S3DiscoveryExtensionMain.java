@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Florian Limpöck
  * @author Abdullah Imal
- * @since 4.0.0
+ * @since  4.0.0
  */
 public class S3DiscoveryExtensionMain implements ExtensionMain {
 

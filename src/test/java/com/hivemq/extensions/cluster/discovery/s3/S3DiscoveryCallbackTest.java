@@ -249,9 +249,8 @@ class S3DiscoveryCallbackTest {
 
     @Test
     void test_init_bucket_does_not_exist() {
-        when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456",
-                404,
-                NoSuchBucketException.builder().build()));
+        when(hiveMQS3Client.checkBucket())
+                .thenReturn(new S3BucketResponse("hivemq123456", 404, NoSuchBucketException.builder().build()));
 
         s3DiscoveryCallback.init(clusterDiscoveryInput, clusterDiscoveryOutput);
 
@@ -373,9 +372,8 @@ class S3DiscoveryCallbackTest {
 
         final var s3Config = new ConfigurationReader(extensionInformation).readConfiguration();
         when(hiveMQS3Client.getS3Config()).thenReturn(s3Config);
-        when(hiveMQS3Client.checkBucket()).thenReturn(new S3BucketResponse("hivemq123456",
-                404,
-                NoSuchBucketException.builder().build()));
+        when(hiveMQS3Client.checkBucket())
+                .thenReturn(new S3BucketResponse("hivemq123456", 404, NoSuchBucketException.builder().build()));
 
         s3DiscoveryCallback.reload(clusterDiscoveryInput, clusterDiscoveryOutput);
         verify(clusterDiscoveryOutput, times(1)).provideCurrentNodes(anyList());

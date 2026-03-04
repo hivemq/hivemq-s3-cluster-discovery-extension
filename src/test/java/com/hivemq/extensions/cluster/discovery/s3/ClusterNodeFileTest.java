@@ -68,20 +68,20 @@ class ClusterNodeFileTest {
 
     @Test
     void test_cluster_node_file_nodeId_null() {
-        //noinspection DataFlowIssue
-        assertThatThrownBy(() -> new ClusterNodeFile(null,
-                clusterNodeAddress)).isInstanceOf(NullPointerException.class);
+        // noinspection DataFlowIssue
+        assertThatThrownBy(() -> new ClusterNodeFile(null, clusterNodeAddress))
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void test_cluster_node_file_nodeId_blank() {
-        assertThatThrownBy(() -> new ClusterNodeFile(" ",
-                clusterNodeAddress)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new ClusterNodeFile(" ", clusterNodeAddress))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void test_cluster_node_file_cluster_node_address_null() {
-        //noinspection DataFlowIssue
+        // noinspection DataFlowIssue
         assertThatThrownBy(() -> new ClusterNodeFile(nodeId, null)).isInstanceOf(NullPointerException.class);
     }
 
@@ -228,12 +228,13 @@ class ClusterNodeFileTest {
 
     @Test
     void test_parseClusterNodeFile_null() {
-        //noinspection DataFlowIssue
+        // noinspection DataFlowIssue
         assertThatThrownBy(() -> ClusterNodeFile.parseClusterNodeFile(null)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
     void test_parseClusterNodeFile_blank() {
-        assertThatThrownBy(() -> ClusterNodeFile.parseClusterNodeFile("  ")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> ClusterNodeFile.parseClusterNodeFile("  "))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

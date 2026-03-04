@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Abdullah Imal
- * @since 4.0.0
+ * @since  4.0.0
  */
 public interface S3Config extends Config {
 

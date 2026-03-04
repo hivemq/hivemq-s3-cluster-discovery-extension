@@ -53,7 +53,7 @@ class S3DiscoveryMetrics {
     }
 
     void stop() {
-        metricRegistry.removeMatching((name, metric) -> name.startsWith(EXTENSION_METRIC_PREFIX + ".") &&
-                metric instanceof Gauge);
+        metricRegistry.removeMatching(
+                (name, metric) -> name.startsWith(EXTENSION_METRIC_PREFIX + ".") && metric instanceof Gauge);
     }
 }

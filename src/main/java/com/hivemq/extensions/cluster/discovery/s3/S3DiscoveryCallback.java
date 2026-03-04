@@ -42,7 +42,7 @@ import static com.hivemq.extensions.cluster.discovery.s3.util.StringUtil.isNullO
 /**
  * @author Florian Limpöck
  * @author Abdullah Imal
- * @since 4.0.0
+ * @since  4.0.0
  */
 class S3DiscoveryCallback implements ClusterDiscoveryCallback {
 
@@ -131,9 +131,8 @@ class S3DiscoveryCallback implements ClusterDiscoveryCallback {
         try {
             final var s3Bucket = hiveMQS3Client.checkBucket();
             if (s3Bucket.isSuccessful()) {
-                if (ownNodeFile == null ||
-                        ownNodeFile.isExpired(Objects.requireNonNull(hiveMQS3Client.getS3Config())
-                                .getFileUpdateIntervalInSeconds())) {
+                if (ownNodeFile == null || ownNodeFile.isExpired(
+                        Objects.requireNonNull(hiveMQS3Client.getS3Config()).getFileUpdateIntervalInSeconds())) {
                     saveOwnFile(clusterDiscoveryInput.getOwnClusterId(), clusterDiscoveryInput.getOwnAddress());
                 }
                 clusterDiscoveryOutput.provideCurrentNodes(getNodeAddresses());
