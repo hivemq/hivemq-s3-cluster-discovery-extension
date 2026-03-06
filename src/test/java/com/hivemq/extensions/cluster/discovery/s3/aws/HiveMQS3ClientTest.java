@@ -109,8 +109,8 @@ class HiveMQS3ClientTest {
         when(headBucketResponse.sdkHttpResponse()).thenReturn(sdkHttpResponse);
         when(sdkHttpResponse.isSuccessful()).thenReturn(true);
         when(sdkHttpResponse.statusCode()).thenReturn(200);
-        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenReturn(
-                headBucketResponse);
+        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any()))
+                .thenReturn(headBucketResponse);
         final var s3Bucket = hiveMQS3Client.checkBucket();
 
         assertThat(s3Bucket.isSuccessful()).isTrue();
@@ -131,8 +131,8 @@ class HiveMQS3ClientTest {
                         .sdkHttpResponse(SdkHttpResponse.builder().statusCode(404).build())
                         .build())
                 .build();
-        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any())).thenThrow(
-                awsServiceException);
+        when(s3Client.headBucket(ArgumentMatchers.<Consumer<HeadBucketRequest.Builder>>any()))
+                .thenThrow(awsServiceException);
         final var s3Bucket = hiveMQS3Client.checkBucket();
 
         assertThat(s3Bucket.isSuccessful()).isFalse();
@@ -359,8 +359,8 @@ class HiveMQS3ClientTest {
         final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        when(s3Client.putObject(ArgumentMatchers.<Consumer<PutObjectRequest.Builder>>any(),
-                any(RequestBody.class))).thenReturn(PutObjectResponse.builder().build());
+        when(s3Client.putObject(ArgumentMatchers.<Consumer<PutObjectRequest.Builder>>any(), any(RequestBody.class)))
+                .thenReturn(PutObjectResponse.builder().build());
         hiveMQS3Client.saveObject("abcd", "test");
     }
 
@@ -369,7 +369,7 @@ class HiveMQS3ClientTest {
         System.setProperty("aws.accessKeyId", "asdf");
         System.setProperty("aws.secretAccessKey", "asdf");
         hiveMQS3Client.createOrUpdate();
-        //noinspection DataFlowIssue
+        // noinspection DataFlowIssue
         assertThatThrownBy(() -> hiveMQS3Client.saveObject(null, "test")).isInstanceOf(SdkClientException.class);
     }
 
@@ -378,7 +378,7 @@ class HiveMQS3ClientTest {
         System.setProperty("aws.accessKeyId", "asdf");
         System.setProperty("aws.secretAccessKey", "asdf");
         hiveMQS3Client.createOrUpdate();
-        //noinspection DataFlowIssue
+        // noinspection DataFlowIssue
         assertThatThrownBy(() -> hiveMQS3Client.saveObject("abcd", null)).isInstanceOf(NullPointerException.class);
     }
 
@@ -399,9 +399,9 @@ class HiveMQS3ClientTest {
         final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        when(s3Client.getObjectAsBytes(ArgumentMatchers.<Consumer<GetObjectRequest.Builder>>any())).thenThrow(
-                IllegalArgumentException.class);
-        //noinspection DataFlowIssue
+        when(s3Client.getObjectAsBytes(ArgumentMatchers.<Consumer<GetObjectRequest.Builder>>any()))
+                .thenThrow(IllegalArgumentException.class);
+        // noinspection DataFlowIssue
         assertThatThrownBy(() -> hiveMQS3Client.getObject(null)).isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -411,8 +411,8 @@ class HiveMQS3ClientTest {
         final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        when(s3Client.deleteObject(ArgumentMatchers.<Consumer<DeleteObjectRequest.Builder>>any())).thenReturn(mock(
-                DeleteObjectResponse.class));
+        when(s3Client.deleteObject(ArgumentMatchers.<Consumer<DeleteObjectRequest.Builder>>any()))
+                .thenReturn(mock(DeleteObjectResponse.class));
         hiveMQS3Client.deleteObject("abcd");
     }
 
@@ -424,7 +424,7 @@ class HiveMQS3ClientTest {
 
         doThrow(IllegalArgumentException.class).when(s3Client)
                 .deleteObject(ArgumentMatchers.<Consumer<DeleteObjectRequest.Builder>>any());
-        //noinspection DataFlowIssue
+        // noinspection DataFlowIssue
         assertThatThrownBy(() -> hiveMQS3Client.deleteObject(null)).isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -434,8 +434,8 @@ class HiveMQS3ClientTest {
         final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenReturn(mock(
-                ListObjectsV2Response.class));
+        when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any()))
+                .thenReturn(mock(ListObjectsV2Response.class));
         assertThat(hiveMQS3Client.getObjects()).isNotNull();
     }
 
@@ -445,8 +445,8 @@ class HiveMQS3ClientTest {
         final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenThrow(
-                IllegalArgumentException.class);
+        when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any()))
+                .thenThrow(IllegalArgumentException.class);
         assertThatThrownBy(() -> hiveMQS3Client.getObjects()).isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -456,8 +456,8 @@ class HiveMQS3ClientTest {
         final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenReturn(mock(
-                ListObjectsV2Response.class));
+        when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any()))
+                .thenReturn(mock(ListObjectsV2Response.class));
         assertThat(hiveMQS3Client.getNextBatchOfObjects("continuationToken")).isNotNull();
     }
 
@@ -467,10 +467,11 @@ class HiveMQS3ClientTest {
         final var s3Client = mock(S3Client.class);
         hiveMQS3Client.setS3Client(s3Client);
 
-        when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any())).thenThrow(
-                IllegalArgumentException.class);
-        //noinspection DataFlowIssue
-        assertThatThrownBy(() -> hiveMQS3Client.getNextBatchOfObjects(null)).isInstanceOf(IllegalArgumentException.class);
+        when(s3Client.listObjectsV2(ArgumentMatchers.<Consumer<ListObjectsV2Request.Builder>>any()))
+                .thenThrow(IllegalArgumentException.class);
+        // noinspection DataFlowIssue
+        assertThatThrownBy(() -> hiveMQS3Client.getNextBatchOfObjects(null))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

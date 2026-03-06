@@ -22,45 +22,57 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Abdullah Imal
- * @since 4.0.0
+ * @since  4.0.0
  */
 public interface S3Config extends Config {
 
     @Key("s3-bucket-name")
-    @NotNull String getBucketName();
+    @NotNull
+    String getBucketName();
 
     @Key("s3-bucket-region")
-    @NotNull String getBucketRegionName();
+    @NotNull
+    String getBucketRegionName();
 
     @Key("file-prefix")
     @DefaultValue("")
-    @NotNull String getFilePrefix();
+    @NotNull
+    String getFilePrefix();
 
     @Key("file-expiration")
-    @NotNull Long getFileExpirationInSeconds();
+    @NotNull
+    Long getFileExpirationInSeconds();
 
     @Key("update-interval")
-    @NotNull Long getFileUpdateIntervalInSeconds();
+    @NotNull
+    Long getFileUpdateIntervalInSeconds();
 
     @Key("s3-endpoint")
     @DefaultValue("s3.amazonaws.com")
-    @NotNull String getEndpoint();
+    @NotNull
+    String getEndpoint();
 
     @Key("s3-endpoint-region")
-    @Nullable String getEndpointRegionName();
+    @Nullable
+    String getEndpointRegionName();
 
     @Key("s3-path-style-access")
-    @Nullable Boolean getPathStyleAccess();
+    @Nullable
+    Boolean getPathStyleAccess();
 
     @Key("credentials-type")
-    @NotNull String getAuthenticationTypeName();
+    @NotNull
+    String getAuthenticationTypeName();
 
     @Key("credentials-access-key-id")
-    @Nullable String getAccessKeyId();
+    @Nullable
+    String getAccessKeyId();
 
     @Key("credentials-secret-access-key")
-    @Nullable String getAccessKeySecret();
+    @Nullable
+    String getAccessKeySecret();
 
     @Key("credentials-session-token")
-    @Nullable String getSessionToken();
+    @Nullable
+    String getSessionToken();
 }
