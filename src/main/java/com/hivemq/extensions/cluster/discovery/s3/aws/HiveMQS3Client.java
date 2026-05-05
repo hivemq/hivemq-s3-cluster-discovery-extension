@@ -50,7 +50,6 @@ import static com.hivemq.extensions.cluster.discovery.s3.ExtensionConstants.EXTE
  */
 public class HiveMQS3Client {
 
-    @SuppressWarnings("SpellCheckingInspection")
     static final @NotNull String S3_HOSTNAME = "s3.amazonaws.com";
 
     private static final @NotNull Logger LOG = LoggerFactory.getLogger(HiveMQS3Client.class);
@@ -93,6 +92,8 @@ public class HiveMQS3Client {
             }
         }
         final var s3ConfigurationBuilder = S3Configuration.builder();
+        // disable Expect: 100-continue to reduce latency for small payloads
+        s3ConfigurationBuilder.expectContinueEnabled(false);
         if (s3Config.getPathStyleAccess() != null) {
             s3ConfigurationBuilder.pathStyleAccessEnabled(s3Config.getPathStyleAccess());
         }
