@@ -1,4 +1,5 @@
 [versions]
+apache-httpclient5 = "5.6.2"
 assertj = "3.27.7"
 aws-sdkv2 = "2.47.4"
 gradleOci-junitJupiter = "0.8.0"
@@ -11,6 +12,7 @@ owner = "1.0.12"
 testcontainers = "2.0.5"
 
 [libraries]
+apache-httpclient5 = { module = "org.apache.httpcomponents.client5:httpclient5", version.ref = "apache-httpclient5" }
 assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 aws-sdkv2-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdkv2" }
 gradleOci-junitJupiter = { module = "io.github.sgtsilvio:gradle-oci-junit-jupiter", version.ref = "gradleOci-junitJupiter" }

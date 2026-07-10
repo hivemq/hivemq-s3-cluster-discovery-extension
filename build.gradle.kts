@@ -40,6 +40,14 @@ dependencies {
     hivemqProvided(libs.logback.classic)
     implementation(libs.owner)
     implementation(libs.aws.sdkv2.s3)
+    // The AWS SDK's apache5-client (sync HTTP client) pulls httpclient5 5.6.1, which pins httpcore5-h2 to 5.4.
+    // Forcing httpclient5 to 5.6.2 transitively pulls the patched httpcore5/httpcore5-h2 5.4.3
+    // (its parent raises httpcore.version 5.4 -> 5.4.3).
+    constraints {
+        implementation(libs.apache.httpclient5) {
+            because("CVE-2026-54428: unbounded HPACK header-list DoS in httpcore5-h2 < 5.4.3, pulled transitively via AWS apache5-client -> httpclient5 5.6.1")
+        }
+    }
 }
 
 oci {
