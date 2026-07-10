@@ -48,6 +48,9 @@ dependencies {
             because("CVE-2026-54428: unbounded HPACK header-list DoS in httpcore5-h2 < 5.4.3, pulled transitively via AWS apache5-client -> httpclient5 5.6.1")
         }
     }
+    implementation(platform(libs.netty.bom)) {
+        because("pin netty-bom to a fixed version to address vulnerabilities introduced via the AWS SDK")
+    }
 }
 
 oci {
