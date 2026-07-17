@@ -1,7 +1,7 @@
 [versions]
 apache-httpclient5 = "5.6.2"
 assertj = "3.27.7"
-aws-sdkv2 = "2.48.1"
+aws-sdkv2 = "2.48.2"
 gradleOci-junitJupiter = "0.8.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "26.1.0"
