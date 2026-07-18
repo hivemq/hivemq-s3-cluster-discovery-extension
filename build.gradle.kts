@@ -88,7 +88,7 @@ oci {
         register("integrationTest") {
             allPlatforms {
                 dependencies {
-                    runtime(project)
+                    runtime(project())
                     runtime("com.hivemq.extensions:hivemq-prometheus-extension")
                 }
             }
@@ -142,7 +142,7 @@ testing {
             }
             oci.of(this) {
                 imageDependencies {
-                    runtime(project) {
+                    runtime(project()) {
                         capabilities { requireFeature("integration-test") }
                     }.tag("latest")
                     runtime("localstack:localstack:3.3.0").tag("latest")
