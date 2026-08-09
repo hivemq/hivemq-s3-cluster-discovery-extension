@@ -1,5 +1,5 @@
 [versions]
-apache-httpclient5 = "5.6.3"
+apache-httpclient5 = "5.6.4"
 assertj = "3.27.7"
 aws-sdkv2 = "2.51.3"
 gradleOci-junitJupiter = "0.8.0"
