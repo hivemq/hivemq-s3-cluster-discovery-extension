@@ -1,7 +1,7 @@
 [versions]
 apache-httpclient5 = "5.6.4"
 assertj = "3.27.7"
-aws-sdkv2 = "2.54.4"
+aws-sdkv2 = "2.54.6"
 gradleOci-junitJupiter = "0.8.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "26.1.0"
@@ -30,5 +30,5 @@ testcontainers-localstack = { module = "org.testcontainers:testcontainers-locals
 [plugins]
 defaults = { id = "io.github.sgtsilvio.gradle.defaults", version = "0.3.0" }
 hivemq-extension = { id = "com.hivemq.extension", version = "5.0.0" }
-spotless = { id = "com.diffplug.spotless", version = "8.10.0" }
+spotless = { id = "com.diffplug.spotless", version = "8.10.1" }
 oci = { id = "io.github.sgtsilvio.gradle.oci", version = "0.30.0" }
